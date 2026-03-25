@@ -2,15 +2,17 @@
    VARIABLES GLOBALES (Paleta de NutrIAssist)
    ========================================= */
 :root {
-    --color-mint: #D7FFE4;
-    --color-spring: #5BFF92;
-    --color-primary: #37F677;
-    --color-malachite: #11CF50;
-    --color-bg: #FFFFFF;
-    --color-bg-app: #F3F4F6; /* Gris claro para el fondo detrás del celular */
-    --color-text-dark: #1F2937;
-    --color-text-gray: #6B7280;
-    --color-border: #E5E7EB;
+    --color-mint:        #D7FFE4;
+    --color-spring:      #5BFF92;
+    --color-primary:     #37F677;
+    --color-malachite:   #11CF50;
+    --color-bg:          #FFFFFF;
+    --color-bg-app:      #F3F4F6;
+    --color-bg-light:    #F7FAF7;
+    --color-text-dark:   #1F2937;
+    --color-text-gray:   #6B7280;
+    --color-border:      #E5E7EB;
+    --color-icon-circle: #D7FFE4;
 }
 
 /* =========================================
@@ -28,49 +30,121 @@ body {
     color: var(--color-text-dark);
     display: flex;
     justify-content: center;
-    /* En móvil real, esto no afecta. En PC, centra la app */
-    min-height: 100vh; 
+    min-height: 100vh;
 }
 
 /* El cascarón de la app (Mobile-first) */
 .mobile-container {
     background-color: var(--color-bg);
     width: 100%;
-    max-width: 400px; /* Ancho máximo de un teléfono grande */
+    max-width: 430px;
     min-height: 100vh;
-    padding: 1.5rem;
+    padding: 1.5rem 1.5rem 2rem;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    position: relative; /* Útil para tu futuro botón flotante del chat */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    position: relative;
 }
 
-/* Títulos estándar */
-h1 { font-size: 1.75rem; font-weight: 700; color: var(--color-text-dark); margin-bottom: 0.5rem; }
+h1 { font-size: 1.8rem; font-weight: 700; color: var(--color-text-dark); margin-bottom: 0.4rem; }
 h2 { font-size: 1.25rem; font-weight: 600; color: var(--color-text-dark); margin-bottom: 0.5rem; }
-p  { font-size: 0.95rem; color: var(--color-text-gray); }
+p  { font-size: 0.92rem; color: var(--color-text-gray); line-height: 1.5; }
+
+/* =========================================
+   BARRA DE NAVEGACIÓN (back + progress)
+   ========================================= */
+.nav-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    min-height: 32px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-dark);
+    font-size: 1.3rem;
+    padding: 0.25rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+    text-decoration: none;
+}
+
+/* =========================================
+   BARRA DE PROGRESO EN 3 SEGMENTOS
+   ========================================= */
+.progress-segments {
+    display: flex;
+    gap: 6px;
+    flex-grow: 1;
+}
+
+.progress-seg {
+    flex: 1;
+    height: 5px;
+    border-radius: 99px;
+    background-color: var(--color-border);
+}
+
+.progress-seg.active {
+    background-color: var(--color-malachite);
+}
+
+/* =========================================
+   ÍCONO CÍRCULO HÉROE
+   ========================================= */
+.icon-circle {
+    width: 96px;
+    height: 96px;
+    background-color: var(--color-icon-circle);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0.5rem auto 1.5rem;
+    overflow: hidden;
+}
+
+.icon-circle img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
+
+.icon-circle svg {
+    width: 52px;
+    height: 52px;
+}
 
 /* =========================================
    COMPONENTES UNIVERSALES
    ========================================= */
 
-/* Botón Principal (Verde vibrante) */
 .btn-primary {
     width: 100%;
     background-color: var(--color-primary);
-    color: var(--color-text-dark);
-    font-weight: 600;
+    color: #1a1a1a;
+    font-weight: 700;
     font-size: 1.05rem;
     padding: 1rem;
     border: none;
-    border-radius: 12px;
+    border-radius: 14px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, transform 0.1s;
     text-align: center;
+    letter-spacing: 0.01em;
 }
-.btn-primary:active { background-color: var(--color-malachite); color: white; }
+.btn-primary:active {
+    background-color: var(--color-malachite);
+    color: white;
+    transform: scale(0.98);
+}
 
-/* Tarjetas (Para el Diario, Recetas, Dashboard) */
 .card {
     background-color: var(--color-bg);
     border: 1px solid var(--color-border);
@@ -85,21 +159,186 @@ p  { font-size: 0.95rem; color: var(--color-text-gray); }
 /* Campos de Formulario */
 .form-input {
     width: 100%;
-    padding: 0.875rem 1rem;
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    border: 1.5px solid var(--color-border);
+    border-radius: 14px;
     font-size: 1rem;
+    color: var(--color-text-dark);
+    background-color: #FFFFFF;
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.1rem;
 }
+.form-input::placeholder { color: #B0B7C3; }
 .form-input:focus {
     border-color: var(--color-malachite);
     box-shadow: 0 0 0 3px var(--color-mint);
 }
+
 .form-label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.45rem;
     font-weight: 500;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
+    color: var(--color-text-dark);
+}
+
+/* Input con ícono a la derecha */
+.input-wrapper {
+    position: relative;
+    margin-bottom: 1.1rem;
+}
+.input-wrapper .form-input {
+    margin-bottom: 0;
+    padding-right: 3rem;
+}
+.input-icon-right {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-gray);
+    display: flex;
+    align-items: center;
+    padding: 0;
+}
+
+/* =========================================
+   TARJETAS DE SELECCIÓN (radio)
+   ========================================= */
+.radio-hidden { display: none; }
+
+.option-card {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.1rem;
+    border: 1.5px solid var(--color-border);
+    border-radius: 16px;
+    margin-bottom: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: var(--color-bg);
+    gap: 0.9rem;
+}
+
+.option-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background-color: var(--color-bg-app);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background-color 0.2s;
+}
+.option-icon-box svg { width: 24px; height: 24px; }
+.option-icon-box .emoji { font-size: 1.3rem; }
+
+.option-text { flex-grow: 1; }
+.option-text h3 { font-size: 1rem; font-weight: 600; color: var(--color-text-dark); margin-bottom: 0.1rem; }
+.option-text p  { font-size: 0.8rem; color: var(--color-text-gray); }
+
+.option-indicator {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+/* Estado seleccionado */
+.radio-hidden:checked + .option-card {
+    border-color: var(--color-malachite);
+    background-color: var(--color-mint);
+}
+.radio-hidden:checked + .option-card .option-icon-box {
+    background-color: var(--color-malachite);
+}
+.radio-hidden:checked + .option-card .option-indicator {
+    background-color: var(--color-malachite);
+    border-color: var(--color-malachite);
+}
+.radio-hidden:checked + .option-card .option-indicator::after {
+    content: '';
+    display: block;
+    width: 5px;
+    height: 9px;
+    border: 2px solid white;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+
+/* =========================================
+   PIE FIJO
+   ========================================= */
+.sticky-footer {
+    margin-top: auto;
+    padding-top: 1.5rem;
+}
+
+/* =========================================
+   CABECERA CENTRADA
+   ========================================= */
+.screen-header {
+    text-align: center;
+    margin-bottom: 1.75rem;
+}
+.screen-header h1 { margin-bottom: 0.3rem; }
+
+/* =========================================
+   FILAS DE INFO (Onboarding "Sobre ti")
+   ========================================= */
+.info-row {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.1rem;
+    border: 1.5px solid var(--color-border);
+    border-radius: 16px;
+    margin-bottom: 0.75rem;
+    background-color: var(--color-bg);
+    cursor: pointer;
+    gap: 0.9rem;
+    transition: border-color 0.2s;
+}
+.info-row:active { border-color: var(--color-malachite); }
+
+.info-row-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--color-text-gray);
+}
+.info-row-icon svg { width: 22px; height: 22px; }
+
+.info-row-label {
+    flex-grow: 1;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text-dark);
+}
+
+.info-row-value {
+    font-size: 0.95rem;
+    color: var(--color-text-gray);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-weight: 500;
+}
+.info-row-value .chevron {
+    color: var(--color-malachite);
+    font-weight: 700;
+    font-size: 1.1rem;
 }

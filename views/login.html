@@ -3,37 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NutrIAssist - Crear Cuenta</title>
+    <title>NutrIAssist - Iniciar Sesión</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/global.css">
     <style>
-        /* Degradado sutil de arriba: verde muy claro → blanco */
-        .mobile-container {
-            background: linear-gradient(160deg, #e8f9ed 0%, #ffffff 30%);
-        }
-        .page-header {
-            margin-top: 0.5rem;
-            margin-bottom: 1.75rem;
-        }
-        .page-header h1 { font-size: 2rem; margin-bottom: 0.3rem; }
-        .page-header p  { font-size: 0.92rem; }
-
-        .terms-text {
+        .brand-logo {
             text-align: center;
-            font-size: 0.78rem;
-            color: var(--color-text-gray);
-            margin-top: 0.9rem;
-            line-height: 1.5;
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
         }
-        .terms-text a {
-            color: var(--color-malachite);
-            font-weight: 600;
+        .brand-name {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--color-text-dark);
+            margin-bottom: 0.3rem;
+        }
+        .brand-tagline {
+            font-size: 0.9rem;
+            color: var(--color-text-gray);
+        }
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--color-text-dark);
+            margin-bottom: 1.5rem;
+        }
+        .forgot-password {
+            text-align: right;
+            margin-top: -0.6rem;
+            margin-bottom: 1rem;
+        }
+        .forgot-password a {
+            font-size: 0.85rem;
+            color: var(--color-text-gray);
             text-decoration: none;
         }
         .bottom-link {
             text-align: center;
-            margin-top: auto;
-            padding-top: 1.5rem;
+            margin-top: 1.25rem;
             font-size: 0.92rem;
             color: var(--color-text-gray);
         }
@@ -42,27 +49,39 @@
             font-weight: 700;
             text-decoration: none;
         }
+        .error-msg {
+            display: none;
+            background-color: #FEE2E2;
+            color: #DC2626;
+            padding: 0.75rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            border: 1px solid #F87171;
+        }
     </style>
 </head>
 <body>
 
     <div class="mobile-container">
-        <!-- Barra de navegación con botón atrás -->
-        <div class="nav-bar">
-            <a href="login.html" class="back-btn" aria-label="Volver">&#8592;</a>
+
+        <!-- Logo + marca -->
+        <div class="brand-logo">
+            <div class="icon-circle">
+                <img src="../assets/img/avocado.svg" alt="NutrIAssist logo">
+            </div>
+            <div class="brand-name">NutrIAssist</div>
+            <div class="brand-tagline">Tu camino hacia una vida saludable</div>
         </div>
 
-        <div class="page-header">
-            <h1>Crear Cuenta</h1>
-            <p>Únete a nuestra comunidad de salud y bienestar.</p>
+        <div class="section-title">Iniciar Sesión</div>
+
+        <div class="error-msg" id="error-box">
+            Correo o contraseña incorrectos.
         </div>
 
-        <form action="../controllers/procesar_registro.php" method="POST"
-              style="display:flex;flex-direction:column;flex-grow:1;">
-
-            <label class="form-label" for="nombre">Nombre completo</label>
-            <input class="form-input" type="text" id="nombre" name="nombre"
-                   placeholder="Ingresa tu nombre completo" required autocomplete="name">
+        <form action="../controllers/procesar_login.php" method="POST" style="display:flex;flex-direction:column;flex-grow:1;">
 
             <label class="form-label" for="email">Correo electrónico</label>
             <input class="form-input" type="email" id="email" name="email"
@@ -71,8 +90,9 @@
             <label class="form-label" for="password">Contraseña</label>
             <div class="input-wrapper">
                 <input class="form-input" type="password" id="password" name="password"
-                       placeholder="Crea una contraseña segura" required minlength="8" autocomplete="new-password">
+                       placeholder="·········" required autocomplete="current-password">
                 <button type="button" class="input-icon-right" id="toggle-pw" aria-label="Mostrar contraseña">
+                    <!-- Eye icon -->
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -81,27 +101,33 @@
                 </button>
             </div>
 
+            <div class="forgot-password">
+                <a href="#">Olvidé mi contraseña</a>
+            </div>
+
             <div class="sticky-footer">
-                <button type="submit" class="btn-primary">Registrarse</button>
-                <div class="terms-text">
-                    Al registrarte, aceptas nuestros
-                    <a href="#">Términos y Condiciones</a>
-                    así como nuestra Política de Privacidad.
+                <button type="submit" class="btn-primary">Iniciar Sesión</button>
+                <div class="bottom-link">
+                    ¿No tienes cuenta? <a href="registro.html">Regístrate</a>
                 </div>
             </div>
         </form>
-
-        <div class="bottom-link">
-            ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
-        </div>
     </div>
 
     <script>
+        // Mostrar error si viene del servidor
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('error') === '1') {
+            document.getElementById('error-box').style.display = 'block';
+        }
+
+        // Toggle mostrar/ocultar contraseña
         const togglePw = document.getElementById('toggle-pw');
         const pwInput  = document.getElementById('password');
         togglePw.addEventListener('click', () => {
             const isHidden = pwInput.type === 'password';
             pwInput.type = isHidden ? 'text' : 'password';
+            // Cambiar ícono
             togglePw.innerHTML = isHidden
                 ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
                 : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;

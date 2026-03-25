@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Outer dark green skin -->
+  <path d="M100 18 C60 18, 30 50, 28 90 C26 125, 40 155, 70 170 C80 175, 90 178, 100 178 C110 178, 120 175, 130 170 C160 155, 174 125, 172 90 C170 50, 140 18, 100 18 Z" fill="#2D5A16" stroke="#1a3a0a" stroke-width="5"/>
+  <!-- Inner light green flesh -->
+  <path d="M100 32 C68 32, 44 58, 42 90 C40 118, 52 144, 76 157 C84 161, 92 164, 100 164 C108 164, 116 161, 124 157 C148 144, 160 118, 158 90 C156 58, 132 32, 100 32 Z" fill="#A8CC8C"/>
+  <!-- Brown pit/seed -->
+  <ellipse cx="100" cy="106" rx="28" ry="34" fill="#7A4520" stroke="#5C3010" stroke-width="3"/>
+  <!-- Pit highlight -->
+  <ellipse cx="92" cy="96" rx="8" ry="10" fill="#9A5A30" opacity="0.5"/>
+  <!-- White highlight lines on the flesh (bottom right) -->
+  <path d="M120 148 Q132 142, 138 130" stroke="white" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+  <path d="M126 158 Q140 150, 148 136" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.4"/>
+</svg>
