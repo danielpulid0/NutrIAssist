@@ -68,7 +68,7 @@ function get_icon_profile($is_active) {
         <?= get_icon_home($pagina_actual == 'dashboard.php') ?>
         <span>Inicio</span>
     </a>
-    <a href="#" class="nav-item <?= $pagina_actual == 'diario.php' ? 'active' : '' ?>">
+    <a href="diario.php" class="nav-item <?= $pagina_actual == 'diario.php' ? 'active' : '' ?>">
         <?= get_icon_diary($pagina_actual == 'diario.php') ?>
         <span>Diario</span>
     </a>
