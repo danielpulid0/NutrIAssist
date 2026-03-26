@@ -469,9 +469,13 @@ if (!isset($_SESSION['usuario_id'])) {
                     if (iaResponse.tipo_respuesta === 'chat') {
                         // Modo Conversación
                         appendBotText(iaResponse.mensaje_respuesta);
+                        playGeminiVoice(iaResponse.mensaje_respuesta);
                     } else if (iaResponse.tipo_respuesta === 'food_log') {
                         // Modo Registro de Comida o Sugerencia
                         renderBotCard(iaResponse);
+                        // Cuando da la tarjeta, también nos da una descripción o nombre
+                        const texto = `He registrado ${iaResponse.alimento}. Tiene ${iaResponse.calorias} calorías. ¿Está correcto?`;
+                        playGeminiVoice(texto);
                     }
                 } else {
                     appendBotText("Lo siento, tuve un problema analizando eso. ¿Puedes repetirlo?");
@@ -667,6 +671,71 @@ if (!isset($_SESSION['usuario_id'])) {
         userInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') sendMessage();
         });
+
+        // ==========================================
+        // MOTOR TTS GEMINI (Texto a Voz nativo)
+        // ==========================================
+        async function playGeminiVoice(text) {
+            try {
+                const res = await fetch('../controllers/gemini_tts.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ texto: text })
+                });
+                
+                const data = await res.json();
+                if (data.status === 'success' && data.audio_base64) {
+                    playPCMBase64(data.audio_base64);
+                }
+            } catch (e) {
+                console.error("Error reproduciendo voz:", e);
+            }
+        }
+
+        // Función constructora WAV a partir de PCM lineal crudo de Gemini TTS
+        function playPCMBase64(base64Str) {
+            const raw = atob(base64Str);
+            const len = raw.length;
+            let buffer = new ArrayBuffer(44 + len);
+            let view = new DataView(buffer);
+            
+            // RIFF chunk descriptor
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + len, true);
+            writeString(view, 8, 'WAVE');
+            
+            // FMT sub-chunk
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true); // PCM format = 1
+            view.setUint16(22, 1, true); // Mono channel = 1
+            view.setUint32(24, 24000, true); // Sample rate = 24000Hz (Default Gemini)
+            view.setUint32(28, 24000 * 2, true); // Byte rate
+            view.setUint16(32, 2, true); // Block align
+            view.setUint16(34, 16, true); // Bits per sample = 16
+            
+            // Data sub-chunk
+            writeString(view, 36, 'data');
+            view.setUint32(40, len, true);
+            
+            // Escribir la data PCM exacta
+            let offset = 44;
+            for (let i = 0; i < len; i++) {
+                view.setUint8(offset + i, raw.charCodeAt(i));
+            }
+            
+            const blob = new Blob([buffer], { type: 'audio/wav' });
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+            audio.play();
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
     </script>
 </body>
 </html>
