@@ -1,9 +1,9 @@
 <?php
 // config/db.php
 $host = "localhost";
-$dbname = "nutrIAssist"; // Ajusta al nombre exacto que creaste
+$dbname = "nutrIAssist_db"; // Ajusta al nombre exacto que creaste
 $username = "root";
-$password = "chicharito14"; 
+$password = "October311990"; 
 
 try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
