@@ -16,6 +16,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // 4. SEGURIDAD: Encriptar la contraseña (¡NUNCA se guarda en texto plano!)
     $password_hash = password_hash($password_plana, PASSWORD_DEFAULT);
 
+    // 4.5 VALIDACIÓN PREVIA: Comprobar que el correo no exista ya
+    $stmt_check = $conn->prepare("SELECT id_usuario FROM Usuarios WHERE email = :email");
+    $stmt_check->bindParam(':email', $email);
+    $stmt_check->execute();
+    if ($stmt_check->rowCount() > 0) {
+        // Enviar al usuario de vuelta a registro.html con un mensaje de error
+        header("Location: ../views/registro.html?error=email_existente");
+        exit();
+    }
+
     // Valores temporales para los campos obligatorios (se llenarán en el Onboarding)
     $fecha_temp = '2000-01-01'; 
     $peso_temp = 0.00;
@@ -51,9 +61,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
 
     } catch(PDOException $e) {
-        // Si el correo ya existe, MySQL lanzará un error porque pusimos UNIQUE
+        // En caso excepcional que pase la validación previa pero MySQL siga bloqueando
         if ($e->getCode() == 23000) {
-            die("Error: El correo electrónico ya está registrado. <a href='../views/registro.html'>Volver</a>");
+            header("Location: ../views/registro.html?error=email_existente");
+            exit();
         } else {
             die("Error crítico al registrar: " . $e->getMessage());
         }
