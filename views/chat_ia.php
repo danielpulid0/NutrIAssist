@@ -631,18 +631,27 @@ if (!isset($_SESSION['usuario_id'])) {
             btn.disabled = true;
 
             try {
+                // Desescapar comillas para que el body sí sea JSON válido para PHP
+                const validJsonString = jsonDataStr.replace(/&quot;/g, '"');
+                
                 const response = await fetch('../controllers/guardar_comida_ia.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: jsonDataStr
+                    body: validJsonString
                 });
 
-                if (response.ok) {
+                const repObj = await response.json();
+
+                if (response.ok && repObj.status === 'success') {
                     const actions = document.querySelector(`#${templateId} .fc-actions`);
                     actions.innerHTML = '<div style="width: 100%; text-align: center; color: #15803D; font-weight: 700; padding: 0.5rem 0; font-size: 0.9rem;">✅ Guardado correctamente</div>';
+                } else {
+                    btn.innerHTML = 'Fallo al guardar';
+                    btn.disabled = false;
                 }
             } catch (e) {
-                btn.innerHTML = 'Error';
+                btn.innerHTML = 'Error conexión';
+                btn.disabled = false;
             }
         }
 
