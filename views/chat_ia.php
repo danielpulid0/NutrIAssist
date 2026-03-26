@@ -423,41 +423,55 @@ if (!isset($_SESSION['usuario_id'])) {
         </div>
 
     </div>
-
     <script>
         const chatBox = document.getElementById('chat-box');
         const userInput = document.getElementById('user-input');
         const btnSend = document.getElementById('btn-send');
         const typingMsg = document.getElementById('typing-msg');
-        
-        let initialBotMsgShown = false;
 
         async function sendMessage() {
             const text = userInput.value.trim();
             if (!text) return;
 
+            // 1. Mostrar mensaje del usuario localmente
             appendUserMessage(text);
             userInput.value = '';
             
-            // Show typing indicator
+            // 2. Mostrar indicador "escribiendo..." de la IA
             chatBox.appendChild(typingMsg);
             typingMsg.style.display = 'flex';
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            if (!initialBotMsgShown) {
-                // To simulate the mockup flow, if this is the first message 
-                // ("Comí 2 tacos..."), we render the card immediately.
-                initialBotMsgShown = true;
-                setTimeout(() => {
-                    typingMsg.style.display = 'none';
-                    renderBotCard();
-                }, 1500);
-            } else {
-                // For sub-sequent messages, simply reply with text
-                setTimeout(() => {
-                    typingMsg.style.display = 'none';
-                    appendBotText("¡Anotado! He actualizado tus macros de hoy.");
-                }, 1000);
+            try {
+                // 3. Petición POST a la API de Gemma (Backend en PHP)
+                const response = await fetch('../controllers/gamma_api.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: text })
+                });
+
+                const data = await response.json();
+                
+                // Ocultamos el indicador de typing
+                typingMsg.style.display = 'none';
+
+                if (data.status === 'success' && data.food_data) {
+                    const iaResponse = data.food_data;
+                    
+                    if (iaResponse.tipo_respuesta === 'chat') {
+                        // Modo Conversación
+                        appendBotText(iaResponse.mensaje_respuesta);
+                    } else if (iaResponse.tipo_respuesta === 'food_log') {
+                        // Modo Registro de Comida
+                        renderBotCard(iaResponse);
+                    }
+                } else {
+                    appendBotText("Lo siento, tuve un problema analizando eso. ¿Puedes repetirlo?");
+                }
+
+            } catch (error) {
+                typingMsg.style.display = 'none';
+                appendBotText("Error de red. Asegúrate de tener conexión.");
             }
         }
 
@@ -475,7 +489,7 @@ if (!isset($_SESSION['usuario_id'])) {
             const div = document.createElement('div');
             div.innerHTML = html;
             chatBox.insertBefore(div.firstElementChild, typingMsg);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            chatBox.scroll({ top: chatBox.scrollHeight, behavior: 'smooth' });
         }
         
         function appendBotText(text) {
@@ -492,11 +506,28 @@ if (!isset($_SESSION['usuario_id'])) {
             const div = document.createElement('div');
             div.innerHTML = html;
             chatBox.insertBefore(div.firstElementChild, typingMsg);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            chatBox.scroll({ top: chatBox.scrollHeight, behavior: 'smooth' });
         }
 
-        function renderBotCard() {
+        function renderBotCard(data) {
             const templateId = 'card_' + Date.now();
+            // Evitar nulos
+            const calorias = data.calorias || 0;
+            const alimento = data.alimento || "Alimento desconocido";
+            const detalle = data.descripcion || "Porción regular";
+            const comida = data.tipo_comida || "Comida";
+            const proteina = data.proteina || 0;
+            const carbs = data.carbs || 0;
+            const grasas = data.grasas || 0;
+
+            const iconClass = data.tipo_icono === 'liquid' ? 'liquid' : 'solid';
+            const iconSvg = iconClass === 'liquid' 
+                ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 22h8"></path><path d="M12 2v20"></path><path d="M16 8l-4 4-4-4"></path><path d="M12 12V2"></path></svg>'
+                : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg>';
+
+            // Estructura stringificada para el botón
+            const jsonPayload = JSON.stringify({ calorias, proteina, carbs, grasas }).replace(/"/g, '&quot;');
+
             const html = `
             <div class="msg-wrapper ai" id="${templateId}">
                 <div class="msg-label">NutrIAssist</div>
@@ -505,47 +536,31 @@ if (!isset($_SESSION['usuario_id'])) {
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path></svg>
                     </div>
                     <div class="food-card">
-                        <div class="fc-banner">
+                        <div class="fc-banner" style="background-image: url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=140&fit=crop');">
                             <div class="fc-banner-overlay">
                                 <h3>Confirmación de Registro</h3>
-                                <p>Almuerzo • 450 kcal total</p>
+                                <p>${comida} • ${calorias} kcal total</p>
                             </div>
-                            <div class="fc-badge">+450 kcal</div>
+                            <div class="fc-badge">+${calorias} kcal</div>
                         </div>
                         <div class="fc-body">
-                            <!-- Taco -->
                             <div class="fc-item">
-                                <div class="fc-icon solid">
-                                    <!-- Icono de tenedores -->
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg>
+                                <div class="fc-icon ${iconClass}">
+                                    ${iconSvg}
                                 </div>
                                 <div class="fc-item-info">
-                                    <h4>Tacos de Asada</h4>
-                                    <p>2 piezas (Tamaño regular)</p>
+                                    <h4>${alimento}</h4>
+                                    <p>${detalle}</p>
                                 </div>
                                 <div class="fc-item-cal">
-                                    450<span>kcal</span>
-                                </div>
-                            </div>
-                            <!-- Refresco -->
-                            <div class="fc-item">
-                                <div class="fc-icon liquid">
-                                    <!-- Icono de vaso -->
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 22h8"></path><path d="M12 2v20"></path><path d="M16 8l-4 4-4-4"></path><path d="M12 12V2"></path><path d="M12 16v.01"></path><path d="M12 8v.01"></path></svg>
-                                </div>
-                                <div class="fc-item-info">
-                                    <h4>Refresco Light</h4>
-                                    <p>1 lata (355 ml)</p>
-                                </div>
-                                <div class="fc-item-cal">
-                                    0<span>kcal</span>
+                                    ${calorias}<span>kcal</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="fc-actions">
                             <button class="fc-btn outline">Editar Detalles</button>
-                            <button class="fc-btn primary confirm-btn" onclick="saveFoodData('${templateId}')">
+                            <button class="fc-btn primary confirm-btn" onclick="saveFoodData('${templateId}', '${jsonPayload}')">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                 Confirmar
                             </button>
@@ -553,22 +568,34 @@ if (!isset($_SESSION['usuario_id'])) {
                     </div>
                 </div>
             </div>`;
+            
             const div = document.createElement('div');
             div.innerHTML = html;
             chatBox.insertBefore(div.firstElementChild, typingMsg);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            chatBox.scroll({ top: chatBox.scrollHeight, behavior: 'smooth' });
         }
 
-        async function saveFoodData(templateId) {
+        async function saveFoodData(templateId, jsonDataStr) {
             const btn = document.querySelector(`#${templateId} .confirm-btn`);
             btn.innerHTML = 'Guardando...';
             btn.style.backgroundColor = '#CBD5E1';
             btn.style.color = '#334155';
+            btn.disabled = true;
 
-            setTimeout(() => {
-                const actions = document.querySelector(`#${templateId} .fc-actions`);
-                actions.innerHTML = `<div style="width: 100%; text-align: center; color: #15803D; font-weight: 700; padding: 0.5rem 0; font-size: 0.9rem;">✅ Guardado correctamente</div>`;
-            }, 1000);
+            try {
+                const response = await fetch('../controllers/guardar_comida_ia.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: jsonDataStr
+                });
+
+                if (response.ok) {
+                    const actions = document.querySelector(`#${templateId} .fc-actions`);
+                    actions.innerHTML = '<div style="width: 100%; text-align: center; color: #15803D; font-weight: 700; padding: 0.5rem 0; font-size: 0.9rem;">✅ Guardado correctamente</div>';
+                }
+            } catch (e) {
+                btn.innerHTML = 'Error';
+            }
         }
 
         btnSend.addEventListener('click', sendMessage);

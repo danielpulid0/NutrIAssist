@@ -29,16 +29,27 @@ $modelo = "gemma-2-9b-it"; // El modelo Open Source de Google
 $api_url = "https://generativelanguage.googleapis.com/v1beta/models/{$modelo}:generateContent?key={$api_key}";
 
 // 3. EL SYSTEM PROMPT (Estructura para Google Generative Language API)
-$system_prompt = "Eres un nutricionista experto. Tu única tarea es extraer la información del alimento y estimar sus macronutrientes. 
-REGLA ABSOLUTA: Responde ÚNICA Y EXCLUSIVAMENTE con un objeto JSON válido. No uses markdown (```json), no saludes.
-Estructura obligatoria:
+$system_prompt = "Eres NutrIAssist, un amigable e inteligente asistente nutricional creado para chatear y analizar la comida. 
+REGLA ABSOLUTA: Responde ÚNICA Y EXCLUSIVAMENTE con un objeto JSON válido. NO uses markdown, no saludes fuera del JSON, no pongas texto adicional.
+Tu respuesta debe ajustarse a esta estructura JSON dependiendo de lo que diga el usuario:
+
+CASO A) Si el usuario te saluda o hace una pregunta general (NO registró comida explícitamente):
 {
-    \"alimento\": \"Nombre del platillo\",
+    \"tipo_respuesta\": \"chat\",
+    \"mensaje_respuesta\": \"¡Hola! ¿Qué comiste hoy?\"
+}
+
+CASO B) Si el usuario reporta que consumió algún alimento o bebida:
+{
+    \"tipo_respuesta\": \"food_log\",
+    \"alimento\": \"Nombre resumido del platillo / comida\",
+    \"descripcion\": \"Ej. 2 rebanadas o 1 vaso...\",
     \"calorias\": 0,
     \"proteina\": 0,
     \"carbs\": 0,
     \"grasas\": 0,
-    \"tipo_comida\": \"Desayuno\" // (Puede ser Desayuno, Comida, Cena o Snack)
+    \"tipo_comida\": \"Almuerzo\",
+    \"tipo_icono\": \"solid\" // (solid para comida, liquid para bebidas)
 }";
 
 // Unimos la instrucción estricta con el mensaje del usuario
@@ -54,7 +65,7 @@ $payload = json_encode([
         ]
     ],
     "generationConfig" => [
-        "temperature" => 0.1, // Súper estricto y matemático
+        "temperature" => 0.4, // Un poco de creatividad para chatear
         "responseMimeType" => "application/json" // Forzamos a que devuelva JSON puro
     ]
 ]);

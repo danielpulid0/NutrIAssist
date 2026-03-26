@@ -11,13 +11,26 @@ if (!isset($_SESSION['usuario_id'])) {
 $nombre_usuario = $_SESSION['usuario_nombre'] ?? 'Usuario';
 $meta_calorias = $_SESSION['meta_calorias'] ?? 2000; // Valor por defecto si falla algo
 
-// Datos simulados (Hardcoded) por ahora. En la Fase 4 esto vendrá de MySQL (SUM de la tabla Comidas)
-$calorias_consumidas = 850; 
-$calorias_restantes = $meta_calorias - $calorias_consumidas;
+// Datos base simulados + Macros de IA si existen
+$cal_base = 850;
+$pro_base = 90;
+$carbs_base = 120;
+$grasas_base = 35;
 
-// Matemáticas para el anillo circular (Porcentaje)
-$porcentaje_anillo = ($calorias_consumidas / $meta_calorias) * 100;
-if ($porcentaje_anillo > 100) $porcentaje_anillo = 100;
+$ia_macros = $_SESSION['macros_consumidos'] ?? ['calorias' => 0, 'proteina' => 0, 'carbs' => 0, 'grasas' => 0];
+
+$calorias_consumidas = $cal_base + $ia_macros['calorias']; 
+$pro_consumidas = $pro_base + $ia_macros['proteina'];
+$carbs_consumidas = $carbs_base + $ia_macros['carbs'];
+$grasas_consumidas = $grasas_base + $ia_macros['grasas'];
+
+$calorias_restantes = max(0, $meta_calorias - $calorias_consumidas);
+
+// Porcentajes para barras
+$porcentaje_anillo = min(100, ($calorias_consumidas / $meta_calorias) * 100);
+$pro_p = min(100, ($pro_consumidas / 150) * 100);
+$carbs_p = min(100, ($carbs_consumidas / 220) * 100);
+$grasas_p = min(100, ($grasas_consumidas / 70) * 100);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -255,10 +268,10 @@ if ($porcentaje_anillo > 100) $porcentaje_anillo = 100;
             <div class="calorie-ring">
                 <div class="ring-inner">
                     <p style="color: var(--color-malachite); font-size: 1.2rem; margin-bottom: 0.2rem;">🔥</p>
-                    <h2>1,600</h2>
-                    <p style="font-size: 0.8rem;">de 2,000 kcal</p>
+                    <h2><?= number_format($calorias_consumidas) ?></h2>
+                    <p style="font-size: 0.8rem;">de <?= number_format($meta_calorias) ?> kcal</p>
                     <div style="background-color: var(--color-mint); color: var(--color-malachite); font-size: 0.75rem; font-weight: 600; padding: 0.3rem 0.6rem; border-radius: 12px; margin-top: 0.5rem; display: inline-block;">
-                        400 restantes
+                        <?= number_format($calorias_restantes) ?> restantes
                     </div>
                 </div>
             </div>
@@ -272,10 +285,10 @@ if ($porcentaje_anillo > 100) $porcentaje_anillo = 100;
                         <span class="macro-dot" style="background-color: #3b82f6;"></span>
                         Proteínas
                     </div>
-                    <div class="macro-val-h">90 / 150g</div>
+                    <div class="macro-val-h"><?= $pro_consumidas ?> / 150g</div>
                 </div>
                 <div class="macro-bar-bg">
-                    <div class="macro-bar-fill" style="width: 60%; background-color: #3b82f6;"></div>
+                    <div class="macro-bar-fill" style="width: <?= $pro_p ?>%; background-color: #3b82f6;"></div>
                 </div>
             </div>
             
@@ -286,10 +299,10 @@ if ($porcentaje_anillo > 100) $porcentaje_anillo = 100;
                         <span class="macro-dot" style="background-color: #f97316;"></span>
                         Carbohidratos
                     </div>
-                    <div class="macro-val-h">120 / 220g</div>
+                    <div class="macro-val-h"><?= $carbs_consumidas ?> / 220g</div>
                 </div>
                 <div class="macro-bar-bg">
-                    <div class="macro-bar-fill" style="width: 54.5%; background-color: #f97316;"></div>
+                    <div class="macro-bar-fill" style="width: <?= $carbs_p ?>%; background-color: #f97316;"></div>
                 </div>
             </div>
 
@@ -300,10 +313,10 @@ if ($porcentaje_anillo > 100) $porcentaje_anillo = 100;
                         <span class="macro-dot" style="background-color: #eab308;"></span>
                         Grasas
                     </div>
-                    <div class="macro-val-h">35 / 70g</div>
+                    <div class="macro-val-h"><?= $grasas_consumidas ?> / 70g</div>
                 </div>
                 <div class="macro-bar-bg">
-                    <div class="macro-bar-fill" style="width: 50%; background-color: #eab308;"></div>
+                    <div class="macro-bar-fill" style="width: <?= $grasas_p ?>%; background-color: #eab308;"></div>
                 </div>
             </div>
         </div>
