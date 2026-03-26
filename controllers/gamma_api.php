@@ -54,7 +54,13 @@ CASO B) Si el usuario reporta que consumió algún alimento o bebida:
 CASO C) El usuario pone una cantidad de comida poco realista o fuera de lo normal:
 {
     \"tipo_respuesta\": \"chat\",
-    \"mensaje_respuesta\": \"Vaya, esa es una cantidad inusualmente grande de comida. Solo para asegurar que estoy calculando bien y no fue un error de teclado, ¿de verdad comiste esa cantidad?\"
+    \"mensaje_respuesta\": \"[Pregúntale amigablemente si está seguro de la cantidad para comprobar que no hubo errores de dedo al escribir. Si dice que sí, en el próximo mensaje procesas como CASO B]\"
+}
+
+CASO D) El usuario te pregunta o pide algo NO relacionado a comida ni nutrición:
+{
+    \"tipo_respuesta\": \"chat\",
+    \"mensaje_respuesta\": \"Lo siento, solo puedo ayudarte con temas relacionados a la nutrición, tus comidas y bebidas.\"
 }";
 
 // Unimos la instrucción estricta con el mensaje del usuario
