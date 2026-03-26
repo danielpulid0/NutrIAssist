@@ -212,25 +212,25 @@ if ($porcentaje_anillo > 100) $porcentaje_anillo = 100;
         .tag-green { background-color: var(--color-mint); color: var(--color-malachite); }
         .tag-gray { background-color: var(--color-bg-app); color: var(--color-text-gray); }
 
-        .btn-action-corner {
+        .fab-chat {
             position: absolute;
-            bottom: -5px;
-            right: -5px;
-            width: 50px;
-            height: 50px;
+            bottom: 90px;
+            right: 20px;
+            width: 55px;
+            height: 55px;
             background-color: var(--color-primary);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 4px 10px rgba(55, 246, 119, 0.3);
+            box-shadow: 0 4px 15px rgba(55, 246, 119, 0.4);
             cursor: pointer;
-            border: none;
             color: var(--color-text-dark);
-            outline: none;
-            transition: transform 0.2s;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 100;
         }
-        .btn-action-corner:active { transform: scale(0.95) translate(-2px, -2px); }
+        .fab-chat:active { transform: scale(0.95); }
 
         /* Contenedor principal ajustado para el footer plano */
         .mobile-container { padding-bottom: 90px; }
@@ -322,10 +322,11 @@ if ($porcentaje_anillo > 100) $porcentaje_anillo = 100;
                     <span class="tag-light tag-gray">Vegetariano</span>
                 </div>
             </div>
-            <button class="btn-action-corner">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            </button>
         </div>
+
+        <a href="chat_ia.php" class="fab-chat">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </a>
 
         <?php include 'includes/footer.php'; ?>
 

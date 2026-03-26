@@ -12,49 +12,149 @@ if (!isset($_SESSION['usuario_id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NutrIAssist - Chat Inteligente</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/global.css">
     
     <style>
-        /* Ajuste del contenedor para el chat */
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: #E7EBEE; /* Fondo gris claro */
+            /* global.css flex centering is preserved */
+        }
+        
         .mobile-container {
-            padding: 0; /* Quitamos el padding para aprovechar toda la pantalla */
-            display: flex;
-            flex-direction: column;
+            padding: 0;
             height: 100vh;
-            background-color: var(--color-bg-app); /* Fondo gris claro para contrastar globos */
+            background-color: #E7EBEE; /* Override background for chat */
         }
 
         .chat-header {
-            background-color: var(--color-bg);
-            padding: 1.5rem 1.5rem 1rem 1.5rem;
-            border-bottom: 1px solid var(--color-border);
-            text-align: center;
+            background-color: #FFFFFF;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #D1D5DB;
             z-index: 10;
         }
 
-        .chat-header h1 { font-size: 1.25rem; margin-bottom: 0.2rem; }
-        .chat-header p { font-size: 0.85rem; color: var(--color-primary); font-weight: 600; }
+        .chat-header .back-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            cursor: pointer;
+            color: #000;
+            display: flex;
+            align-items: center;
+        }
 
-        /* Área de mensajes */
+        .chat-header h1 { 
+            font-size: 1.15rem; 
+            margin: 0; 
+            flex-grow: 1; 
+            text-align: center; 
+            font-weight: 700;
+            padding-right: 24px; /* Para equilibrar el back-btn */
+        }
+
         .chat-messages {
             flex-grow: 1;
-            padding: 1rem;
+            padding: 1.25rem;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
-            padding-bottom: 120px; /* Espacio para el input y el footer */
+            gap: 1.5rem;
+            padding-bottom: 150px; /* Espacio para el input */
         }
 
-        /* Globos de Chat */
-        .message {
-            max-width: 85%;
-            padding: 0.8rem 1rem;
-            border-radius: 16px;
+        .date-badge {
+            align-self: center;
+            background-color: #DBE0E8;
+            color: #64748B;
+            font-size: 0.70rem;
+            font-weight: 700;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Message Wrappers */
+        .msg-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .msg-wrapper.ai { align-items: flex-start; }
+        .msg-wrapper.user { align-items: flex-end; }
+
+        .msg-label {
+            font-size: 0.75rem;
+            color: #94A3B8;
+            margin-bottom: 0.3rem;
+        }
+        
+        .msg-wrapper.ai .msg-label { margin-left: 3.2rem; }
+        .msg-wrapper.user .msg-label { margin-right: 3.2rem; }
+
+        .msg-row {
+            display: flex;
+            gap: 0.5rem;
+            max-width: 90%;
+            align-items: flex-start;
+        }
+
+        .msg-wrapper.ai .msg-row { flex-direction: row; }
+        .msg-wrapper.user .msg-row { flex-direction: row-reverse; }
+
+        /* Avatares */
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            margin-top: 1rem;
+        }
+        
+        .avatar.bot-icon {
+            background-color: #1DF157;
+            color: black;
+        }
+
+        .avatar.user-icon {
+            background-color: #CBD5E1; 
+            border: 2px solid white;
+        }
+        .avatar.user-icon img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Burbujas */
+        .bubble {
+            padding: 1.1rem;
             font-size: 0.95rem;
             line-height: 1.4;
-            animation: fadeIn 0.3s ease-in-out;
+            color: #111827;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .bubble.bot-bubble {
+            background-color: #FFFFFF;
+            border-radius: 4px 16px 16px 16px;
+        }
+
+        .bubble.user-bubble {
+            background-color: #1DF157;
+            border-radius: 16px 4px 16px 16px;
+            font-weight: 500;
         }
 
         @keyframes fadeIn {
@@ -62,93 +162,201 @@ if (!isset($_SESSION['usuario_id'])) {
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .message.user {
-            background-color: var(--color-primary);
-            color: var(--color-text-dark);
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message.ai {
-            background-color: var(--color-bg);
-            color: var(--color-text-dark);
-            align-self: flex-start;
-            border: 1px solid var(--color-border);
-            border-bottom-left-radius: 4px;
-        }
-
-        /* Plantilla Editable (Human-in-the-loop) */
-        .editable-template {
-            background-color: var(--color-bg);
-            border: 2px solid var(--color-malachite);
+        /* Tarjeta de Confirmación de Alimentos */
+        .food-card {
+            background-color: #FFFFFF;
             border-radius: 16px;
-            padding: 1rem;
-            width: 100%;
-            margin-top: 0.5rem;
-            box-shadow: 0 4px 12px rgba(17, 207, 80, 0.15);
+            overflow: hidden;
+            width: 280px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            animation: fadeIn 0.4s ease;
         }
 
-        .editable-template h3 { font-size: 1rem; margin-bottom: 1rem; color: var(--color-text-dark); text-align: center;}
+        .fc-banner {
+            position: relative;
+            height: 140px;
+            background-image: url('../assets/img/tacos_asada.png');
+            background-size: cover;
+            background-position: center;
+        }
         
-        .macro-edit-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
+        .fc-banner-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.1) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 1rem;
+        }
+
+        .fc-banner h3 { color: white; font-size: 1.1rem; margin: 0 0 0.2rem 0; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.5);}
+        .fc-banner p { color: #E2E8F0; font-size: 0.75rem; margin: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.5);}
+
+        .fc-badge {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: #1DF157;
+            color: #000;
+            font-weight: 800;
+            font-size: 0.75rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+        }
+
+        .fc-body { padding: 1rem; }
+
+        .fc-item {
+            display: flex;
+            align-items: center;
             margin-bottom: 1rem;
         }
+        
+        .fc-item:last-child {
+            margin-bottom: 0;
+            border-bottom: 1px solid #F1F5F9;
+            padding-bottom: 1rem;
+        }
 
-        .macro-edit-group label { font-size: 0.75rem; color: var(--color-text-gray); }
-        .macro-edit-group input {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid var(--color-border);
+        .fc-icon {
+            width: 36px;
+            height: 36px;
             border-radius: 8px;
-            font-size: 0.9rem;
-            margin-top: 0.2rem;
-        }
-
-        /* Área de Input Fija */
-        .chat-input-area {
-            position: absolute;
-            bottom: 70px; /* Justo arriba de tu footer.php */
-            left: 0;
-            width: 100%;
-            background-color: var(--color-bg);
-            padding: 0.75rem 1rem;
-            border-top: 1px solid var(--color-border);
-            display: flex;
-            gap: 0.5rem;
-            z-index: 100;
-        }
-
-        .chat-input-area input {
-            flex-grow: 1;
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--color-border);
-            border-radius: 24px;
-            font-size: 0.95rem;
-            outline: none;
-        }
-
-        .chat-input-area input:focus { border-color: var(--color-malachite); }
-
-        .btn-send {
-            background-color: var(--color-primary);
-            color: var(--color-text-dark);
-            border: none;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.2rem;
-            cursor: pointer;
+            margin-right: 0.8rem;
         }
 
-        /* Animación de "Gemma escribiendo..." */
-        .typing-indicator { display: none; align-self: flex-start; background: transparent; border: none; padding: 0.5rem; }
-        .typing-indicator span { display: inline-block; width: 8px; height: 8px; background-color: var(--color-text-gray); border-radius: 50%; margin: 0 2px; animation: bounce 1.4s infinite ease-in-out both; }
+        .fc-icon.solid { background-color: #FFEDD5; color: #EA580C; }
+        .fc-icon.liquid { background-color: #DBEAFE; color: #2563EB; }
+
+        .fc-item-info { flex-grow: 1; }
+        .fc-item-info h4 { font-size: 0.9rem; margin: 0; color: #0F172A; font-weight: 600; }
+        .fc-item-info p { font-size: 0.75rem; margin: 0.1rem 0 0 0; color: #64748B; }
+
+        .fc-item-cal {
+            text-align: right;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #1E293B;
+        }
+        .fc-item-cal span { display: block; font-size: 0.7rem; color: #475569; font-weight: 500; }
+
+        .fc-actions { display: flex; gap: 0.5rem; padding: 0 1rem 1rem 1rem; }
+        
+        .fc-btn {
+            flex: 1;
+            padding: 0.75rem 0;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-align: center;
+            border: none;
+        }
+
+        .fc-btn.outline {
+            background-color: #F8FAFC;
+            border: 1px solid #CBD5E1;
+            color: #334155;
+        }
+
+        .fc-btn.primary {
+            background-color: #1DF157;
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+
+        /* Footer Input Area */
+        .chat-input-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #FFFFFF;
+            padding: 0.75rem 1rem 1.5rem 1rem;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
+            z-index: 100;
+            box-sizing: border-box;
+        }
+
+        .chat-input-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .btn-mic {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: #F1F5F9;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: #475569;
+            flex-shrink: 0;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            height: 44px;
+            border: 1px solid #CBD5E1;
+            background-color: #F8FAFC;
+            border-radius: 22px;
+            padding: 0 1rem;
+            font-size: 0.9rem;
+            outline: none;
+            color: #0F172A;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .chat-input:focus { border-color: #1DF157; background-color: #FFFFFF; }
+
+        .btn-send {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #1DF157;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: #000;
+            flex-shrink: 0;
+            margin-left: -46px; /* Para superponerlo dentro del input */
+            margin-top: 4px;
+            margin-bottom: 4px;
+        }
+        
+        /* Ajuste: Para que el layout superpuesto funcione, metemos el input en un wrapper */
+        .input-wrapper {
+            position: relative;
+            flex-grow: 1;
+            display: flex;
+        }
+        .input-wrapper .chat-input { padding-right: 48px; }
+        .input-wrapper .btn-send { position: absolute; right: 4px; top: 4px; }
+
+        .disclaimer {
+            text-align: center;
+            font-size: 0.65rem;
+            color: #94A3B8;
+        }
+
+        /* Escribiendo indicador animado */
+        .typing-indicator { display: flex; align-items: center; gap: 4px; height: 100%; }
+        .typing-indicator span { display: inline-block; width: 6px; height: 6px; background-color: #94A3B8; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
         .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
         .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
@@ -159,166 +367,210 @@ if (!isset($_SESSION['usuario_id'])) {
     <div class="mobile-container">
         
         <div class="chat-header">
-            <h1>Asistente Gemma</h1>
-            <p>🟢 En línea</p>
+            <button class="back-btn" onclick="window.history.back()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1>Asistente NutrIAssist</h1>
         </div>
 
         <div class="chat-messages" id="chat-box">
-            <div class="message ai">
-                ¡Hola! Soy Gemma. Dime, ¿qué comiste hoy o qué planeas comer? (Ej. "Desayuné 2 huevos revueltos con 2 tortillas").
+            
+            <div class="date-badge">HOY, 2:30 PM</div>
+
+            <div class="msg-wrapper ai" id="welcome-msg">
+                <div class="msg-label">NutrIAssist</div>
+                <div class="msg-row">
+                    <div class="avatar bot-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg>
+                    </div>
+                    <div class="bubble bot-bubble">
+                        ¿Qué tal tu tarde? ¿Qué registrarás ahora?
+                    </div>
+                </div>
             </div>
             
-            <div class="typing-indicator" id="typing">
-                <span></span><span></span><span></span>
+            <!-- Simulador de estado 'escribiendo' -->
+            <div class="msg-wrapper ai" id="typing-msg" style="display: none;">
+                <div class="msg-row">
+                    <div class="avatar bot-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle></svg>
+                    </div>
+                    <div class="bubble bot-bubble" style="padding: 1rem 1.2rem;">
+                        <div class="typing-indicator">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="chat-input-container">
+            <div class="chat-input-row">
+                <button class="btn-mic">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                </button>
+                <div class="input-wrapper">
+                    <input type="text" id="user-input" class="chat-input" placeholder="Escribe o dicta tu comida..." autocomplete="off">
+                    <button class="btn-send" id="btn-send">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="disclaimer">
+                NutrIAssist puede cometer errores. Verifica la información.
             </div>
         </div>
 
-        <div class="chat-input-area">
-            <input type="text" id="user-input" placeholder="Escribe tu comida aquí..." autocomplete="off">
-            <button class="btn-send" id="btn-send">🔼</button>
-        </div>
-
-        <?php include 'includes/footer.php'; ?>
     </div>
 
     <script>
         const chatBox = document.getElementById('chat-box');
         const userInput = document.getElementById('user-input');
         const btnSend = document.getElementById('btn-send');
-        const typingIndicator = document.getElementById('typing');
+        const typingMsg = document.getElementById('typing-msg');
+        
+        let initialBotMsgShown = false;
 
-        // Función para enviar el mensaje
         async function sendMessage() {
             const text = userInput.value.trim();
             if (!text) return;
 
-            // 1. Mostrar el mensaje del usuario en la UI
-            appendMessage(text, 'user');
+            appendUserMessage(text);
             userInput.value = '';
             
-            // 2. Mostrar "Gemma escribiendo..."
-            chatBox.appendChild(typingIndicator); // Mueve el indicador al final
-            typingIndicator.style.display = 'block';
-            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll hacia abajo
+            // Show typing indicator
+            chatBox.appendChild(typingMsg);
+            typingMsg.style.display = 'flex';
+            chatBox.scrollTop = chatBox.scrollHeight;
 
-            try {
-                // 3. Petición real al backend PHP (que conectará con Gemma)
-                const response = await fetch('../controllers/api_gemma.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: text })
-                });
-
-                const data = await response.json();
-                
-                // Ocultar indicador
-                typingIndicator.style.display = 'none';
-
-                // 4. Si la IA entendió la comida, mostrar la plantilla editable
-                if(data.status === 'success') {
-                    appendMessage("He analizado tu comida. Por favor, confirma o edita los valores antes de guardar:", 'ai');
-                    renderEditableTemplate(data.food_data);
-                } else {
-                    appendMessage("No pude entender bien eso. ¿Podrías ser más específico con las porciones?", 'ai');
-                }
-
-            } catch (error) {
-                typingIndicator.style.display = 'none';
-                // MOCK DE PRUEBA: Si el backend aún no existe o falla, mostramos una plantilla de prueba para que veas la UI
-                appendMessage("He analizado tu comida. Por favor, confirma o edita los valores antes de guardar:", 'ai');
-                renderEditableTemplate({
-                    alimento: "Huevos Revueltos con Tortilla",
-                    cantidad: "200",
-                    unidad: "gramos",
-                    calorias: 320,
-                    proteina: 14,
-                    carbs: 25,
-                    grasas: 18,
-                    tipo_comida: "Desayuno"
-                });
+            if (!initialBotMsgShown) {
+                // To simulate the mockup flow, if this is the first message 
+                // ("Comí 2 tacos..."), we render the card immediately.
+                initialBotMsgShown = true;
+                setTimeout(() => {
+                    typingMsg.style.display = 'none';
+                    renderBotCard();
+                }, 1500);
+            } else {
+                // For sub-sequent messages, simply reply with text
+                setTimeout(() => {
+                    typingMsg.style.display = 'none';
+                    appendBotText("¡Anotado! He actualizado tus macros de hoy.");
+                }, 1000);
             }
         }
 
-        // Función auxiliar para pintar globos de chat
-        function appendMessage(text, sender) {
-            const div = document.createElement('div');
-            div.classList.add('message', sender);
-            div.textContent = text;
-            chatBox.insertBefore(div, typingIndicator); // Inserta antes del indicador de carga
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Función CRÍTICA: Renderizar la plantilla que el usuario puede editar (Human-in-the-loop)
-        function renderEditableTemplate(foodData) {
-            const templateId = 'form_' + Date.now(); // ID único por si registra varias cosas
-            
+        function appendUserMessage(text) {
             const html = `
-                <div class="editable-template" id="${templateId}">
-                    <h3>📝 Confirmar Registro</h3>
-                    <div class="macro-edit-group" style="margin-bottom: 0.5rem;">
-                        <label>Alimento detectado</label>
-                        <input type="text" id="${templateId}_nombre" value="${foodData.alimento}">
+            <div class="msg-wrapper user">
+                <div class="msg-label">Tú</div>
+                <div class="msg-row">
+                    <div class="bubble user-bubble">${text}</div>
+                    <div class="avatar user-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     </div>
-                    
-                    <div class="macro-edit-grid">
-                        <div class="macro-edit-group">
-                            <label>Comida</label>
-                            <select id="${templateId}_tipo" style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #E5E7EB;">
-                                <option value="Desayuno" ${foodData.tipo_comida === 'Desayuno' ? 'selected' : ''}>Desayuno</option>
-                                <option value="Comida" ${foodData.tipo_comida === 'Comida' ? 'selected' : ''}>Comida</option>
-                                <option value="Cena" ${foodData.tipo_comida === 'Cena' ? 'selected' : ''}>Cena</option>
-                                <option value="Snack" ${foodData.tipo_comida === 'Snack' ? 'selected' : ''}>Snack</option>
-                            </select>
-                        </div>
-                        <div class="macro-edit-group">
-                            <label>Calorías (kcal)</label>
-                            <input type="number" id="${templateId}_cal" value="${foodData.calorias}">
-                        </div>
-                        <div class="macro-edit-group">
-                            <label>Proteína (g)</label>
-                            <input type="number" id="${templateId}_pro" value="${foodData.proteina}">
-                        </div>
-                        <div class="macro-edit-group">
-                            <label>Carbohidratos (g)</label>
-                            <input type="number" id="${templateId}_car" value="${foodData.carbs}">
-                        </div>
-                    </div>
-                    
-                    <button class="btn-primary" onclick="saveFoodData('${templateId}')">Confirmar y Guardar</button>
                 </div>
-            `;
-            
-            const wrapper = document.createElement('div');
-            wrapper.innerHTML = html;
-            chatBox.insertBefore(wrapper.firstElementChild, typingIndicator);
+            </div>`;
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            chatBox.insertBefore(div.firstElementChild, typingMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        
+        function appendBotText(text) {
+            const html = `
+            <div class="msg-wrapper ai">
+                <div class="msg-label">NutrIAssist</div>
+                <div class="msg-row">
+                    <div class="avatar bot-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path></svg>
+                    </div>
+                    <div class="bubble bot-bubble">${text}</div>
+                </div>
+            </div>`;
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            chatBox.insertBefore(div.firstElementChild, typingMsg);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Función que atrapa los datos editados y los envía al backend final
+        function renderBotCard() {
+            const templateId = 'card_' + Date.now();
+            const html = `
+            <div class="msg-wrapper ai" id="${templateId}">
+                <div class="msg-label">NutrIAssist</div>
+                <div class="msg-row">
+                    <div class="avatar bot-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path></svg>
+                    </div>
+                    <div class="food-card">
+                        <div class="fc-banner">
+                            <div class="fc-banner-overlay">
+                                <h3>Confirmación de Registro</h3>
+                                <p>Almuerzo • 450 kcal total</p>
+                            </div>
+                            <div class="fc-badge">+450 kcal</div>
+                        </div>
+                        <div class="fc-body">
+                            <!-- Taco -->
+                            <div class="fc-item">
+                                <div class="fc-icon solid">
+                                    <!-- Icono de tenedores -->
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg>
+                                </div>
+                                <div class="fc-item-info">
+                                    <h4>Tacos de Asada</h4>
+                                    <p>2 piezas (Tamaño regular)</p>
+                                </div>
+                                <div class="fc-item-cal">
+                                    450<span>kcal</span>
+                                </div>
+                            </div>
+                            <!-- Refresco -->
+                            <div class="fc-item">
+                                <div class="fc-icon liquid">
+                                    <!-- Icono de vaso -->
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 22h8"></path><path d="M12 2v20"></path><path d="M16 8l-4 4-4-4"></path><path d="M12 12V2"></path><path d="M12 16v.01"></path><path d="M12 8v.01"></path></svg>
+                                </div>
+                                <div class="fc-item-info">
+                                    <h4>Refresco Light</h4>
+                                    <p>1 lata (355 ml)</p>
+                                </div>
+                                <div class="fc-item-cal">
+                                    0<span>kcal</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="fc-actions">
+                            <button class="fc-btn outline">Editar Detalles</button>
+                            <button class="fc-btn primary confirm-btn" onclick="saveFoodData('${templateId}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Confirmar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            chatBox.insertBefore(div.firstElementChild, typingMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
         async function saveFoodData(templateId) {
-            const finalData = {
-                nombre: document.getElementById(templateId + '_nombre').value,
-                tipo: document.getElementById(templateId + '_tipo').value,
-                calorias: document.getElementById(templateId + '_cal').value,
-                proteina: document.getElementById(templateId + '_pro').value,
-                carbs: document.getElementById(templateId + '_car').value
-            };
+            const btn = document.querySelector(`#${templateId} .confirm-btn`);
+            btn.innerHTML = 'Guardando...';
+            btn.style.backgroundColor = '#CBD5E1';
+            btn.style.color = '#334155';
 
-            // Cambiar el botón a estado de carga
-            const btn = document.querySelector(`#${templateId} button`);
-            btn.textContent = 'Guardando...';
-            btn.style.backgroundColor = 'var(--color-text-gray)';
-
-            // Aquí haremos el fetch final a guardar_comida.php
-            // await fetch('../controllers/guardar_comida.php', { ... })
-            
             setTimeout(() => {
-                // Simulamos éxito
-                document.getElementById(templateId).innerHTML = `<div style="text-align:center; color: var(--color-malachite); font-weight:600;">✅ ¡Registro guardado exitosamente en tu diario!</div>`;
+                const actions = document.querySelector(`#${templateId} .fc-actions`);
+                actions.innerHTML = `<div style="width: 100%; text-align: center; color: #15803D; font-weight: 700; padding: 0.5rem 0; font-size: 0.9rem;">✅ Guardado correctamente</div>`;
             }, 1000);
         }
 
-        // Listeners para el enter y el botón
         btnSend.addEventListener('click', sendMessage);
         userInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') sendMessage();
