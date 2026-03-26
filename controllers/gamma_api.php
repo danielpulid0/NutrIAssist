@@ -50,6 +50,11 @@ CASO B) Si el usuario reporta que consumió algún alimento o bebida:
     \"grasas\": 0,
     \"tipo_comida\": \"Almuerzo\",
     \"tipo_icono\": \"solid\" // (solid para comida, liquid para bebidas)
+}
+CASO C) El usuario pone una cantidad de comida poco realista o fuera de lo normal:
+{
+    \"tipo_respuesta\": \"chat\",
+    \"mensaje_respuesta\": \"Vaya, esa es una cantidad inusualmente grande de comida. Solo para asegurar que estoy calculando bien y no fue un error de teclado, ¿de verdad comiste esa cantidad?\"
 }";
 
 // Unimos la instrucción estricta con el mensaje del usuario
