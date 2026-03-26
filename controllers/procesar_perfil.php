@@ -36,6 +36,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $anio_nac = date('Y') - $edad;
     $fecha_nac = "$anio_nac-01-01";
 
+    // --- MIGRACIÓN SILENCIOSA DEL CATÁLOGO DE ACTIVIDAD ---
+    // Si la tabla está vacía, llenarla con los 3 niveles base para que la Llave Foránea no falle
+    $stmt_check_act = $conn->query("SELECT COUNT(*) FROM Nivel_Actividad");
+    if ($stmt_check_act->fetchColumn() == 0) {
+        $conn->exec("INSERT INTO Nivel_Actividad (id_nivel_actividad, descripcion, multiplicador_biometrico) VALUES 
+            (1, 'Sedentario', 1.200), 
+            (2, 'Moderado', 1.550), 
+            (3, 'Activo', 1.725)");
+    }
+
     try {
         $sql = "UPDATE Usuarios 
                 SET fecha_nacimiento = :fecha, 
