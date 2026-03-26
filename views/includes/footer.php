@@ -76,7 +76,7 @@ function get_icon_profile($is_active) {
         <?= get_icon_recipes($pagina_actual == 'recetas.php' || $pagina_actual == 'receta_detalle.php') ?>
         <span>Recetas</span>
     </a>
-    <a href="#" class="nav-item <?= $pagina_actual == 'perfil.php' ? 'active' : '' ?>">
+    <a href="perfil.php" class="nav-item <?= $pagina_actual == 'perfil.php' ? 'active' : '' ?>">
         <?= get_icon_profile($pagina_actual == 'perfil.php') ?>
         <span>Perfil</span>
     </a>
