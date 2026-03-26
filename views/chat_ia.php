@@ -559,7 +559,7 @@ if (!isset($_SESSION['usuario_id'])) {
                         </div>
 
                         <div class="fc-actions">
-                            <button class="fc-btn outline">Editar Detalles</button>
+                            <button class="fc-btn outline" onclick="editFoodData('${templateId}', ${calorias}, ${proteina}, ${carbs}, ${grasas})">Editar Detalles</button>
                             <button class="fc-btn primary confirm-btn" onclick="saveFoodData('${templateId}', '${jsonPayload}')">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                 Confirmar
@@ -573,6 +573,54 @@ if (!isset($_SESSION['usuario_id'])) {
             div.innerHTML = html;
             chatBox.insertBefore(div.firstElementChild, typingMsg);
             chatBox.scroll({ top: chatBox.scrollHeight, behavior: 'smooth' });
+        }
+
+        function editFoodData(templateId, c, p, cb, g) {
+            const card = document.getElementById(templateId);
+            if(card) {
+                const body = card.querySelector('.fc-body');
+                body.innerHTML = `
+                    <div style="padding: 1rem; background-color: #F8FAFC; border-bottom: 1px solid #E2E8F0;">
+                        <h4 style="margin-top:0; font-size: 0.9rem; color: #0F172A;">Edición Manual de Macros</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; font-size: 0.85rem; color: #475569;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;"><label>Calorías:</label> <input type="number" id="e_cal_${templateId}" value="${c}" style="width: 50px; padding: 0.2rem; border: 1px solid #CBD5E1; border-radius:4px;"></div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;"><label>Proteína:</label> <input type="number" id="e_pro_${templateId}" value="${p}" style="width: 50px; padding: 0.2rem; border: 1px solid #CBD5E1; border-radius:4px;"></div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;"><label>Carbs:</label> <input type="number" id="e_car_${templateId}" value="${cb}" style="width: 50px; padding: 0.2rem; border: 1px solid #CBD5E1; border-radius:4px;"></div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;"><label>Grasas:</label> <input type="number" id="e_fat_${templateId}" value="${g}" style="width: 50px; padding: 0.2rem; border: 1px solid #CBD5E1; border-radius:4px;"></div>
+                        </div>
+                    </div>
+                `;
+                const action = card.querySelector('.fc-actions');
+                action.innerHTML = `<button class="fc-btn primary" onclick="saveEditData('${templateId}')">✅ Hecho</button>`;
+            }
+        }
+
+        function saveEditData(templateId) {
+            const c = document.getElementById('e_cal_'+templateId).value || 0;
+            const p = document.getElementById('e_pro_'+templateId).value || 0;
+            const cb = document.getElementById('e_car_'+templateId).value || 0;
+            const f = document.getElementById('e_fat_'+templateId).value || 0;
+            
+            // Reconstruir Payload JSON
+            const jsonStr = JSON.stringify({calorias: c, proteina: p, carbs: cb, grasas: f}).replace(/"/g, '&quot;');
+            
+            // Retornar la visualización
+            const body = document.querySelector(`#${templateId} .fc-body`);
+            body.innerHTML = `
+                <div style="padding: 1rem; text-align:center;">
+                    <span style="color:#15803D; font-weight:700; font-size:0.85rem;">Valores actualizados listos</span><br>
+                    <p style="font-size:0.8rem; color:#475569; margin-top:0.4rem;">Calorías: <b>${c}</b> • Proteína: <b>${p}g</b> • Carbs: <b>${cb}g</b> • Grasas: <b>${f}g</b></p>
+                </div>
+            `;
+            
+            const action = document.querySelector(`#${templateId} .fc-actions`);
+            action.innerHTML = `
+                <button class="fc-btn outline" onclick="editFoodData('${templateId}', ${c}, ${p}, ${cb}, ${f})">Editar</button>
+                <button class="fc-btn primary confirm-btn" onclick="saveFoodData('${templateId}', '${jsonStr}')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Confirmar
+                </button>
+            `;
         }
 
         async function saveFoodData(templateId, jsonDataStr) {

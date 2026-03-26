@@ -36,7 +36,7 @@ Tu respuesta debe ajustarse a esta estructura JSON dependiendo de lo que diga el
 CASO A) Si el usuario te saluda o hace una pregunta general (NO registró comida explícitamente):
 {
     \"tipo_respuesta\": \"chat\",
-    \"mensaje_respuesta\": \"¡Hola! ¿Qué comiste hoy?\"
+    \"mensaje_respuesta\": \"Aquí redacta tu respuesta conversacional auténtica, experta y amigable de acuerdo a la pregunta o saludo del usuario.\"
 }
 
 CASO B) Si el usuario reporta que consumió algún alimento o bebida:
