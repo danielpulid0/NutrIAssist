@@ -22,6 +22,12 @@ $stmt->bindParam(':id', $user_id);
 $stmt->execute();
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+// Si el usuario no fue encontrado en la base de datos (sesión corrupta/borrada)
+if (!$user) {
+    header("Location: ../controllers/logout.php");
+    exit();
+}
+
 $edad = 24; // Default
 if (!empty($user['fecha_nacimiento']) && $user['fecha_nacimiento'] != '0000-00-00') {
     $nacimiento = new DateTime($user['fecha_nacimiento']);
