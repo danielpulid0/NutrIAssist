@@ -3,7 +3,7 @@ session_start();
 
 // Validar que el usuario esté logueado
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: registro.html");
+    header("Location: login.html");
     exit();
 }
 
