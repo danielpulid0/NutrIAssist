@@ -22,8 +22,8 @@ if (empty($mensaje_usuario)) {
 // CONFIGURACIÓN DE LA API (Google AI Studio - Gemma)
 // ==========================================
 // ¡CUIDADO! En un proyecto real, esto debe ir en un archivo .env oculto
-$api_key = "AIzaSyALQvWdzYhMklLSj9DTh01TVIvmjwyBVKQ"; 
-$modelo = "gemma-2-9b-it"; // El modelo Open Source de Google
+$api_key = "AIzaSyBbwRJzrW1jFhw-EisY9KXZUip7GzuLJDw"; 
+$modelo = "gemma-3-27b-it"; // El nuevo modelo open-source revolucionario de Google
 
 // La URL de Google AI Studio lleva la llave en la misma URL
 $api_url = "https://generativelanguage.googleapis.com/v1beta/models/{$modelo}:generateContent?key={$api_key}";
@@ -65,8 +65,7 @@ $payload = json_encode([
         ]
     ],
     "generationConfig" => [
-        "temperature" => 0.4, // Un poco de creatividad para chatear
-        "responseMimeType" => "application/json" // Forzamos a que devuelva JSON puro
+        "temperature" => 0.4 // Un poco de creatividad para chatear
     ]
 ]);
 
