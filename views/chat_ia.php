@@ -428,10 +428,15 @@ if (!isset($_SESSION['usuario_id'])) {
         const userInput = document.getElementById('user-input');
         const btnSend = document.getElementById('btn-send');
         const typingMsg = document.getElementById('typing-msg');
+        
+        let chatHistory = [];
 
         async function sendMessage() {
             const text = userInput.value.trim();
             if (!text) return;
+
+            // Almacenar en la memoria de la UI
+            chatHistory.push({ role: "user", parts: [{ text: text }] });
 
             // 1. Mostrar mensaje del usuario localmente
             appendUserMessage(text);
@@ -447,7 +452,7 @@ if (!isset($_SESSION['usuario_id'])) {
                 const response = await fetch('../controllers/gamma_api.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: text })
+                    body: JSON.stringify({ prompt: text, history: chatHistory })
                 });
 
                 const data = await response.json();
@@ -458,11 +463,14 @@ if (!isset($_SESSION['usuario_id'])) {
                 if (data.status === 'success' && data.food_data) {
                     const iaResponse = data.food_data;
                     
+                    // Almacenar en la memoria lo que dijo la IA
+                    chatHistory.push({ role: "model", parts: [{ text: JSON.stringify(iaResponse) }] });
+                    
                     if (iaResponse.tipo_respuesta === 'chat') {
                         // Modo Conversación
                         appendBotText(iaResponse.mensaje_respuesta);
                     } else if (iaResponse.tipo_respuesta === 'food_log') {
-                        // Modo Registro de Comida
+                        // Modo Registro de Comida o Sugerencia
                         renderBotCard(iaResponse);
                     }
                 } else {

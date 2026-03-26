@@ -2,16 +2,40 @@
 session_start();
 header('Content-Type: application/json');
 
-// 1. Validar seguridad
+// 1. Validar seguridad e incluir BD
+require_once '../config/conexion.php';
 if (!isset($_SESSION['usuario_id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['status' => 'error', 'message' => 'Acceso denegado']);
     exit();
 }
 
-// 2. Leer lo que nos envió Vanilla JS
+$usuario_id = $_SESSION['usuario_id'];
+
+// --- OBTENER PERFIL DE BASE DE DATOS ---
+$stmt = $conn->prepare("SELECT peso_kg, altura_cm, sexo, fecha_nacimiento, meta_principal FROM Usuarios WHERE id_usuario = ?");
+$stmt->execute([$usuario_id]);
+$u_data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$stmt_r = $conn->prepare("SELECT r.nombre FROM Restricciones_Medicas r INNER JOIN Usuario_Restriccion ur ON r.id_restriccion = ur.id_restriccion WHERE ur.id_usuario = ?");
+$stmt_r->execute([$usuario_id]);
+$restricciones = $stmt_r->fetchAll(PDO::FETCH_COLUMN);
+
+$edad = "No definida";
+if ($u_data && $u_data['fecha_nacimiento']) {
+    $edad = date_diff(date_create($u_data['fecha_nacimiento']), date_create('today'))->y;
+}
+$str_restricciones = empty($restricciones) ? "Ninguna" : implode(", ", $restricciones);
+$peso = $u_data['peso_kg'] ?? 'No definido';
+$sexo = $u_data['sexo'] ?? 'No definido';
+$meta = $u_data['meta_principal'] ?? 'No definida';
+
+$perfil_texto = "CONTEXTO OBLIGATORIO DEL USUARIO ACTUAL:\n- Edad: $edad años\n- Peso: $peso kg\n- Sexo: $sexo\n- Meta Principal: $meta\n- Restricciones Médicas/Dietas: $str_restricciones\nATENCIÓN: Basa todas tus recomendaciones, cálculos y charlas cordiales en este contexto.\n\n";
+
+// 2. Leer JSON del Frontend
 $json_input = file_get_contents('php://input');
 $data = json_decode($json_input, true);
 $mensaje_usuario = $data['prompt'] ?? '';
+$historial_js = $data['history'] ?? [];
 
 if (empty($mensaje_usuario)) {
     echo json_encode(['status' => 'error', 'message' => 'El mensaje está vacío']);
@@ -19,64 +43,60 @@ if (empty($mensaje_usuario)) {
 }
 
 // ==========================================
-// CONFIGURACIÓN DE LA API (Google AI Studio - Gemma)
-// ==========================================
-// ¡CUIDADO! En un proyecto real, esto debe ir en un archivo .env oculto
 $api_key = "AIzaSyBbwRJzrW1jFhw-EisY9KXZUip7GzuLJDw"; 
-$modelo = "gemma-3-27b-it"; // El nuevo modelo open-source revolucionario de Google
-
-// La URL de Google AI Studio lleva la llave en la misma URL
+$modelo = "gemma-3-27b-it"; 
 $api_url = "https://generativelanguage.googleapis.com/v1beta/models/{$modelo}:generateContent?key={$api_key}";
 
-// 3. EL SYSTEM PROMPT (Estructura para Google Generative Language API)
-$system_prompt = "Eres NutrIAssist, un amigable e inteligente asistente nutricional creado para chatear y analizar la comida. 
-REGLA ABSOLUTA: Responde ÚNICA Y EXCLUSIVAMENTE con un objeto JSON válido. NO uses markdown, no saludes fuera del JSON, no pongas texto adicional.
-Tu respuesta debe ajustarse a esta estructura JSON dependiendo de lo que diga el usuario:
+// 3. SYSTEM PROMPT
+$system_prompt = "Eres NutrIAssist, un inteligente asistente nutricional creado para chatear, analizar y recomendar comida.
+REGLA ABSOLUTA: Responde SIEMPRE con un objeto JSON válido.
+Estructuras JSON permitidas según el Caso:
 
-CASO A) Si el usuario te saluda o hace una pregunta general (NO registró comida explícitamente):
-{
-    \"tipo_respuesta\": \"chat\",
-    \"mensaje_respuesta\": \"Aquí redacta tu respuesta conversacional auténtica, experta y amigable de acuerdo a la pregunta o saludo del usuario.\"
+CASO A) Saludo o charla general:
+{ \"tipo_respuesta\": \"chat\", \"mensaje_respuesta\": \"[Tu respuesta amigable y natural aquí]\" }
+
+CASO B) El usuario reporta una comida explícitamente consumida:
+{ \"tipo_respuesta\": \"food_log\", \"alimento\": \"[Deduce nombre]\", \"descripcion\": \"[Porción]\", \"calorias\": 0, \"proteina\": 0, \"carbs\": 0, \"grasas\": 0, \"tipo_comida\": \"Comida\", \"tipo_icono\": \"solid\" }
+
+CASO C) El usuario pone una cantidad de comida irreal (ej. 40 pasteles):
+{ \"tipo_respuesta\": \"chat\", \"mensaje_respuesta\": \"[Pregúntale amigablemente si está seguro para comprobar que no hubo errores al escribir. Si dice que sí en otro mensaje, procesas como CASO B]\" }
+
+CASO D) Temas ajenos a la dieta o nutrición:
+{ \"tipo_respuesta\": \"chat\", \"mensaje_respuesta\": \"Lo siento, solo ayudo con comida y nutrición.\" }
+
+CASO E) El usuario PIDIÓ CONSEJOS de qué alimento/receta COMER AHORA MISMO:
+{ \"tipo_respuesta\": \"food_log\", \"alimento\": \"[Nombre Platillo Sugerido adaptado estrictamente a su PERFIL, META Y RESTRICCIONES]\", \"descripcion\": \"[Mini receta o justificación de por qué le sirve]\", \"calorias\": 0, \"proteina\": 0, \"carbs\": 0, \"grasas\": 0, \"tipo_comida\": \"Sugerencia\", \"tipo_icono\": \"solid\" }";
+
+// 4. CONSTRUIR MEMORIA (Contexto + Historial)
+$contents = [];
+$primer_mensaje = true;
+
+// Si NO mandaron historial válido, lo forzamos con el primer turno
+if (empty($historial_js)) {
+    $historial_js = [
+        ["role" => "user", "parts" => [["text" => $mensaje_usuario]]]
+    ];
 }
 
-CASO B) Si el usuario reporta que consumió algún alimento o bebida:
-{
-    \"tipo_respuesta\": \"food_log\",
-    \"alimento\": \"Nombre resumido del platillo / comida\",
-    \"descripcion\": \"Ej. 2 rebanadas o 1 vaso...\",
-    \"calorias\": 0,
-    \"proteina\": 0,
-    \"carbs\": 0,
-    \"grasas\": 0,
-    \"tipo_comida\": \"Almuerzo\",
-    \"tipo_icono\": \"solid\" // (solid para comida, liquid para bebidas)
-}
-CASO C) El usuario pone una cantidad de comida poco realista o fuera de lo normal:
-{
-    \"tipo_respuesta\": \"chat\",
-    \"mensaje_respuesta\": \"[Pregúntale amigablemente si está seguro de la cantidad para comprobar que no hubo errores de dedo al escribir. Si dice que sí, en el próximo mensaje procesas como CASO B]\"
+foreach ($historial_js as $msg) {
+    $texto_limpio = $msg['parts'][0]['text'];
+    
+    // Inyectamos el cerebro (Prompts + DB) secretamente bajo la alfombra en la primera interacción
+    if ($primer_mensaje && $msg['role'] === 'user') {
+        $texto_limpio = $system_prompt . "\n\n" . $perfil_texto . "\nAnaliza lo siguiente: " . $texto_limpio;
+        $primer_mensaje = false;
+    }
+    
+    $contents[] = [
+        "role" => $msg['role'],
+        "parts" => [["text" => $texto_limpio]]
+    ];
 }
 
-CASO D) El usuario te pregunta o pide algo NO relacionado a comida ni nutrición:
-{
-    \"tipo_respuesta\": \"chat\",
-    \"mensaje_respuesta\": \"Lo siento, solo puedo ayudarte con temas relacionados a la nutrición, tus comidas y bebidas.\"
-}";
-
-// Unimos la instrucción estricta con el mensaje del usuario
-$prompt_completo = $system_prompt . "\n\nAnaliza lo siguiente: " . $mensaje_usuario;
-
-// 4. Armar el paquete de datos (Payload) específico para Google AI Studio
 $payload = json_encode([
-    "contents" => [
-        [
-            "parts" => [
-                ["text" => $prompt_completo]
-            ]
-        ]
-    ],
+    "contents" => $contents,
     "generationConfig" => [
-        "temperature" => 0.4 // Un poco de creatividad para chatear
+        "temperature" => 0.4
     ]
 ]);
 
