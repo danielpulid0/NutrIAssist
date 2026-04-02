@@ -1,0 +1,10 @@
+# Archivos con credenciales — nunca subir al repositorio
+config/keys.php
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+*.swp

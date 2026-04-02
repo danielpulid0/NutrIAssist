@@ -1,37 +1,62 @@
 <?php
 session_start();
 
-// Validar que el usuario esté logueado
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: login.html");
     exit();
 }
 
-// Rescatar datos de la memoria del servidor
 $nombre_usuario = $_SESSION['usuario_nombre'] ?? 'Usuario';
-$meta_calorias = $_SESSION['meta_calorias'] ?? 2000; // Valor por defecto si falla algo
+$meta_calorias  = (int) ($_SESSION['meta_calorias'] ?? 2000);
+$meta_proteina  = 150;
+$meta_carbs     = 220;
+$meta_grasas    = 70;
 
-// Datos base simulados + Macros de IA si existen
-$cal_base = 850;
-$pro_base = 90;
-$carbs_base = 120;
-$grasas_base = 35;
+// ─── Consulta real: SUM de macros del día ─────────────────────────
+require_once '../config/conexion.php';
 
-$ia_macros = $_SESSION['macros_consumidos'] ?? ['calorias' => 0, 'proteina' => 0, 'carbs' => 0, 'grasas' => 0];
+$id_usuario = (int) $_SESSION['usuario_id'];
+$fecha_hoy  = date('Y-m-d');
 
-$calorias_consumidas = $cal_base + $ia_macros['calorias']; 
-$pro_consumidas = $pro_base + $ia_macros['proteina'];
-$carbs_consumidas = $carbs_base + $ia_macros['carbs'];
-$grasas_consumidas = $grasas_base + $ia_macros['grasas'];
+$calorias_consumidas = 0;
+$pro_consumidas      = 0;
+$carbs_consumidas    = 0;
+$grasas_consumidas   = 0;
+
+try {
+    $stmt = $conn->prepare("
+        SELECT
+            COALESCE(SUM(ac.calorias_ia), 0) AS total_cal,
+            COALESCE(SUM(ac.proteina_ia), 0) AS total_pro,
+            COALESCE(SUM(ac.carbs_ia),    0) AS total_carbs,
+            COALESCE(SUM(ac.grasas_ia),   0) AS total_grasas
+        FROM Alimentos_Consumidos ac
+        INNER JOIN Comidas c
+            ON ac.id_comida = c.id_comida
+        INNER JOIN Registros_Diarios rd
+            ON c.id_registro = rd.id_registro
+        WHERE rd.id_usuario = :uid
+          AND rd.fecha      = :fecha
+    ");
+    $stmt->execute([':uid' => $id_usuario, ':fecha' => $fecha_hoy]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $calorias_consumidas = (float) $row['total_cal'];
+    $pro_consumidas      = (float) $row['total_pro'];
+    $carbs_consumidas    = (float) $row['total_carbs'];
+    $grasas_consumidas   = (float) $row['total_grasas'];
+
+} catch (PDOException $e) {
+    error_log('[dashboard] DB ERROR: ' . $e->getMessage());
+}
 
 $calorias_restantes = max(0, $meta_calorias - $calorias_consumidas);
-
-// Porcentajes para barras
-$porcentaje_anillo = min(100, ($calorias_consumidas / $meta_calorias) * 100);
-$pro_p = min(100, ($pro_consumidas / 150) * 100);
-$carbs_p = min(100, ($carbs_consumidas / 220) * 100);
-$grasas_p = min(100, ($grasas_consumidas / 70) * 100);
+$porcentaje_anillo  = ($meta_calorias > 0) ? min(100, ($calorias_consumidas / $meta_calorias) * 100) : 0;
+$pro_p    = ($meta_proteina > 0) ? min(100, ($pro_consumidas   / $meta_proteina) * 100) : 0;
+$carbs_p  = ($meta_carbs    > 0) ? min(100, ($carbs_consumidas / $meta_carbs)    * 100) : 0;
+$grasas_p = ($meta_grasas   > 0) ? min(100, ($grasas_consumidas/ $meta_grasas)   * 100) : 0;
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>

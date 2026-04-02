@@ -43,9 +43,9 @@ if (empty($mensaje_usuario)) {
 }
 
 // ==========================================
-$api_key = "AIzaSyBbwRJzrW1jFhw-EisY9KXZUip7GzuLJDw"; 
-$modelo = "gemma-3-27b-it"; 
-$api_url = "https://generativelanguage.googleapis.com/v1beta/models/{$modelo}:generateContent?key={$api_key}";
+require_once '../config/keys.php';
+$api_url = "https://generativelanguage.googleapis.com/v1beta/models/" . GEMINI_MODELO_CHAT . ":generateContent?key=" . GEMINI_API_KEY;
+
 
 // 3. SYSTEM PROMPT
 $system_prompt = "Eres NutrIAssist, un inteligente asistente nutricional creado para chatear, analizar y recomendar comida.

@@ -10,9 +10,9 @@ if (empty($texto_hablar)) {
     exit();
 }
 
-$api_key = "AIzaSyBbwRJzrW1jFhw-EisY9KXZUip7GzuLJDw"; 
-$modelo = "gemini-2.5-flash-preview-tts"; 
-$api_url = "https://generativelanguage.googleapis.com/v1beta/models/{$modelo}:generateContent?key={$api_key}";
+require_once '../config/keys.php';
+$api_url = "https://generativelanguage.googleapis.com/v1beta/models/" . GEMINI_MODELO_TTS . ":generateContent?key=" . GEMINI_API_KEY;
+
 
 // Solo le decimos que "Hable este texto"
 $payload = json_encode([
