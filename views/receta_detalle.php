@@ -1,312 +1,381 @@
 <?php
 session_start();
-
-$recetas_json = '[
-  {
-    "id": 1,
-    "titulo": "Bowl de Quinoa y Pollo",
-    "img": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=400&fit=crop",
-    "tiempo": "30 min",
-    "costo_txt": "Medio",
-    "kcal": "550 kcal",
-    "tag_bg": "var(--color-mint)",
-    "tag_text": "var(--color-malachite)",
-    "tag_label": "Fácil",
-    "ingredientes": [
-        "150g Pechuga de Pollo",
-        "1 taza Quinoa cocida",
-        "1/2 Aguacate",
-        "50g Queso Panela"
-    ],
-    "pasos": [
-        "Cocina la quinoa según las instrucciones del paquete. Normalmente es 1 parte de quinoa por 2 de agua, cocida a fuego lento durante 15 minutos.",
-        "Sazona la pechuga de pollo con sal y pimienta. Ásala en una sartén a fuego medio hasta que esté dorada y cocida por completo.",
-        "Corta el aguacate en rodajas y el queso panela en cubos pequeños.",
-        "Sirve la quinoa en un bowl, coloca el pollo encima y decora con el aguacate y el queso. ¡Disfruta!"
-    ]
-  }
-]';
-
-$recetas = json_decode($recetas_json, true);
-$receta = $recetas[0]; // Forzar a id 1 para esta demo con backdoor.
-if(isset($_GET['id']) && $_GET['id']){
-   // Si quisiéramos filtrar haríamos un array_search aquí. Por ahora mock ID 1 siempre carga completo.
-   // Las otras tarjetas genéricas en la pantalla anterior no tienen su array de instrucciones.
+if (!isset($_SESSION['usuario_id']) || !isset($_GET['id'])) {
+    header("Location: recetas.php");
+    exit();
 }
+
+require_once '../config/conexion.php';
+$id_receta = (int) $_GET['id'];
+
+try {
+    $stmt = $conn->prepare("SELECT * FROM Recetas WHERE id_receta = :id");
+    $stmt->bindParam(':id', $id_receta, PDO::PARAM_INT);
+    $stmt->execute();
+    $receta = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$receta) { header("Location: recetas.php"); exit(); }
+
+    $stmt_ing = $conn->prepare("
+        SELECT ir.id_ingrediente, ir.cantidad_gramos, a.nombre,
+               ROUND(a.calorias_por_100g * ir.cantidad_gramos / 100) AS calorias_calc,
+               ROUND(a.proteina_por_100g * ir.cantidad_gramos / 100, 1) AS proteina_calc
+        FROM Ingredientes_Receta ir
+        JOIN Alimentos a ON ir.id_alimento = a.id_alimento
+        WHERE ir.id_receta = :id
+    ");
+    $stmt_ing->bindParam(':id', $id_receta, PDO::PARAM_INT);
+    $stmt_ing->execute();
+    $ingredientes = $stmt_ing->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    die("Error de Base de Datos: " . $e->getMessage());
+}
+
+// Parsear instrucciones en pasos numerados
+$pasos = [];
+if (!empty($receta['instrucciones'])) {
+    $partes = preg_split('/\d+\.\s+/', $receta['instrucciones'], -1, PREG_SPLIT_NO_EMPTY);
+    foreach ($partes as $p) {
+        $paso = trim($p);
+        if ($paso) $pasos[] = $paso;
+    }
+}
+
+// Extraer costo de etiquetas
+$tags  = json_decode($receta['etiquetas'] ?? '[]', true) ?: [];
+$costo = 'Medio';
+foreach ($tags as $t) {
+    if (in_array($t, ['Económico', 'Medio', 'Caro', 'Premium'])) { $costo = $t; break; }
+}
+
+$tiempo_txt = $receta['tiempo_prep_min'] ? $receta['tiempo_prep_min'] . ' min' : '—';
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NutrIAssist - Detalle de Receta</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>NutrIAssist – <?= htmlspecialchars($receta['titulo']) ?></title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/global.css">
     <style>
-        body { background-color: #1a1a1a; } /* El fondo debe ser oscuro atrás del contenedor para simular mobile frame */
-        .mobile-container {
-            padding: 0;
-            background-color: var(--color-bg);
-            padding-bottom: 2rem;
-            position: relative;
-        }
+        * { box-sizing: border-box; }
+        body { background: var(--color-bg-app); }
+        .mobile-container { padding: 0; min-height: 100vh; background: var(--color-bg-app); }
 
-        /* HERO HEADER */
-        .hero {
-            position: relative;
-            width: 100%;
-            height: 300px;
+        /* ── HEADER ── */
+        .detail-header {
+            display: flex; align-items: center;
+            padding: 1.1rem 1.25rem 0.9rem;
+            background: #fff; border-bottom: 1px solid var(--color-border);
+            position: sticky; top: 0; z-index: 50;
         }
+        .btn-back {
+            width: 36px; height: 36px; display: flex;
+            align-items: center; justify-content: center;
+            text-decoration: none; color: var(--color-text-dark);
+            border-radius: 50%; transition: background 0.15s; flex-shrink: 0;
+        }
+        .btn-back:hover { background: var(--color-bg-app); }
+        .btn-back svg { width: 20px; height: 20px; }
+        .header-title { flex: 1; text-align: center; font-size: 1rem; font-weight: 700; color: var(--color-text-dark); }
+        .header-spacer { width: 36px; flex-shrink: 0; }
 
-        .hero-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        /* ── HERO ── */
+        .hero-section { position: relative; width: 100%; height: 260px; background: #e8f5e9; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .hero-section img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .hero-emoji { font-size: 5rem; }
+        .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.72) 40%, transparent 100%); }
+        .hero-title { position: absolute; bottom: 1.25rem; left: 1.25rem; right: 1.25rem; font-size: 1.5rem; font-weight: 800; color: #fff; line-height: 1.2; text-shadow: 0 1px 4px rgba(0,0,0,0.3); }
 
-        .hero-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 60%;
-            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%);
-        }
+        /* ── CONTENT ── */
+        .recipe-content { background: #fff; padding: 1.5rem 1.25rem; padding-bottom: 110px; }
 
-        .back-nav {
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            z-index: 10;
-        }
-        .back-btn-float {
-            width: 36px;
-            height: 36px;
-            background-color: var(--color-bg);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--color-text-dark);
-            text-decoration: none;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header-title-float {
-            flex-grow: 1;
-            text-align: center;
-            font-weight: 700;
-            font-size: 1rem;
-            color: var(--color-bg);
-            margin-right: calc(1rem + 36px); /* Center exactly */
-            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-        }
+        /* Info pills */
+        .info-pills { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 2rem; }
+        .info-pill { border: 1px solid var(--color-border); border-radius: 12px; padding: 0.75rem 0.5rem; text-align: center; }
+        .pill-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 0.3rem; color: var(--color-malachite); }
+        .pill-icon svg { width: 20px; height: 20px; }
+        .pill-label { font-size: 0.68rem; color: var(--color-text-gray); display: block; margin-bottom: 2px; }
+        .pill-value { font-size: 0.92rem; font-weight: 700; color: var(--color-text-dark); }
 
-        .hero-title {
-            position: absolute;
-            bottom: 1.5rem;
-            left: 1.5rem;
-            color: var(--color-bg);
-            font-size: 1.8rem;
-            font-weight: 700;
-            line-height: 1.1;
-            width: 80%;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
+        /* ── SECCIONES ── */
+        .section-title { font-size: 1.1rem; font-weight: 700; color: var(--color-text-dark); margin: 0 0 0.85rem; }
 
-        .content-body { padding: 1.5rem; }
+        /* ── INGREDIENTES ── */
+        .ingredient-list { list-style: none; padding: 0; margin: 0 0 2rem; }
+        .ingredient-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid var(--color-border); }
+        .ingredient-item:last-child { border-bottom: none; }
+        .ingr-check { width: 20px; height: 20px; flex-shrink: 0; border: 1.5px solid var(--color-border); border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #fff; transition: background 0.15s, border-color 0.15s; }
+        .ingr-check.done { background: var(--color-malachite); border-color: var(--color-malachite); }
+        .ingr-check.done::after { content: ''; display: block; width: 5px; height: 9px; border: 2px solid #fff; border-top: none; border-left: none; transform: rotate(45deg) translateY(-1px); }
+        .ingr-text { flex: 1; min-width: 0; }
+        .ingr-name { font-size: 0.92rem; font-weight: 500; color: var(--color-text-dark); }
+        .ingr-name.done-text { text-decoration: line-through; color: var(--color-text-gray); }
+        .ingr-meta { font-size: 0.75rem; color: var(--color-text-gray); }
+        .btn-swap { background: none; border: 1px solid var(--color-border); border-radius: 8px; padding: 0.3rem 0.45rem; cursor: pointer; color: var(--color-text-gray); flex-shrink: 0; transition: border-color 0.15s, color 0.15s; }
+        .btn-swap:hover { border-color: var(--color-malachite); color: var(--color-malachite); }
+        .btn-swap svg { width: 15px; height: 15px; display: block; }
 
-        /* STATS CARDS */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.75rem;
-            margin-bottom: 2rem;
-        }
+        /* ── INSTRUCCIONES ── */
+        .steps-list { list-style: none; padding: 0; margin: 0 0 2rem; }
+        .step-item { display: flex; gap: 1rem; margin-bottom: 1.25rem; align-items: flex-start; }
+        .step-num { width: 32px; height: 32px; border-radius: 50%; background: var(--color-malachite); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; }
+        .step-text { font-size: 0.92rem; line-height: 1.6; color: var(--color-text-dark); padding-top: 5px; }
 
-        .stat-card {
-            background-color: var(--color-bg);
-            border: 1px solid var(--color-border);
-            border-radius: 12px;
-            padding: 1rem 0.5rem;
-            text-align: center;
-        }
-        .stat-card svg { margin-bottom: 0.25rem; }
-        .stat-card p { font-size: 0.7rem; color: var(--color-text-gray); margin-bottom: 0.1rem; }
-        .stat-card h3 { font-size: 0.95rem; font-weight: 700; color: var(--color-text-dark); }
+        /* ── FLOATING ACTION ── */
+        .floating-action { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--color-border); padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom)); z-index: 100; }
+        .btn-registrar { width: 100%; background: var(--color-malachite); color: #fff; border: none; border-radius: 99px; padding: 1rem; font-size: 1rem; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.6rem; transition: background 0.15s; }
+        .btn-registrar:hover { background: #0db844; }
+        .btn-registrar svg { width: 20px; height: 20px; }
 
-        /* INGREDIENTES */
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: var(--color-text-dark);
-        }
+        /* ── MODAL IA SWAP ── */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: flex-end; justify-content: center; z-index: 1000; }
+        .modal-overlay.active { display: flex; }
+        .modal-sheet { background: #fff; width: 100%; max-width: 480px; border-radius: 24px 24px 0 0; padding: 0 1.5rem 2rem; animation: slideUp 0.3s cubic-bezier(.32,.72,0,1); max-height: 85vh; overflow-y: auto; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        .ing-list {
-            display: flex;
-            flex-direction: column;
-            border: 1px solid var(--color-border);
-            border-radius: 14px;
-            margin-bottom: 2rem;
-            overflow: hidden;
-        }
+        .modal-handle { width: 36px; height: 4px; border-radius: 99px; background: #E5E7EB; margin: 12px auto 20px; }
+        .modal-title-text { font-size: 1.15rem; font-weight: 800; color: var(--color-text-dark); margin-bottom: 0.3rem; }
+        .modal-subtitle { font-size: 0.85rem; color: var(--color-text-gray); margin-bottom: 1.25rem; }
 
-        .ing-item {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            border-bottom: 1px solid var(--color-border);
-            cursor: pointer;
-        }
-        .ing-item:last-child { border-bottom: none; }
+        /* Lista de opciones */
+        .swap-options-list { list-style: none; padding: 0; margin: 0 0 1.5rem; }
+        .swap-option { display: flex; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--color-border); gap: 0.75rem; }
+        .swap-option:last-child { border-bottom: none; }
+        .swap-option-info { flex: 1; min-width: 0; }
+        .swap-option-top { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; flex-wrap: wrap; }
+        .swap-nombre { font-size: 0.95rem; font-weight: 700; color: var(--color-text-dark); }
+        .badge-recomendado { background: var(--color-mint); color: var(--color-malachite); border: 1px solid var(--color-spring); font-size: 0.62rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 99px; letter-spacing: 0.04em; white-space: nowrap; }
+        .swap-nota { font-size: 0.78rem; color: var(--color-text-gray); }
+        .btn-elegir { background: #fff; border: 1.5px solid var(--color-border); color: var(--color-text-dark); border-radius: 99px; padding: 0.45rem 1rem; font-size: 0.85rem; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: border-color 0.15s, color 0.15s; }
+        .btn-elegir:hover { border-color: var(--color-malachite); color: var(--color-malachite); }
+        .swap-loading { text-align: center; padding: 1.5rem 0; color: var(--color-text-gray); font-size: 0.9rem; }
 
-        .ing-cb {
-            width: 20px;
-            height: 20px;
-            margin-right: 1rem;
-            accent-color: var(--color-malachite);
-        }
-        
-        .ing-text {
-            font-size: 0.95rem;
-            color: var(--color-text-dark);
-        }
-
-        /* INSTRUCCIONES */
-        .inst-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-            margin-bottom: 3rem;
-        }
-
-        .inst-item {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .inst-num {
-            width: 32px;
-            height: 32px;
-            background-color: var(--color-mint);
-            color: var(--color-malachite);
-            font-weight: 700;
-            font-size: 1rem;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-shrink: 0;
-        }
-
-        .inst-text {
-            font-size: 0.95rem;
-            color: var(--color-text-gray);
-            line-height: 1.5;
-            padding-top: 5px; /* Alignment with circle */
-        }
-
-        /* FIXED BUTTON */
-        .sticky-action {
-            position: fixed;
-            bottom: 1.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 3rem);
-            max-width: calc(430px - 3rem);
-            z-index: 100;
-        }
-
-        .btn-register {
-            width: 100%;
-            background-color: var(--color-primary);
-            color: #1a1a1a;
-            font-weight: 700;
-            font-size: 1.05rem;
-            padding: 1rem;
-            border: none;
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
-            box-shadow: 0 4px 15px rgba(55, 246, 119, 0.3);
-            cursor: pointer;
-        }
-
+        .btn-cancelar { width: 100%; background: none; border: none; color: var(--color-text-gray); font-size: 0.95rem; font-family: 'Inter', sans-serif; cursor: pointer; padding: 0.5rem; }
+        .btn-cancelar:hover { color: var(--color-text-dark); }
     </style>
 </head>
 <body>
+<div class="mobile-container">
 
-    <div class="mobile-container">
+    <div class="detail-header">
+        <a href="recetas.php" class="btn-back" aria-label="Volver">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+        </a>
+        <span class="header-title">Detalle de Receta</span>
+        <div class="header-spacer"></div>
+    </div>
 
-        <div class="hero">
-            <img class="hero-img" src="<?= $receta['img'] ?>" alt="Hero">
-            <div class="hero-overlay"></div>
-            
-            <div class="back-nav">
-                <a href="recetas.php" class="back-btn-float">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                </a>
-                <div class="header-title-float">Detalle de Receta</div>
+    <div class="hero-section">
+        <?php if (!empty($receta['imagen_url'])): ?>
+        <img src="../assets/img/recetas/<?= htmlspecialchars($receta['imagen_url']) ?>"
+             alt="<?= htmlspecialchars($receta['titulo']) ?>"
+             onerror="this.style.display='none';">
+        <?php else: ?>
+        <span class="hero-emoji">🍲</span>
+        <?php endif; ?>
+        <div class="hero-overlay"></div>
+        <h1 class="hero-title"><?= htmlspecialchars($receta['titulo']) ?></h1>
+    </div>
+
+    <div class="recipe-content">
+
+        <div class="info-pills">
+            <div class="info-pill">
+                <div class="pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+                <span class="pill-label">Tiempo</span>
+                <span class="pill-value"><?= htmlspecialchars($tiempo_txt) ?></span>
             </div>
-
-            <div class="hero-title"><?= htmlspecialchars($receta['titulo']) ?></div>
+            <div class="info-pill">
+                <div class="pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+                <span class="pill-label">Costo</span>
+                <span class="pill-value"><?= htmlspecialchars($costo) ?></span>
+            </div>
+            <div class="info-pill">
+                <div class="pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 8v4l3 3"/></svg></div>
+                <span class="pill-label">Calorías</span>
+                <span class="pill-value"><?= $receta['calorias_totales'] ?> kcal</span>
+            </div>
         </div>
 
-        <div class="content-body">
-            
-            <div class="stats-row">
-                <div class="stat-card">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-malachite)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    <p>Tiempo</p>
-                    <h3><?= htmlspecialchars($receta['tiempo']) ?></h3>
+        <h2 class="section-title">Ingredientes</h2>
+        <ul class="ingredient-list">
+            <?php foreach ($ingredientes as $i => $ing): ?>
+            <li class="ingredient-item">
+                <div class="ingr-check" id="check-<?= $i ?>"
+                     onclick="toggleIngrediente(<?= $i ?>)"
+                     role="checkbox" aria-checked="false"></div>
+                <div class="ingr-text">
+                    <div class="ingr-name" id="ingr-name-<?= $i ?>">
+                        <?php
+                        $cant = rtrim(rtrim((string)$ing['cantidad_gramos'], '0'), '.');
+                        echo $cant . 'g ' . htmlspecialchars($ing['nombre']);
+                        ?>
+                    </div>
+                    <div class="ingr-meta"><?= $ing['calorias_calc'] ?> kcal • <?= $ing['proteina_calc'] ?>g prot</div>
                 </div>
-                <div class="stat-card">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-malachite)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                    <p>Costo</p>
-                    <h3><?= htmlspecialchars($receta['costo_txt']) ?></h3>
-                </div>
-                <div class="stat-card">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-malachite)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c-2.28 0-3-2-3-3s1.72-3 4-3c2.28 0 4 1.28 4 3 0 1.28-.72 3-3 3a2.5 2.5 0 0 0-2.5 2.5v1.5a4 4 0 0 1-4 4"></path><path d="M17.5 14.5a2.5 2.5 0 0 1-2.5-2.5"></path><path d="M11.5 20.5A4.5 4.5 0 0 1 7 16"></path><path d="M12 2v20"></path></svg>
-                    <p>Calorías</p>
-                    <h3><?= htmlspecialchars($receta['kcal']) ?></h3>
-                </div>
-            </div>
+                <?php if ($receta['permitir_ia_swap']): ?>
+                <button class="btn-swap"
+                        onclick="abrirSwap('<?= htmlspecialchars(addslashes($ing['nombre'])) ?>', <?= $ing['cantidad_gramos'] ?>)"
+                        title="Sustitución IA">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="17 1 21 5 17 9"/>
+                        <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                        <polyline points="7 23 3 19 7 15"/>
+                        <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                    </svg>
+                </button>
+                <?php endif; ?>
+            </li>
+            <?php endforeach; ?>
+        </ul>
 
-            <h2 class="section-title">Ingredientes</h2>
-            <div class="ing-list">
-                <?php foreach($receta['ingredientes'] as $ing): ?>
-                <label class="ing-item">
-                    <input type="checkbox" class="ing-cb">
-                    <span class="ing-text"><?= htmlspecialchars($ing) ?></span>
-                </label>
-                <?php endforeach; ?>
-            </div>
-
-            <h2 class="section-title">Instrucciones</h2>
-            <div class="inst-list">
-                <?php foreach($receta['pasos'] as $index => $paso): ?>
-                <div class="inst-item">
-                    <div class="inst-num"><?= $index + 1 ?></div>
-                    <div class="inst-text"><?= htmlspecialchars($paso) ?></div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-
-        </div>
-
-        <div class="sticky-action">
-            <button class="btn-register">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg>
-                Registrar Comida
-            </button>
-        </div>
+        <?php if (!empty($pasos)): ?>
+        <h2 class="section-title">Instrucciones</h2>
+        <ol class="steps-list">
+            <?php foreach ($pasos as $n => $paso): ?>
+            <li class="step-item">
+                <div class="step-num"><?= $n + 1 ?></div>
+                <div class="step-text"><?= htmlspecialchars($paso) ?></div>
+            </li>
+            <?php endforeach; ?>
+        </ol>
+        <?php endif; ?>
 
     </div>
 
+    <div class="floating-action">
+        <form action="../controllers/guardar_receta_diario.php" method="POST">
+            <input type="hidden" name="id_receta" value="<?= $receta['id_receta'] ?>">
+            <button type="submit" class="btn-registrar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                    <path d="M9 16l2 2 4-4"/>
+                </svg>
+                Registrar Comida
+            </button>
+        </form>
+    </div>
+
+</div>
+
+<!-- MODAL SUSTITUCIÓN IA -->
+<div class="modal-overlay" id="swapModal">
+    <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-title-text" id="swapTitle">Sustituir Ingrediente</div>
+        <p class="modal-subtitle" id="swapSubtitle">Buscando alternativas...</p>
+        <ul class="swap-options-list" id="swapOptionsList"></ul>
+        <button class="btn-cancelar" onclick="cerrarSwap()">Cancelar</button>
+    </div>
+</div>
+
+<script>
+    // ── Checkboxes ────────────────────────────────────────────────────────
+    function toggleIngrediente(i) {
+        const check = document.getElementById('check-' + i);
+        const label = document.getElementById('ingr-name-' + i);
+        const done  = check.classList.toggle('done');
+        check.setAttribute('aria-checked', done);
+        label.classList.toggle('done-text', done);
+    }
+
+    // ── Modal Swap ────────────────────────────────────────────────────────
+    const swapModal = document.getElementById('swapModal');
+    const swapTitle = document.getElementById('swapTitle');
+    const swapSub   = document.getElementById('swapSubtitle');
+    const swapList  = document.getElementById('swapOptionsList');
+
+    let _ing = '', _gr = 0;
+
+    function abrirSwap(nombre, gramos) {
+        _ing = nombre; _gr = gramos;
+        swapTitle.textContent = 'Sustituir ' + nombre;
+        swapSub.textContent   = 'Buscando alternativas...';
+        swapList.innerHTML    = '<li class="swap-loading">⏳ Gemma está analizando alternativas...</li>';
+        swapModal.classList.add('active');
+        pedirSwap(nombre, gramos);
+    }
+
+    function pedirSwap(nombre, gramos) {
+        fetch('../controllers/ia_swap.php', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ ingrediente: nombre, gramos: gramos })
+        })
+        .then(r => r.json())
+        .then(json => {
+            if (json.status === 'success') {
+                swapSub.textContent  = json.subtitulo || 'Sugerencias basadas en tus macros:';
+                swapList.innerHTML   = '';
+                window._swapOpciones = json.data;
+
+                json.data.forEach((op, idx) => {
+                    const li = document.createElement('li');
+                    li.className = 'swap-option';
+                    li.innerHTML = `
+                        <div class="swap-option-info">
+                            <div class="swap-option-top">
+                                <span class="swap-nombre">${esc(op.nombre)}</span>
+                                ${op.recomendado ? '<span class="badge-recomendado">RECOMENDADO</span>' : ''}
+                            </div>
+                            <div class="swap-nota">${esc(op.nota)}</div>
+                        </div>
+                        <button class="btn-elegir" onclick="elegirSwap(${idx})">Elegir</button>
+                    `;
+                    swapList.appendChild(li);
+                });
+            } else {
+                swapList.innerHTML = `
+                    <li style="padding:1rem 0;text-align:center;color:#EF4444">
+                        ⚠️ ${esc(json.message || 'Error')}
+                        <br><button onclick="pedirSwap('${esc(_ing)}',${_gr})"
+                            style="margin-top:0.5rem;background:none;border:1px solid #ddd;
+                                   border-radius:8px;padding:0.3rem 0.8rem;cursor:pointer">
+                            🔄 Reintentar</button>
+                    </li>`;
+            }
+        })
+        .catch(() => {
+            swapList.innerHTML = `
+                <li style="padding:1rem 0;text-align:center;color:#EF4444">
+                    ⚠️ Error de conexión
+                    <br><button onclick="pedirSwap('${esc(_ing)}',${_gr})"
+                        style="margin-top:0.5rem;background:none;border:1px solid #ddd;
+                               border-radius:8px;padding:0.3rem 0.8rem;cursor:pointer">
+                        🔄 Reintentar</button>
+                </li>`;
+        });
+    }
+
+    function elegirSwap(idx) {
+        const op = (window._swapOpciones || [])[idx];
+        if (!op) return;
+        cerrarSwap();
+        const t = document.createElement('div');
+        t.textContent = '✓ Sustituido por: ' + op.nombre;
+        Object.assign(t.style, {
+            position:'fixed', bottom:'110px', left:'50%', transform:'translateX(-50%)',
+            background:'#1F2937', color:'#fff', padding:'0.6rem 1.2rem',
+            borderRadius:'99px', fontSize:'0.85rem', fontWeight:'500',
+            zIndex:'2000', whiteSpace:'nowrap', transition:'opacity 0.3s'
+        });
+        document.body.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2200);
+    }
+
+    function esc(str) {
+        return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function cerrarSwap() { swapModal.classList.remove('active'); }
+    swapModal.addEventListener('click', e => { if (e.target === swapModal) cerrarSwap(); });
+</script>
 </body>
 </html>
