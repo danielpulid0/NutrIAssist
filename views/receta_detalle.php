@@ -215,11 +215,11 @@ $tiempo_txt = $receta['tiempo_prep_min'] ? $receta['tiempo_prep_min'] . ' min' :
                         echo $cant . 'g ' . htmlspecialchars($ing['nombre']);
                         ?>
                     </div>
-                    <div class="ingr-meta"><?= $ing['calorias_calc'] ?> kcal • <?= $ing['proteina_calc'] ?>g prot</div>
+                    <div class="ingr-meta" id="ingr-meta-<?= $i ?>"><?= $ing['calorias_calc'] ?> kcal • <?= $ing['proteina_calc'] ?>g prot</div>
                 </div>
                 <?php if ($receta['permitir_ia_swap']): ?>
                 <button class="btn-swap"
-                        onclick="abrirSwap('<?= htmlspecialchars(addslashes($ing['nombre'])) ?>', <?= $ing['cantidad_gramos'] ?>)"
+                        onclick="abrirSwap('<?= htmlspecialchars(addslashes($ing['nombre'])) ?>', <?= $ing['cantidad_gramos'] ?>, <?= $i ?>)"
                         title="Sustitución IA">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="17 1 21 5 17 9"/>
@@ -248,21 +248,39 @@ $tiempo_txt = $receta['tiempo_prep_min'] ? $receta['tiempo_prep_min'] . ' min' :
     </div>
 
     <div class="floating-action">
-        <form action="../controllers/guardar_receta_diario.php" method="POST">
-            <input type="hidden" name="id_receta" value="<?= $receta['id_receta'] ?>">
-            <button type="submit" class="btn-registrar">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                    <line x1="16" y1="2" x2="16" y2="6"/>
-                    <line x1="8" y1="2" x2="8" y2="6"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
-                    <path d="M9 16l2 2 4-4"/>
-                </svg>
-                Registrar Comida
-            </button>
-        </form>
+        <button class="btn-registrar" onclick="abrirRegistro()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+                <path d="M9 16l2 2 4-4"/>
+            </svg>
+            Registrar Comida
+        </button>
     </div>
 
+</div>
+
+<!-- MODAL TIPO DE COMIDA -->
+<div class="modal-overlay" id="registroModal">
+    <div class="modal-sheet" style="padding:0 1.5rem 2rem">
+        <div class="modal-handle"></div>
+        <div class="modal-title-text" style="margin-bottom:0.3rem">Registrar en tu Diario</div>
+        <p class="modal-subtitle">¿En qué momento del día fue?</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.5rem">
+            <?php foreach(['Desayuno','Comida','Cena','Snack'] as $tipo): ?>
+            <button class="btn-tipo-comida" onclick="guardarReceta('<?= $tipo ?>')"
+                    style="padding:0.9rem;border:1.5px solid var(--color-border);border-radius:14px;
+                           background:#fff;font-size:0.95rem;font-weight:600;
+                           font-family:'Inter',sans-serif;cursor:pointer;
+                           transition:border-color 0.15s,background 0.15s;">
+                <?= ['Desayuno'=>'☀️','Comida'=>'🌱','Cena'=>'🌙','Snack'=>'🍪'][$tipo] ?> <?= $tipo ?>
+            </button>
+            <?php endforeach; ?>
+        </div>
+        <button class="btn-cancelar" onclick="cerrarRegistro()">Cancelar</button>
+    </div>
 </div>
 
 <!-- MODAL SUSTITUCIÓN IA -->
@@ -292,10 +310,10 @@ $tiempo_txt = $receta['tiempo_prep_min'] ? $receta['tiempo_prep_min'] . ' min' :
     const swapSub   = document.getElementById('swapSubtitle');
     const swapList  = document.getElementById('swapOptionsList');
 
-    let _ing = '', _gr = 0;
+    let _ing = '', _gr = 0, _idx = -1;
 
-    function abrirSwap(nombre, gramos) {
-        _ing = nombre; _gr = gramos;
+    function abrirSwap(nombre, gramos, idx) {
+        _ing = nombre; _gr = gramos; _idx = idx;
         swapTitle.textContent = 'Sustituir ' + nombre;
         swapSub.textContent   = 'Buscando alternativas...';
         swapList.innerHTML    = '<li class="swap-loading">⏳ Gemma está analizando alternativas...</li>';
@@ -358,6 +376,20 @@ $tiempo_txt = $receta['tiempo_prep_min'] ? $receta['tiempo_prep_min'] . ' min' :
         const op = (window._swapOpciones || [])[idx];
         if (!op) return;
         cerrarSwap();
+
+        // Actualizar DOM del ingrediente en pantalla
+        if (_idx >= 0) {
+            const nameEl = document.getElementById('ingr-name-' + _idx);
+            const metaEl = document.getElementById('ingr-meta-' + _idx);
+            if (nameEl) {
+                nameEl.textContent = _gr + 'g ' + op.nombre;
+                nameEl.style.color = 'var(--color-malachite)';
+                nameEl.style.transition = 'color 0.3s';
+            }
+            if (metaEl) {
+                metaEl.textContent = op.calorias + ' kcal • ' + op.proteina + 'g prot';
+            }
+        }
         const t = document.createElement('div');
         t.textContent = '✓ Sustituido por: ' + op.nombre;
         Object.assign(t.style, {
@@ -376,6 +408,63 @@ $tiempo_txt = $receta['tiempo_prep_min'] ? $receta['tiempo_prep_min'] . ' min' :
 
     function cerrarSwap() { swapModal.classList.remove('active'); }
     swapModal.addEventListener('click', e => { if (e.target === swapModal) cerrarSwap(); });
+
+    // ── Modal Registro Receta ─────────────────────────────────────────────
+    const registroModal = document.getElementById('registroModal');
+    const RECETA = {
+        titulo:   '<?= addslashes(htmlspecialchars($receta['titulo'])) ?>',
+        calorias: <?= (int)   ($receta['calorias_totales'] ?? 0) ?>,
+        proteina: <?= (float) ($receta['proteina_total']   ?? 0) ?>,
+        carbs:    <?= (float) ($receta['carbs_total']      ?? 0) ?>,
+        grasas:   <?= (float) ($receta['grasas_total']     ?? 0) ?>,
+    };
+
+    function abrirRegistro() { registroModal.classList.add('active'); }
+    function cerrarRegistro() { registroModal.classList.remove('active'); }
+    registroModal.addEventListener('click', e => { if (e.target === registroModal) cerrarRegistro(); });
+
+    async function guardarReceta(tipo) {
+        cerrarRegistro();
+        const btn = document.querySelector('.btn-registrar');
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Guardando...';
+
+        try {
+            const resp = await fetch('../controllers/guardar_comida_manual.php', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tipo_comida: tipo,
+                    fecha:       new Date().toISOString().split('T')[0],
+                    alimento:    RECETA.titulo,
+                    calorias:    RECETA.calorias,
+                    proteina:    RECETA.proteina,
+                    carbs:       RECETA.carbs,
+                    grasas:      RECETA.grasas,
+                })
+            });
+            const json = await resp.json();
+
+            if (json.status === 'success') {
+                btn.innerHTML = '✓ Registrado en ' + tipo;
+                btn.style.background = '#0db844';
+                setTimeout(() => window.location.href = 'diario.php', 1200);
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '⚠️ Error. Intenta de nuevo';
+                btn.style.background = '#EF4444';
+                setTimeout(() => {
+                    btn.innerHTML = '🗓️ Registrar Comida';
+                    btn.style.background = '';
+                    btn.disabled = false;
+                }, 2500);
+            }
+        } catch {
+            btn.disabled = false;
+            btn.innerHTML = '⚠️ Error de conexión';
+            setTimeout(() => { btn.innerHTML = '🗓️ Registrar Comida'; btn.disabled = false; }, 2500);
+        }
+    }
 </script>
 </body>
 </html>
