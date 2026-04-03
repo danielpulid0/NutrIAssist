@@ -37,7 +37,24 @@ $proteina  = (float) ($datos['proteina'] ?? 0);
 $carbs     = (float) ($datos['carbs']    ?? 0);
 $grasas    = (float) ($datos['grasas']   ?? 0);
 
-if (empty($nombre_ia) || $calorias < 0) {
+// ── VALIDACIONES MATEMÁTICAS (Seguridad de Lógica de Negocio) ────────
+// Regla 1: Valores nunca negativos
+if ($calorias < 0 || $proteina < 0 || $carbs < 0 || $grasas < 0) {
+    echo json_encode(['status' => 'error', 'message' => 'Los valores nutricionales no pueden ser negativos.']);
+    exit();
+}
+// Regla 2: Límites fisiológicos máximos razonables
+// (ningún alimento en 100g tiene más de 900 kcal ni 100g de macronutriente)
+if ($calorias > 9000) {
+    echo json_encode(['status' => 'error', 'message' => 'El valor de calorías supera el límite permitido (9000 kcal).']);
+    exit();
+}
+if ($proteina > 100 || $carbs > 100 || $grasas > 100) {
+    echo json_encode(['status' => 'error', 'message' => 'Los macronutrientes no pueden superar 100g por registro.']);
+    exit();
+}
+// Regla 3: Nombre requerido
+if (empty($nombre_ia)) {
     echo json_encode(['status' => 'error', 'message' => 'Nombre y calorías son requeridos']);
     exit();
 }

@@ -12,6 +12,16 @@ $meta_proteina  = 150;
 $meta_carbs     = 220;
 $meta_grasas    = 70;
 
+// ─ Fecha y saludo dinámico ────────────────────────────────────────────
+$hora_actual = (int) date('H');
+if ($hora_actual < 12)      $saludo = 'Buenos días';
+elseif ($hora_actual < 19)  $saludo = 'Buenas tardes';
+else                        $saludo = 'Buenas noches';
+
+$dias_es_corto  = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+$meses_es_corto = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+$label_hoy = $dias_es_corto[(int)date('w')] . ', ' . (int)date('j') . ' ' . $meses_es_corto[(int)date('n') - 1];
+
 // ─── Consulta real: SUM de macros del día ─────────────────────────
 require_once '../config/conexion.php';
 
@@ -280,12 +290,12 @@ $grasas_p = ($meta_grasas   > 0) ? min(100, ($grasas_consumidas/ $meta_grasas)  
         
         <div class="header-dashboard">
             <div class="user-greeting">
-                <p>Buenos días</p>
+                <p><?= htmlspecialchars($saludo) ?></p>
                 <h1><?= htmlspecialchars($nombre_usuario) ?></h1>
             </div>
             <div style="text-align: right;">
                 <p style="color: var(--color-malachite); font-size: 0.75rem; font-weight: 700;">HOY</p>
-                <p style="color: var(--color-text-gray); font-size: 0.8rem;">Mié, 25 Feb</p>
+                <p style="color: var(--color-text-gray); font-size: 0.8rem;"><?= $label_hoy ?></p>
             </div>
         </div>
 

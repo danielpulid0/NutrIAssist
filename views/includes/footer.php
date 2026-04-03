@@ -12,7 +12,7 @@ function get_icon_diary($is_active) {
 }
 function get_icon_recipes($is_active) {
     $c = $is_active ? 'var(--color-malachite)' : 'var(--color-text-gray)';
-    return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="'.$c.'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20v-5.5A2.5 2.5 0 0 1 13.5 12h0A2.5 2.5 0 0 1 16 14.5V20"></path><path d="M18 20v-5.5a2.5 2.5 0 0 0-2.5-2.5h0"></path><path d="M6 12V2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h0"></path><path d="M6 12v8"></path><path d="M11 20H6"></path></svg>';
+    return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="'.$c.'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>';
 }
 function get_icon_profile($is_active) {
     $c = $is_active ? 'var(--color-malachite)' : 'var(--color-text-gray)';

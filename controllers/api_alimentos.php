@@ -1,10 +1,12 @@
 <?php
 // ============================================================
-// controllers/api_alimentos.php — v2 (Anti-duplicados)
-// Implementa las 3 defensas contra duplicidad semántica:
-//   D1: Canonicalización por IA (via Gemma)
-//   D2: Búsqueda FULLTEXT en lugar de LIKE
+// controllers/api_alimentos.php — v3 (Bilingüe)
+// Defensas:
+//   D1: Traducción ES→EN via Gemini (para USDA) + nombre en ES para la DB
+//   D2: Búsqueda FULLTEXT en la DB local (caché)
 //   D3: Upsert por fdc_id UNIQUE (llave maestra USDA)
+// Flujo: "manzana" → {es:"Manzana", en:"Apple"} → busca "Apple" en USDA
+//         → guarda "Manzana" en DB → próxima búsqueda: hit local en <10ms
 // ============================================================
 session_start();
 header('Content-Type: application/json');
@@ -17,36 +19,51 @@ if (!isset($_SESSION['usuario_id']) || !isset($_GET['query'])) {
     exit();
 }
 
+// Obtener la búsqueda cruda del usuario
 $busqueda_raw = trim($_GET['query']);
 
 // ──────────────────────────────────────────────────────────────────────────────
-// DEFENSA 1: Canonicalización via Gemma
-// Pedimos a la IA que estandarice el nombre antes de buscar.
-// "piernitas de pollo" → "Pierna de pollo"
+// DEFENSA 1: Traducción y canonicalización con Gemini
+// Convierte la entrada en español a un nombre canónico bilinguë.
+// Entrada:  "piernitas de pollo" (cualquier idioma, cualquier longitud)
+// Salida:   ['es' => 'Pollo, pierna asada', 'en' => 'Chicken, roasted leg']
+// El nombre EN se usa para buscar en USDA; el ES para mostrar y guardar.
 // ──────────────────────────────────────────────────────────────────────────────
-$busqueda = canonicalizar($busqueda_raw);
+$nombres = traducirYCanonicalizar($busqueda_raw);
+// $nombres['es'] → nombre en español  (DB + frontend)
+// $nombres['en'] → nombre en inglés   (USDA API)
 
-function canonicalizar(string $texto): string {
-    // Si el texto ya es corto y simple, no gastas un token
-    if (strlen($texto) <= 15 && !preg_match('/\s{2,}|[^\w\s\-\(\)\.áéíóúñ]/i', $texto)) {
-        return ucfirst(strtolower(trim($texto)));
-    }
-
+/**
+ * Llama a Gemini para obtener el nombre canónico del alimento en ES y EN.
+ * Siempre usa la API (no tiene bypass por longitud) para garantizar la traducción.
+ * En caso de fallo devuelve el texto original como ES y un intento de traducción básico.
+ *
+ * @return array{es: string, en: string}
+ */
+function traducirYCanonicalizar(string $texto): array {
     $api_url = "https://generativelanguage.googleapis.com/v1beta/models/"
              . GEMINI_MODELO_CHAT . ":generateContent?key=" . GEMINI_API_KEY;
+
+    $prompt =
+        "Eres un experto en nutrición. Debes identificar el alimento mencionado y devolver " .
+        "su nombre canónico en DOS idiomas. " .
+        "REGLAS ESTRICTAS: " .
+        "1) Responde ÚNICAMENTE con un objeto JSON válido, sin explicaciones, sin markdown, sin comillas extras. " .
+        "2) El formato exacto es: {\"es\":\"Nombre en español\",\"en\":\"Name in English\"}. " .
+        "3) Usa el formato 'Sustantivo, descriptor' (ej: es:'Pollo, pierna asada' / en:'Chicken, roasted leg'). " .
+        "4) Si es marca o producto, usa el nombre genérico. " .
+        "5) El nombre en inglés debe ser exactamente como aparecería en la base de datos USDA FoodData Central. " .
+        "Alimento a identificar: \"$texto\"";
 
     $payload = json_encode([
         "contents" => [[
             "role"  => "user",
-            "parts" => [["text" =>
-                "Eres un experto en nutrición. Tu única tarea es devolver el nombre canónico " .
-                "estandarizado del alimento que el usuario menciona. " .
-                "REGLAS: 1) Devuelve SOLO el nombre, sin explicaciones ni puntuación. " .
-                "2) Usa el formato 'Sustantivo, descriptor' (ej: 'Pollo, pierna asada'). " .
-                "3) Si es marca o producto, usa el nombre genérico. " .
-                "Alimento a normalizar: \"$texto\""
-            ]]
-        ]]
+            "parts" => [["text" => $prompt]]
+        ]],
+        "generationConfig" => [
+            "temperature"     => 0,      // Respuesta determinista
+            "maxOutputTokens" => 60,     // Solo necesitamos el JSON corto
+        ]
     ]);
 
     $ch = curl_init($api_url);
@@ -55,35 +72,41 @@ function canonicalizar(string $texto): string {
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => $payload,
         CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
-        CURLOPT_TIMEOUT        => 5, // no bloquear más de 5s
+        CURLOPT_TIMEOUT        => 6,
     ]);
     $resp = curl_exec($ch);
     $ok   = curl_getinfo($ch, CURLINFO_HTTP_CODE) === 200;
     curl_close($ch);
 
     if ($ok) {
-        $data = json_decode($resp, true);
-        $canon = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
-        $canon = trim(strip_tags($canon));
-        if (!empty($canon) && strlen($canon) < 80) {
-            return $canon;
+        $data  = json_decode($resp, true);
+        $raw   = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+        // Extraer solo el bloque JSON aunque Gemini añada texto extra
+        if (preg_match('/\{[^}]+\}/s', $raw, $m)) {
+            $parsed = json_decode($m[0], true);
+            $es = trim($parsed['es'] ?? '');
+            $en = trim($parsed['en'] ?? '');
+            if (!empty($es) && !empty($en) && strlen($es) < 120 && strlen($en) < 120) {
+                return ['es' => $es, 'en' => $en];
+            }
         }
     }
 
-    // Fallback: limpiar al menos el texto original
-    return ucfirst(strtolower(trim($texto)));
+    // Fallback: devolver el texto original en ambos idiomas
+    error_log('[api_alimentos] Gemini no devolvió JSON válido para: ' . $texto);
+    $limpio = ucfirst(strtolower(trim($texto)));
+    return ['es' => $limpio, 'en' => $limpio];
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// DEFENSA 2: FULLTEXT SEARCH (en lugar de LIKE)
-// Ignora stop words ("de", "el", "la") para encontrar coincidencias semánticas.
-// Requiere que la columna 'nombre' tenga FULLTEXT INDEX (ver nota al pie).
+// DEFENSA 2: Buscar en caché local (DB) usando el nombre EN ESPAÑOL
+// Si ya fue buscado antes, está guardado en español → hit inmediato sin APIs
 // ──────────────────────────────────────────────────────────────────────────────
 try {
-    // Intentamos FULLTEXT primero; si el índice no existe, caemos a LIKE
     $alimento_local = null;
 
     try {
+        // Búsqueda FULLTEXT con el nombre en español
         $stmt = $conn->prepare("
             SELECT *, MATCH(nombre) AGAINST (:q IN NATURAL LANGUAGE MODE) AS score
             FROM Alimentos
@@ -91,13 +114,13 @@ try {
             ORDER BY score DESC
             LIMIT 1
         ");
-        $stmt->execute([':q' => $busqueda, ':q2' => $busqueda]);
+        $stmt->execute([':q' => $nombres['es'], ':q2' => $nombres['es']]);
         $alimento_local = $stmt->fetch(PDO::FETCH_ASSOC);
     } catch (PDOException $ftEx) {
-        // El índice FULLTEXT no existe aún → fallback a LIKE
+        // Fallback a LIKE si no hay índice FULLTEXT
         error_log('[api_alimentos] FULLTEXT no disponible, usando LIKE: ' . $ftEx->getMessage());
         $stmt = $conn->prepare("SELECT * FROM Alimentos WHERE nombre LIKE :q LIMIT 1");
-        $stmt->execute([':q' => '%' . $busqueda . '%']);
+        $stmt->execute([':q' => '%' . $nombres['es'] . '%']);
         $alimento_local = $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -105,18 +128,20 @@ try {
         echo json_encode([
             'status' => 'success',
             'fuente' => 'mysql_local',
-            'nombre_canonico' => $busqueda, // para debugging
+            'nombre_canonico' => $nombres['es'],
             'data'   => $alimento_local
         ]);
         exit();
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // CACHÉ MISS: consultar USDA FoodData Central
+    // CACHÉ MISS: consultar USDA FoodData Central en INGLÉS
+    // Buscamos con el nombre EN INGLÉS que devolvió Gemini para obtener resultados
     // ──────────────────────────────────────────────────────────────────────────
-    $usda_key = defined('USDA_API_KEY') ? USDA_API_KEY : 'DEMO_KEY';
+    $usda_key    = defined('USDA_API_KEY') ? USDA_API_KEY : 'DEMO_KEY';
+    $query_usda  = $nombres['en'];  // ← Aquí está el cambio clave: EN inglés
     $url = "https://api.nal.usda.gov/fdc/v1/foods/search?api_key={$usda_key}"
-         . "&query=" . urlencode($busqueda) . "&pageSize=1&requireAllWords=true";
+         . "&query=" . urlencode($query_usda) . "&pageSize=1&requireAllWords=true";
 
     $ch = curl_init($url);
     curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 8]);
@@ -138,8 +163,8 @@ try {
 
     $food = $data_usda['foods'][0];
 
-    // Usar el nombre canónico (D1) en lugar del description crudo de la API
-    $nombre_final = $busqueda; // ya fue canonicalizado antes
+    // Guardamos con el nombre en ESPAÑOL (el usuario nunca ve el nombre en inglés)
+    $nombre_final = $nombres['es'];
 
     $fdc_id   = (int) ($food['fdcId'] ?? 0);
     $calorias = $proteina = $carbs = $grasas = 0;

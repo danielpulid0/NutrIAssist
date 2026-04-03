@@ -257,7 +257,7 @@ $tipos_orden = ['Desayuno', 'Comida', 'Cena', 'Snack'];
         /* ── MODAL REGISTRO MANUAL ── */
         .modal-overlay {
             display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.45); z-index: 1000; /* por encima del footer */
+            background: rgba(0,0,0,0.45); z-index: 1000;
             align-items: flex-end; justify-content: center;
         }
         .modal-overlay.active { display: flex; }
@@ -266,41 +266,205 @@ $tipos_orden = ['Desayuno', 'Comida', 'Cena', 'Snack'];
             width: 100%; max-width: 480px;
             padding: 1.5rem 1.25rem 2rem;
             animation: slideUp 0.28s ease;
+            max-height: 90vh; overflow-y: auto;
         }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .modal-title {
             font-size: 1.05rem; font-weight: 700; color: var(--color-text-dark);
-            margin-bottom: 1.25rem; display: flex;
+            margin-bottom: 1.1rem; display: flex;
             justify-content: space-between; align-items: center;
         }
         .modal-close {
             background: none; border: none; font-size: 1.5rem;
             cursor: pointer; color: var(--color-text-gray); line-height: 1;
         }
-        .form-group { margin-bottom: 0.85rem; }
-        .form-group label {
-            display: block; font-size: 0.75rem; font-weight: 600;
-            color: var(--color-text-gray); margin-bottom: 0.3rem;
+        /* Vistas internas del modal */
+        .modal-view { display: none; }
+        .modal-view.active { display: block; }
+
+        /* ── PASO 1: Constructor de lista ── */
+        .add-row {
+            display: grid;
+            grid-template-columns: 1fr 90px auto;
+            gap: 0.5rem; align-items: start;
+            margin-bottom: 0.5rem;
+        }
+        .add-row-labels {
+            display: grid;
+            grid-template-columns: 1fr 90px auto;
+            gap: 0.5rem; margin-bottom: 0.25rem;
+        }
+        .add-row-labels span {
+            font-size: 0.72rem; font-weight: 600; color: var(--color-text-gray);
             text-transform: uppercase; letter-spacing: 0.04em;
         }
-        .form-group input {
+        /* campo de búsqueda */
+        .search-wrap { position: relative; }
+        .search-wrap input {
             width: 100%; padding: 0.7rem 0.9rem;
             border: 1px solid var(--color-border); border-radius: 10px;
-            font-size: 0.95rem; font-family: 'Inter', sans-serif;
-            color: var(--color-text-dark); background: #fff; outline: none;
+            font-size: 0.92rem; font-family: 'Inter', sans-serif;
+            color: var(--color-text-dark); outline: none;
             transition: border-color 0.15s; box-sizing: border-box;
         }
-        .form-group input:focus { border-color: var(--color-malachite); }
-        .macros-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
-        .btn-guardar-manual {
-            width: 100%; background-color: var(--color-malachite);
-            color: #fff; border: none; border-radius: 99px;
+        .search-wrap input:focus { border-color: var(--color-malachite); }
+        /* campo cantidad */
+        .qty-input {
+            width: 100%; padding: 0.7rem 0.6rem;
+            border: 1px solid var(--color-border); border-radius: 10px;
+            font-size: 0.92rem; font-family: 'Inter', sans-serif;
+            color: var(--color-text-dark); outline: none; text-align: center;
+            transition: border-color 0.15s; box-sizing: border-box;
+        }
+        .qty-input:focus { border-color: var(--color-malachite); }
+        /* botón agregar */
+        .btn-add-alim {
+            height: 42px; padding: 0 0.8rem;
+            background: var(--color-malachite); color: #fff;
+            border: none; border-radius: 10px; cursor: pointer;
+            font-size: 1.3rem; font-weight: 700; line-height: 1;
+            font-family: 'Inter', sans-serif;
+            transition: background 0.15s, opacity 0.15s;
+            white-space: nowrap;
+        }
+        .btn-add-alim:hover:not(:disabled) { background: #0db844; }
+        .btn-add-alim:disabled { background: #D1D5DB; cursor: not-allowed; }
+        /* dropdown autocompletado */
+        .ac-dropdown {
+            display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+            background: #fff; border: 1px solid var(--color-border);
+            border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            z-index: 300; overflow: hidden;
+        }
+        .ac-dropdown.open { display: block; }
+        .ac-item {
+            padding: 0.7rem 0.9rem; cursor: pointer;
+            display: flex; align-items: center; gap: 0.55rem;
+            transition: background 0.12s;
+        }
+        .ac-item:hover { background: #F0FFF4; }
+        .ac-item-icon { font-size: 1.05rem; flex-shrink: 0; }
+        .ac-item-info { flex: 1; min-width: 0; }
+        .ac-item-name { font-size: 0.88rem; font-weight: 600; color: var(--color-text-dark); }
+        .ac-item-sub  { font-size: 0.73rem; color: var(--color-text-gray); }
+        .ac-badge {
+            font-size: 0.62rem; padding: 0.12rem 0.45rem; border-radius: 99px;
+            font-weight: 700; flex-shrink: 0;
+        }
+        .ac-badge.local { background: #DCFCE7; color: #16A34A; }
+        .ac-badge.usda  { background: #DBEAFE; color: #1D4ED8; }
+        .ac-status {
+            padding: 0.7rem 0.9rem; font-size: 0.82rem;
+            color: var(--color-text-gray); text-align: center;
+        }
+        .ac-status a { color: var(--color-malachite); font-weight: 600; text-decoration: none; }
+        /* lista de items agregados */
+        .items-list {
+            margin: 0.8rem 0 0; min-height: 0;
+        }
+        .items-list-empty {
+            text-align: center; font-size: 0.82rem;
+            color: var(--color-text-gray); padding: 0.8rem 0;
+        }
+        .item-row {
+            display: flex; align-items: center;
+            padding: 0.55rem 0;
+            border-bottom: 1px solid var(--color-border);
+            gap: 0.5rem;
+        }
+        .item-row:last-child { border-bottom: none; }
+        .item-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--color-malachite); flex-shrink: 0;
+        }
+        .item-name {
+            flex: 1; font-size: 0.88rem;
+            font-weight: 500; color: var(--color-text-dark);
+            min-width: 0; overflow: hidden;
+            text-overflow: ellipsis; white-space: nowrap;
+        }
+        .item-qty {
+            font-size: 0.8rem; color: var(--color-text-gray);
+            white-space: nowrap; flex-shrink: 0;
+        }
+        .btn-remove-item {
+            background: none; border: none; cursor: pointer;
+            color: #9CA3AF; font-size: 1rem; line-height: 1;
+            padding: 0 0.1rem; flex-shrink: 0;
+            transition: color 0.15s;
+        }
+        .btn-remove-item:hover { color: #EF4444; }
+        /* botón registrar */
+        .btn-registrar {
+            width: 100%; margin-top: 1.1rem;
+            background: var(--color-malachite); color: #fff;
+            border: none; border-radius: 99px;
             padding: 0.9rem; font-size: 0.95rem; font-weight: 700;
             cursor: pointer; font-family: 'Inter', sans-serif;
-            transition: background 0.15s; margin-top: 0.5rem;
+            display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+            transition: background 0.15s;
         }
-        .btn-guardar-manual:hover { background: #0db844; }
-        .btn-guardar-manual:disabled { background: #9CA3AF; cursor: not-allowed; }
+        .btn-registrar:hover:not(:disabled) { background: #0db844; }
+        .btn-registrar:disabled { background: #D1D5DB; cursor: not-allowed; }
+
+        /* ── PASO 2: Vista previa ── */
+        .preview-header {
+            font-size: 0.8rem; color: var(--color-text-gray);
+            margin-bottom: 0.85rem;
+        }
+        .preview-table-wrap { overflow-x: auto; margin-bottom: 1rem; }
+        .preview-table {
+            width: 100%; border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+        .preview-table th {
+            text-align: left; padding: 0.4rem 0.5rem;
+            font-size: 0.7rem; font-weight: 700;
+            color: var(--color-text-gray);
+            text-transform: uppercase; letter-spacing: 0.04em;
+            border-bottom: 2px solid var(--color-border);
+        }
+        .preview-table th:not(:first-child) { text-align: right; }
+        .preview-table td {
+            padding: 0.55rem 0.5rem;
+            border-bottom: 1px solid var(--color-border);
+            color: var(--color-text-dark);
+            vertical-align: middle;
+        }
+        .preview-table td:not(:first-child) { text-align: right; }
+        .preview-table .td-name {
+            font-weight: 500; max-width: 130px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .preview-table .td-qty { color: var(--color-text-gray); white-space: nowrap; }
+        .preview-table tr.total-row td {
+            font-weight: 800; border-top: 2px solid var(--color-border);
+            border-bottom: none; color: var(--color-malachite);
+            font-size: 0.88rem;
+        }
+        .preview-table tr.total-row .td-name { color: var(--color-text-dark); }
+        /* acciones preview */
+        .preview-actions {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;
+            margin-top: 0.5rem;
+        }
+        .btn-editar {
+            background: #F3F4F6; color: var(--color-text-dark);
+            border: none; border-radius: 99px;
+            padding: 0.85rem; font-size: 0.9rem; font-weight: 700;
+            cursor: pointer; font-family: 'Inter', sans-serif;
+            transition: background 0.15s;
+        }
+        .btn-editar:hover { background: #E5E7EB; }
+        .btn-confirmar {
+            background: var(--color-malachite); color: #fff;
+            border: none; border-radius: 99px;
+            padding: 0.85rem; font-size: 0.9rem; font-weight: 700;
+            cursor: pointer; font-family: 'Inter', sans-serif;
+            transition: background 0.15s;
+        }
+        .btn-confirmar:hover:not(:disabled) { background: #0db844; }
+        .btn-confirmar:disabled { background: #9CA3AF; cursor: not-allowed; }
 
         /* ── TOAST ── */
         .toast {
@@ -308,7 +472,7 @@ $tipos_orden = ['Desayuno', 'Comida', 'Cena', 'Snack'];
             transform: translateX(-50%);
             background: #1F2937; color: #fff;
             padding: 0.65rem 1.2rem; border-radius: 99px;
-            font-size: 0.85rem; font-weight: 500; z-index: 300;
+            font-size: 0.85rem; font-weight: 500; z-index: 400;
             opacity: 0; transition: opacity 0.3s; pointer-events: none;
             white-space: nowrap;
         }
@@ -447,45 +611,79 @@ $tipos_orden = ['Desayuno', 'Comida', 'Cena', 'Snack'];
 <!-- ── MODAL REGISTRO MANUAL ── -->
 <div class="modal-overlay" id="modal-overlay">
     <div class="modal-sheet" onclick="event.stopPropagation()">
-        <div class="modal-title">
-            <span id="modal-titulo">Agregar Alimento</span>
-            <button class="modal-close" id="btn-modal-close">×</button>
-        </div>
-        <form id="form-manual" onsubmit="guardarManual(event)">
-            <input type="hidden" id="input-tipo" name="tipo_comida">
-            <input type="hidden" name="fecha" value="<?= htmlspecialchars($fecha_sel) ?>">
 
-            <div class="form-group">
-                <label for="input-nombre">Nombre del alimento *</label>
-                <input type="text" id="input-nombre" name="nombre"
-                       placeholder="Ej: Ensalada César" required autocomplete="off">
+        <!-- ══ VISTA 1: Constructor de lista ══ -->
+        <div class="modal-view active" id="vista-lista">
+            <div class="modal-title">
+                <span id="modal-titulo">Agregar a Desayuno</span>
+                <button class="modal-close" id="btn-modal-close">×</button>
             </div>
-            <div class="form-group">
-                <label for="input-calorias">Calorías (kcal) *</label>
-                <input type="number" id="input-calorias" name="calorias"
-                       placeholder="0" min="0" max="9999" required>
+
+            <!-- Fila labels -->
+            <div class="add-row-labels">
+                <span>Buscar alimento</span>
+                <span>Cantidad (g)</span>
+                <span></span>
             </div>
-            <div class="macros-row">
-                <div class="form-group">
-                    <label for="input-proteina">Proteína (g)</label>
-                    <input type="number" id="input-proteina" name="proteina"
-                           placeholder="0" min="0" step="0.1">
+
+            <!-- Fila de entrada -->
+            <div class="add-row">
+                <div class="search-wrap" id="search-wrap">
+                    <input type="text" id="input-busqueda"
+                           placeholder="Ej: Arroz, Manzana…"
+                           autocomplete="off" spellcheck="false">
+                    <div class="ac-dropdown" id="ac-dropdown"></div>
                 </div>
-                <div class="form-group">
-                    <label for="input-carbs">Carbs (g)</label>
-                    <input type="number" id="input-carbs" name="carbs"
-                           placeholder="0" min="0" step="0.1">
-                </div>
-                <div class="form-group">
-                    <label for="input-grasas">Grasas (g)</label>
-                    <input type="number" id="input-grasas" name="grasas"
-                           placeholder="0" min="0" step="0.1">
-                </div>
+                <input type="number" id="input-cantidad" class="qty-input"
+                       placeholder="—" min="1" max="5000" step="1">
+                <button type="button" class="btn-add-alim" id="btn-add-alim"
+                        disabled title="Selecciona un alimento y escribe la cantidad">+</button>
             </div>
-            <button type="submit" class="btn-guardar-manual" id="btn-guardar">
-                Guardar
+
+            <!-- Lista de ítems -->
+            <div class="items-list" id="items-list">
+                <div class="items-list-empty" id="items-empty">Tu lista está vacía. Busca un alimento arriba.</div>
+            </div>
+
+            <!-- Botón registrar -->
+            <button class="btn-registrar" id="btn-registrar" disabled>
+                Revisar registro
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
             </button>
-        </form>
+        </div>
+
+        <!-- ══ VISTA 2: Confirmación ══ -->
+        <div class="modal-view" id="vista-preview">
+            <div class="modal-title">
+                <span>Confirmar registro</span>
+                <button class="modal-close" id="btn-modal-close-2">×</button>
+            </div>
+            <p class="preview-header" id="preview-header">Desayuno — Hoy</p>
+            <div class="preview-table-wrap">
+                <table class="preview-table" id="preview-table">
+                    <thead>
+                        <tr>
+                            <th>Alimento</th>
+                            <th>g</th>
+                            <th>kcal</th>
+                            <th>P</th>
+                            <th>C</th>
+                            <th>G</th>
+                        </tr>
+                    </thead>
+                    <tbody id="preview-tbody"></tbody>
+                </table>
+            </div>
+            <div class="preview-actions">
+                <button class="btn-editar" id="btn-editar">← Editar</button>
+                <button class="btn-confirmar" id="btn-confirmar">✓ Confirmar</button>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -671,61 +869,325 @@ function toggleMeal(id) {
     if (header)  header.setAttribute('aria-expanded', isOpen);
 }
 
-// ─── MODAL ───────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+// MODAL — Registro de alimentos en lista (2 pasos)
+// ══════════════════════════════════════════════════════════════════
+
+// ─── Estado ──────────────────────────────────────────────────────
+let modalTipo  = '';
+let modalFecha = '<?= $fecha_sel ?>';
+let listaItems = [];       // [{nombre, id_alimento, gramos, cal_100, prot_100, c_100, g_100}]
+let itemTemp   = null;     // resultado seleccionado del dropdown (pendiente de agregar)
+
+// ─── Referencias DOM ─────────────────────────────────────────────
+const overlay     = document.getElementById('modal-overlay');
+const vistaLista  = document.getElementById('vista-lista');
+const vistaPreview= document.getElementById('vista-preview');
+const inputBusq   = document.getElementById('input-busqueda');
+const inputQty    = document.getElementById('input-cantidad');
+const btnAddAlim  = document.getElementById('btn-add-alim');
+const itemsList   = document.getElementById('items-list');
+const itemsEmpty  = document.getElementById('items-empty');
+const btnReg      = document.getElementById('btn-registrar');
+const acDrop      = document.getElementById('ac-dropdown');
+
+// ─── Abrir / cerrar modal ─────────────────────────────────────────
 function abrirModal(tipo) {
+    modalTipo  = tipo;
+    listaItems = [];
+    itemTemp   = null;
     document.getElementById('modal-titulo').textContent = 'Agregar a ' + tipo;
-    document.getElementById('input-tipo').value = tipo;
-    document.getElementById('form-manual').reset();
-    document.getElementById('input-tipo').value = tipo; // reset borra el hidden
-    document.getElementById('modal-overlay').classList.add('active');
-    requestAnimationFrame(() => document.getElementById('input-nombre').focus());
+    mostrarVista('lista');
+    renderLista();
+    overlay.classList.add('active');
+    requestAnimationFrame(() => inputBusq.focus());
 }
 
-document.getElementById('modal-overlay').addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('active');
-});
-document.getElementById('btn-modal-close').addEventListener('click', () => {
-    document.getElementById('modal-overlay').classList.remove('active');
+function cerrarModal() {
+    overlay.classList.remove('active');
+    inputBusq.value  = '';
+    inputQty.value   = '';
+    acDrop.classList.remove('open');
+    acDrop.innerHTML = '';
+    itemTemp = null;
+    actualizarBtnAdd();
+}
+
+overlay.addEventListener('click', e => { if (e.target === overlay) cerrarModal(); });
+document.getElementById('btn-modal-close').addEventListener('click',  cerrarModal);
+document.getElementById('btn-modal-close-2').addEventListener('click', cerrarModal);
+
+// ─── Cambio de vista ──────────────────────────────────────────────
+function mostrarVista(cual) {
+    vistaLista.classList.toggle('active',   cual === 'lista');
+    vistaPreview.classList.toggle('active', cual === 'preview');
+}
+
+// ─── Render de la lista de ítems ─────────────────────────────────
+function renderLista() {
+    const tieneItems = listaItems.length > 0;
+    itemsEmpty.style.display = tieneItems ? 'none' : 'block';
+    btnReg.disabled = !tieneItems;
+
+    // Limpiar ítems previos (conservar el mensaje vacío)
+    Array.from(itemsList.querySelectorAll('.item-row')).forEach(el => el.remove());
+
+    listaItems.forEach((it, idx) => {
+        const row = document.createElement('div');
+        row.className = 'item-row';
+        row.innerHTML = `
+            <div class="item-dot"></div>
+            <div class="item-name" title="${escH(it.nombre)}">${escH(it.nombre)}</div>
+            <div class="item-qty">${it.gramos} g</div>
+            <button class="btn-remove-item" title="Eliminar" data-idx="${idx}">✕</button>
+        `;
+        itemsList.appendChild(row);
+    });
+
+    // Delegación de eventos para eliminar
+    itemsList.querySelectorAll('.btn-remove-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+            listaItems.splice(parseInt(btn.dataset.idx), 1);
+            renderLista();
+        });
+    });
+}
+
+// ─── Autocompletado ───────────────────────────────────────────────
+let acTimer = null;
+
+function actualizarBtnAdd() {
+    const qty = parseFloat(inputQty.value);
+    btnAddAlim.disabled = !(itemTemp && qty > 0);
+}
+
+inputBusq.addEventListener('input', () => {
+    // Al escribir de nuevo, reseteamos la selección temporal
+    itemTemp = null;
+    actualizarBtnAdd();
+    clearTimeout(acTimer);
+    const q = inputBusq.value.trim();
+    if (q.length < 2) { acDrop.classList.remove('open'); return; }
+    acDrop.innerHTML = '<div class="ac-status">🔍 Buscando…</div>';
+    acDrop.classList.add('open');
+    acTimer = setTimeout(() => buscarAlimento(q), 450);
 });
 
-async function guardarManual(e) {
-    e.preventDefault();
-    const btn = document.getElementById('btn-guardar');
-    btn.disabled = true;
-    btn.textContent = 'Guardando…';
+inputQty.addEventListener('input', actualizarBtnAdd);
 
-    const fd = new FormData(document.getElementById('form-manual'));
+async function buscarAlimento(query) {
+    try {
+        const resp = await fetch(
+            `../controllers/api_alimentos.php?query=${encodeURIComponent(query)}`,
+            { credentials: 'same-origin' }
+        );
+        const json = await resp.json();
+
+        if (json.status !== 'success' || !json.data) {
+            acDrop.innerHTML = `<div class="ac-status">Sin resultados para "${escH(query)}".<br>
+                <a href="chat_ia.php">Prueba en tu chat NutrIAssist →</a></div>`;
+            return;
+        }
+
+        const d    = json.data;
+        const kcal = Math.round(parseFloat(d.calorias_por_100g) || 0);
+        const prot = parseFloat(d.proteina_por_100g || 0).toFixed(1);
+        const carb = parseFloat(d.carbs_por_100g    || 0).toFixed(1);
+        const gras = parseFloat(d.grasas_por_100g   || 0).toFixed(1);
+        const badge = json.fuente === 'mysql_local'
+            ? '<span class="ac-badge local">Local</span>'
+            : '<span class="ac-badge usda">USDA</span>';
+        const displayName = d.nombre ?? json.nombre_canonico ?? query;
+
+        acDrop.innerHTML = `
+            <div class="ac-item" id="ac-result" tabindex="0" role="option">
+                <span class="ac-item-icon">🥗</span>
+                <div class="ac-item-info">
+                    <div class="ac-item-name">${escH(displayName)}</div>
+                    <div class="ac-item-sub">${kcal} kcal · P ${prot}g · C ${carb}g · G ${gras}g <small>(por 100g)</small></div>
+                </div>
+                ${badge}
+            </div>
+        `;
+
+        const acResult = document.getElementById('ac-result');
+        const seleccionar = () => {
+            itemTemp = {
+                nombre:    displayName,
+                id_alimento: d.id_alimento ?? null,
+                cal_100:   parseFloat(d.calorias_por_100g) || 0,
+                prot_100:  parseFloat(d.proteina_por_100g) || 0,
+                c_100:     parseFloat(d.carbs_por_100g)    || 0,
+                g_100:     parseFloat(d.grasas_por_100g)   || 0,
+            };
+            inputBusq.value = displayName;
+            acDrop.classList.remove('open');
+            actualizarBtnAdd();
+            inputQty.focus();
+        };
+        acResult.addEventListener('click', seleccionar);
+        acResult.addEventListener('keydown', ev => {
+            if (ev.key === 'Enter' || ev.key === ' ') seleccionar();
+        });
+
+    } catch {
+        acDrop.innerHTML = '<div class="ac-status">Error de conexión. Inténtalo de nuevo.</div>';
+    }
+}
+
+// Cerrar dropdown al clic fuera
+document.addEventListener('click', e => {
+    if (!document.getElementById('search-wrap').contains(e.target)) {
+        acDrop.classList.remove('open');
+    }
+});
+
+// ─── Agregar ítem a la lista ──────────────────────────────────────
+btnAddAlim.addEventListener('click', () => {
+    if (!itemTemp) return;
+    const gramos = parseFloat(inputQty.value);
+    if (!(gramos > 0)) { mostrarToast('Ingresa una cantidad válida'); return; }
+
+    listaItems.push({
+        nombre:      itemTemp.nombre,
+        id_alimento: itemTemp.id_alimento,
+        gramos:      gramos,
+        cal_100:     itemTemp.cal_100,
+        prot_100:    itemTemp.prot_100,
+        c_100:       itemTemp.c_100,
+        g_100:       itemTemp.g_100,
+    });
+
+    // Reset campo de entrada
+    inputBusq.value  = '';
+    inputQty.value   = '';
+    itemTemp         = null;
+    acDrop.classList.remove('open');
+    acDrop.innerHTML = '';
+    actualizarBtnAdd();
+    renderLista();
+    inputBusq.focus();
+});
+
+// Enter en cantidad → agregar
+inputQty.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); btnAddAlim.click(); }
+});
+
+// ─── Paso 1 → Paso 2: construir preview ──────────────────────────
+btnReg.addEventListener('click', () => {
+    if (listaItems.length === 0) return;
+
+    const tbody = document.getElementById('preview-tbody');
+    tbody.innerHTML = '';
+
+    let totCal = 0, totProt = 0, totC = 0, totG = 0;
+
+    listaItems.forEach(it => {
+        const f    = it.gramos / 100;
+        const cal  = Math.round(it.cal_100  * f);
+        const prot = +(it.prot_100 * f).toFixed(1);
+        const c    = +(it.c_100   * f).toFixed(1);
+        const g    = +(it.g_100   * f).toFixed(1);
+
+        // Guardar macros calculados en el ítem para el POST
+        it.calorias_ia = cal;
+        it.proteina_ia = prot;
+        it.carbs_ia    = c;
+        it.grasas_ia   = g;
+
+        totCal  += cal;
+        totProt += prot;
+        totC    += c;
+        totG    += g;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="td-name" title="${escH(it.nombre)}">${escH(it.nombre)}</td>
+            <td class="td-qty">${it.gramos}</td>
+            <td>${cal}</td>
+            <td>${prot}</td>
+            <td>${c}</td>
+            <td>${g}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // Fila de totales
+    const trTotal = document.createElement('tr');
+    trTotal.className = 'total-row';
+    trTotal.innerHTML = `
+        <td class="td-name">TOTAL</td>
+        <td>—</td>
+        <td>${totCal}</td>
+        <td>${totProt.toFixed(1)}</td>
+        <td>${totC.toFixed(1)}</td>
+        <td>${totG.toFixed(1)}</td>
+    `;
+    tbody.appendChild(trTotal);
+
+    // Actualizar header de la vista previa
+    const hoyLabel = modalFecha === FECHA_HOY ? 'Hoy' : modalFecha;
+    document.getElementById('preview-header').textContent =
+        `${modalTipo} — ${hoyLabel}`;
+
+    mostrarVista('preview');
+});
+
+// ─── Paso 2 → Paso 1: editar ─────────────────────────────────────
+document.getElementById('btn-editar').addEventListener('click', () => {
+    mostrarVista('lista');
+});
+
+// ─── Confirmar → POST ────────────────────────────────────────────
+document.getElementById('btn-confirmar').addEventListener('click', async function() {
+    this.disabled    = true;
+    this.textContent = 'Guardando…';
+
     const payload = {
-        tipo_comida: fd.get('tipo_comida'),
-        fecha:       fd.get('fecha'),
-        alimento:    fd.get('nombre'),
-        calorias:    parseFloat(fd.get('calorias'))  || 0,
-        proteina:    parseFloat(fd.get('proteina'))  || 0,
-        carbs:       parseFloat(fd.get('carbs'))     || 0,
-        grasas:      parseFloat(fd.get('grasas'))    || 0,
+        tipo_comida: modalTipo,
+        fecha:       modalFecha,
+        items:       listaItems.map(it => ({
+            nombre:      it.nombre,
+            id_alimento: it.id_alimento,
+            gramos:      it.gramos,
+            calorias_ia: it.calorias_ia,
+            proteina_ia: it.proteina_ia,
+            carbs_ia:    it.carbs_ia,
+            grasas_ia:   it.grasas_ia,
+        })),
     };
 
     try {
-        const resp = await fetch('../controllers/guardar_comida_manual.php', {
+        const resp = await fetch('../controllers/guardar_comida_lista.php', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify(payload)
+            body:    JSON.stringify(payload),
+            credentials: 'same-origin',
         });
         const json = await resp.json();
+
         if (json.status === 'success') {
-            document.getElementById('modal-overlay').classList.remove('active');
-            mostrarToast('✓ Guardado correctamente');
+            cerrarModal();
+            mostrarToast('✓ Comida registrada');
             setTimeout(() => location.reload(), 900);
         } else {
             mostrarToast('Error: ' + (json.message || 'Inténtalo de nuevo'));
-            btn.disabled = false;
-            btn.textContent = 'Guardar';
+            this.disabled    = false;
+            this.textContent = '✓ Confirmar';
         }
     } catch {
         mostrarToast('Error de conexión');
-        btn.disabled = false;
-        btn.textContent = 'Guardar';
+        this.disabled    = false;
+        this.textContent = '✓ Confirmar';
     }
+});
+
+// ─── Utilidades ───────────────────────────────────────────────────
+function escH(str) {
+    return String(str)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function mostrarToast(msg) {
