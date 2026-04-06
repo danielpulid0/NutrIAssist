@@ -42,6 +42,29 @@ btnRemoveImg.addEventListener('click', () => {
     inputGallery.value = '';
 });
 
+// ==========================================
+// DRAG AND DROP SOPORTE
+// ==========================================
+const dropZone = document.querySelector('.mobile-container');
+
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragging');
+});
+
+dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragging');
+});
+
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragging');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+        handleImageSelect(file);
+    }
+});
+
 async function sendMessage() {
     const text = userInput.value.trim();
     

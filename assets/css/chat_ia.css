@@ -8,6 +8,14 @@ body {
     padding: 0;
     height: 100vh;
     background-color: #E7EBEE; /* Override background for chat */
+    transition: background-color 0.3s, outline 0.3s;
+}
+
+/* Efecto cuando arrastras una imagen */
+.mobile-container.dragging {
+    background-color: #D1FAE5; /* Un verde muy clarito */
+    outline: 4px dashed #059669;
+    outline-offset: -10px;
 }
 
 .chat-header {
