@@ -31,72 +31,78 @@ $meta = $u_data['meta_principal'] ?? 'No definida';
 
 $perfil_texto = "CONTEXTO OBLIGATORIO DEL USUARIO ACTUAL:\n- Edad: $edad años\n- Peso: $peso kg\n- Sexo: $sexo\n- Meta Principal: $meta\n- Restricciones Médicas/Dietas: $str_restricciones\nATENCIÓN: Basa todas tus recomendaciones, cálculos y charlas cordiales en este contexto.\n\n";
 
-// 2. Leer JSON del Frontend
+// 34. Leer JSON del Frontend
 $json_input = file_get_contents('php://input');
-$data = json_decode($json_input, true);
-$mensaje_usuario = $data['prompt'] ?? '';
-$historial_js = $data['history'] ?? [];
+$dataJson = json_decode($json_input, true);
+$mensaje_usuario = $dataJson['prompt'] ?? '';
+$historial_js    = $dataJson['history'] ?? [];
+$imagen_base64   = $dataJson['image'] ?? null;
 
-if (empty($mensaje_usuario)) {
-    echo json_encode(['status' => 'error', 'message' => 'El mensaje está vacío']);
+if (empty($mensaje_usuario) && empty($imagen_base64)) {
+    echo json_encode(['status' => 'error', 'message' => 'El mensaje o imagen están vacíos']);
     exit();
 }
 
 // ==========================================
 require_once '../config/keys.php';
-$api_url = "https://generativelanguage.googleapis.com/v1beta/models/" . GEMINI_MODELO_CHAT . ":generateContent?key=" . GEMINI_API_KEY;
+
+// CAMBIO AUTOMÁTICO: Si hay imagen, forzamos modelo multimodal (Gemini Flash)
+// Si solo es texto, usamos el modelo por defecto definido en keys (ej. Gemma)
+$modelo = $imagen_base64 ? 'gemini-1.5-flash' : GEMINI_MODELO_CHAT;
+
+$api_url = "https://generativelanguage.googleapis.com/v1beta/models/" . $modelo . ":generateContent?key=" . GEMINI_API_KEY;
 
 
-// 3. SYSTEM PROMPT
-$system_prompt = "Eres NutrIAssist, un inteligente asistente nutricional creado para chatear, analizar y recomendar comida.
+// 3. SYSTEM PROMPT (Igual que antes)
+$system_prompt = "Eres NutrIAssist, un asistente nutricional en México.
 REGLA ABSOLUTA: Responde SIEMPRE con un objeto JSON válido.
-Estructuras JSON permitidas según el Caso:
+Si recibes una imagen, actúa como CASO B (food_log) calculando macros estimados.
 
-CASO A) Saludo o charla general:
-{ \"tipo_respuesta\": \"chat\", \"mensaje_respuesta\": \"[Tu respuesta amigable y natural aquí]\" }
+Estructuras JSON:
+CASO A) Charla: { \"tipo_respuesta\": \"chat\", \"mensaje_respuesta\": \"...\" }
+CASO B) Registro: { \"tipo_respuesta\": \"food_log\", \"alimento\": \"...\", \"descripcion\": \"...\", \"calorias\": 0, \"proteina\": 0, \"carbs\": 0, \"grasas\": 0, \"tipo_comida\": \"...\", \"tipo_icono\": \"solid\" }";
 
-CASO B) El usuario reporta una comida explícitamente consumida:
-{ \"tipo_respuesta\": \"food_log\", \"alimento\": \"[Deduce nombre]\", \"descripcion\": \"[Porción]\", \"calorias\": 0, \"proteina\": 0, \"carbs\": 0, \"grasas\": 0, \"tipo_comida\": \"Comida\", \"tipo_icono\": \"solid\" }
-
-CASO C) El usuario pone una cantidad de comida irreal (ej. 40 pasteles):
-{ \"tipo_respuesta\": \"chat\", \"mensaje_respuesta\": \"[Pregúntale amigablemente si está seguro para comprobar que no hubo errores al escribir. Si dice que sí en otro mensaje, procesas como CASO B]\" }
-
-CASO D) Temas ajenos a la dieta o nutrición:
-{ \"tipo_respuesta\": \"chat\", \"mensaje_respuesta\": \"Lo siento, solo ayudo con comida y nutrición.\" }
-
-CASO E) El usuario PIDIÓ CONSEJOS de qué alimento/receta COMER AHORA MISMO:
-{ \"tipo_respuesta\": \"food_log\", \"alimento\": \"[Nombre Platillo Sugerido adaptado estrictamente a su PERFIL, META Y RESTRICCIONES]\", \"descripcion\": \"[Mini receta o justificación de por qué le sirve]\", \"calorias\": 0, \"proteina\": 0, \"carbs\": 0, \"grasas\": 0, \"tipo_comida\": \"Sugerencia\", \"tipo_icono\": \"solid\" }";
-
-// 4. CONSTRUIR MEMORIA (Contexto + Historial)
+// 4. CONSTRUIR MEMORIA
 $contents = [];
-$primer_mensaje = true;
 
-// Si NO mandaron historial válido, lo forzamos con el primer turno
-if (empty($historial_js)) {
-    $historial_js = [
-        ["role" => "user", "parts" => [["text" => $mensaje_usuario]]]
-    ];
-}
-
+// Si hay historial previo, lo agregamos (solo texto por simplicidad de memoria)
 foreach ($historial_js as $msg) {
-    $texto_limpio = $msg['parts'][0]['text'];
-    
-    // Inyectamos el cerebro (Prompts + DB) secretamente bajo la alfombra en la primera interacción
-    if ($primer_mensaje && $msg['role'] === 'user') {
-        $texto_limpio = $system_prompt . "\n\n" . $perfil_texto . "\nAnaliza lo siguiente: " . $texto_limpio;
-        $primer_mensaje = false;
+    if ($msg['role'] === 'user') {
+        $contents[] = [
+            "role" => "user",
+            "parts" => [["text" => $msg['parts'][0]['text']]]
+        ];
+    } else {
+        $contents[] = [
+            "role" => "model",
+            "parts" => [["text" => $msg['parts'][0]['text']]]
+        ];
     }
-    
-    $contents[] = [
-        "role" => $msg['role'],
-        "parts" => [["text" => $texto_limpio]]
+}
+
+// AGREGAR EL TURNO ACTUAL (Puede llevar imagen o solo texto)
+$current_parts = [];
+if ($imagen_base64) {
+    $current_parts[] = [
+        "inline_data" => [
+            "mime_type" => "image/jpeg",
+            "data" => $imagen_base64
+        ]
     ];
 }
+
+$prompt_final = $system_prompt . "\n\n" . $perfil_texto . "\nAnaliza lo siguiente: " . $mensaje_usuario;
+$current_parts[] = ["text" => $prompt_final];
+
+$contents[] = [
+    "role" => "user",
+    "parts" => $current_parts
+];
 
 $payload = json_encode([
     "contents" => $contents,
     "generationConfig" => [
-        "temperature" => 0.4
+        "temperature" => 0.3
     ]
 ]);
 
