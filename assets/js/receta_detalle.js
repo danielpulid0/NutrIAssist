@@ -19,7 +19,7 @@ function abrirSwap(nombre, gramos, idx) {
     _ing = nombre; _gr = gramos; _idx = idx;
     swapTitle.textContent = 'Sustituir ' + nombre;
     swapSub.textContent   = 'Buscando alternativas...';
-    swapList.innerHTML    = '<li class="swap-loading">⏳ Gemma está analizando alternativas...</li>';
+    swapList.innerHTML    = '<li class="swap-loading">Buscando alternativas...</li>';
     swapModal.classList.add('active');
     pedirSwap(nombre, gramos);
 }
@@ -123,7 +123,7 @@ async function guardarReceta(tipo) {
     cerrarRegistro();
     const btn = document.querySelector('.btn-registrar');
     btn.disabled = true;
-    btn.innerHTML = '⏳ Guardando...';
+    btn.innerHTML = 'Guardando...';
 
     try {
         const resp = await fetch('../controllers/guardar_comida_manual.php', {
