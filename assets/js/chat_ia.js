@@ -177,7 +177,7 @@ function editFoodData(templateId, c, p, cb, g) {
             </div>
         `;
         const action = card.querySelector('.fc-actions');
-        action.innerHTML = `<button class="fc-btn primary" onclick="saveEditData('${templateId}')">✅ Hecho</button>`;
+        action.innerHTML = `<button class="fc-btn primary" onclick="saveEditData('${templateId}')">Hecho</button>`;
     }
 }
 
@@ -230,7 +230,7 @@ async function saveFoodData(templateId, jsonDataStr) {
 
         if (response.ok && repObj.status === 'success') {
             const actions = document.querySelector(`#${templateId} .fc-actions`);
-            actions.innerHTML = '<div style="width: 100%; text-align: center; color: #15803D; font-weight: 700; padding: 0.5rem 0; font-size: 0.9rem;">✅ Guardado correctamente</div>';
+            actions.innerHTML = '<div style="width: 100%; text-align: center; color: #15803D; font-weight: 700; padding: 0.5rem 0; font-size: 0.9rem;">Guardado correctamente</div>';
         } else {
             btn.innerHTML = 'Fallo al guardar';
             btn.disabled = false;
