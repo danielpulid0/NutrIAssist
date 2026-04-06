@@ -1,7 +1,7 @@
 <?php
 // config/db.php
 $host = "localhost";
-$dbname = "nutrIAssist_db"; // Ajusta al nombre exacto que creaste
+$dbname = "nutriassist_db"; // Ajusta al nombre exacto que creaste
 $username = "root";
 $password = "contrasena";
 

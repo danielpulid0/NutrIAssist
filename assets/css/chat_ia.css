@@ -273,7 +273,7 @@ body {
     margin-bottom: 0.6rem;
 }
 
-.btn-mic, .btn-attach {
+.btn-mic {
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -285,14 +285,6 @@ body {
     cursor: pointer;
     color: #475569;
     flex-shrink: 0;
-}
-
-.img-preview-bubble {
-    max-width: 200px;
-    border-radius: 12px;
-    margin-top: 0.5rem;
-    display: block;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .chat-input {

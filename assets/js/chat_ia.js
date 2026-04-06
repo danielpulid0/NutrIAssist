@@ -2,76 +2,59 @@ const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('user-input');
 const btnSend = document.getElementById('btn-send');
 const typingMsg = document.getElementById('typing-msg');
+
 let chatHistory = [];
-
-const btnAttach = document.getElementById('btn-attach');
-const imageInput = document.getElementById('image-input');
-
-btnAttach.addEventListener('click', () => imageInput.click());
-
-imageInput.addEventListener('change', function() {
-    const file = this.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const fullBase64 = e.target.result;
-            const base64Data = fullBase64.split(',')[1];
-            
-            appendUserImage(fullBase64);
-            sendRequest(null, base64Data);
-            
-            imageInput.value = '';
-        };
-        reader.readAsDataURL(file);
-    }
-});
 
 async function sendMessage() {
     const text = userInput.value.trim();
     if (!text) return;
-    userInput.value = '';
-    appendUserMessage(text);
-    sendRequest(text, null);
-}
 
-async function sendRequest(text, imageBase64) {
+    // Almacenar en la memoria de la UI
+    chatHistory.push({ role: "user", parts: [{ text: text }] });
+
+    // 1. Mostrar mensaje del usuario localmente
+    appendUserMessage(text);
+    userInput.value = '';
+    
+    // 2. Mostrar indicador "escribiendo..." de la IA
     chatBox.appendChild(typingMsg);
     typingMsg.style.display = 'flex';
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    const payload = { history: chatHistory };
-    if (text) {
-        payload.prompt = text;
-        chatHistory.push({ role: "user", parts: [{ text: text }] });
-    } else if (imageBase64) {
-        payload.image = imageBase64;
-    }
-
     try {
+        // 3. Petición POST a la API de Gemma (Backend en PHP)
         const response = await fetch('../controllers/gamma_api.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ prompt: text, history: chatHistory })
         });
 
         const data = await response.json();
+        
+        // Ocultamos el indicador de typing
         typingMsg.style.display = 'none';
 
         if (data.status === 'success' && data.food_data) {
             const iaResponse = data.food_data;
+            
+            // Almacenar en la memoria lo que dijo la IA
             chatHistory.push({ role: "model", parts: [{ text: JSON.stringify(iaResponse) }] });
             
             if (iaResponse.tipo_respuesta === 'chat') {
+                // Modo Conversación
                 appendBotText(iaResponse.mensaje_respuesta);
                 playGeminiVoice(iaResponse.mensaje_respuesta);
             } else if (iaResponse.tipo_respuesta === 'food_log') {
+                // Modo Registro de Comida o Sugerencia
                 renderBotCard(iaResponse);
-                const texto = `He detectado ${iaResponse.alimento}. Tiene aproximadamente ${iaResponse.calorias} calorías. ¿Deseas registrarlo?`;
+                // Cuando da la tarjeta, también nos da una descripción o nombre
+                const texto = `He registrado ${iaResponse.alimento}. Tiene ${iaResponse.calorias} calorías. ¿Está correcto?`;
                 playGeminiVoice(texto);
             }
         } else {
-            appendBotText("Lo siento, tuve un problema analizando eso. ¿Puedes intentarlo de nuevo?");
+            appendBotText("Lo siento, tuve un problema analizando eso. ¿Puedes repetirlo?");
         }
+
     } catch (error) {
         typingMsg.style.display = 'none';
         appendBotText("Error de red. Asegúrate de tener conexión.");
@@ -84,25 +67,6 @@ function appendUserMessage(text) {
         <div class="msg-label">Tú</div>
         <div class="msg-row">
             <div class="bubble user-bubble">${text}</div>
-            <div class="avatar user-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            </div>
-        </div>
-    </div>`;
-    const div = document.createElement('div');
-    div.innerHTML = html;
-    chatBox.insertBefore(div.firstElementChild, typingMsg);
-    chatBox.scroll({ top: chatBox.scrollHeight, behavior: 'smooth' });
-}
-
-function appendUserImage(src) {
-    const html = `
-    <div class="msg-wrapper user">
-        <div class="msg-label">Tu Foto</div>
-        <div class="msg-row">
-            <div class="bubble user-bubble" style="padding: 6px; background: white; border: 1px solid #E2E8F0;">
-                <img src="${src}" class="img-preview-bubble" style="margin-top:0; width:100%; border-radius:8px;">
-            </div>
             <div class="avatar user-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             </div>
@@ -213,7 +177,7 @@ function editFoodData(templateId, c, p, cb, g) {
             </div>
         `;
         const action = card.querySelector('.fc-actions');
-        action.innerHTML = `<button class="fc-btn primary" onclick="saveEditData('${templateId}')">Confimar</button>`;
+        action.innerHTML = `<button class="fc-btn primary" onclick="saveEditData('${templateId}')">✅ Hecho</button>`;
     }
 }
 
@@ -266,7 +230,7 @@ async function saveFoodData(templateId, jsonDataStr) {
 
         if (response.ok && repObj.status === 'success') {
             const actions = document.querySelector(`#${templateId} .fc-actions`);
-            actions.innerHTML = '<div style="width: 100%; text-align: center; color: #15803D; font-weight: 700; padding: 0.5rem 0; font-size: 0.9rem;">Guardado correctamente</div>';
+            actions.innerHTML = '<div style="width: 100%; text-align: center; color: #15803D; font-weight: 700; padding: 0.5rem 0; font-size: 0.9rem;">✅ Guardado correctamente</div>';
         } else {
             btn.innerHTML = 'Fallo al guardar';
             btn.disabled = false;
