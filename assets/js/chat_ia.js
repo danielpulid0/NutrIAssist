@@ -1,9 +1,41 @@
-const chatBox = document.getElementById('chat-box');
-const userInput = document.getElementById('user-input');
-const btnSend = document.getElementById('btn-send');
-const typingMsg = document.getElementById('typing-msg');
-
 let chatHistory = [];
+let selectedImageBase64 = null;
+
+// Elementos de la UI de imagen
+const btnCamera = document.getElementById('btn-camera');
+const btnGallery = document.getElementById('btn-gallery');
+const inputCamera = document.getElementById('input-camera');
+const inputGallery = document.getElementById('input-gallery');
+const previewContainer = document.getElementById('image-preview-container');
+const previewImg = document.getElementById('image-preview');
+const btnRemoveImg = document.getElementById('remove-image');
+
+// Eventos para abrir selectores de archivos
+btnCamera.addEventListener('click', () => inputCamera.click());
+btnGallery.addEventListener('click', () => inputGallery.click());
+
+// Manejar selección de imagen
+inputCamera.addEventListener('change', (e) => handleImageSelect(e.target.files[0]));
+inputGallery.addEventListener('change', (e) => handleImageSelect(e.target.files[0]));
+
+function handleImageSelect(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        selectedImageBase64 = event.target.result;
+        previewImg.src = selectedImageBase64;
+        previewContainer.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+
+// Quitar imagen
+btnRemoveImg.addEventListener('click', () => {
+    selectedImageBase64 = null;
+    previewContainer.style.display = 'none';
+    inputCamera.value = '';
+    inputGallery.value = '';
+});
 
 async function sendMessage() {
     const text = userInput.value.trim();
@@ -12,9 +44,18 @@ async function sendMessage() {
     // Almacenar en la memoria de la UI
     chatHistory.push({ role: "user", parts: [{ text: text }] });
 
-    // 1. Mostrar mensaje del usuario localmente
-    appendUserMessage(text);
+    // 1. Mostrar mensaje del usuario localmente (con imagen si existe)
+    appendUserMessage(text, selectedImageBase64);
+    
+    const sendData = { 
+        prompt: text || "Analiza esta imagen de comida", 
+        history: chatHistory,
+        image: selectedImageBase64 
+    };
+
     userInput.value = '';
+    selectedImageBase64 = null;
+    previewContainer.style.display = 'none';
     
     // 2. Mostrar indicador "escribiendo..." de la IA
     chatBox.appendChild(typingMsg);
@@ -26,7 +67,7 @@ async function sendMessage() {
         const response = await fetch('../controllers/gamma_api.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: text, history: chatHistory })
+            body: JSON.stringify(sendData)
         });
 
         const data = await response.json();
@@ -61,12 +102,16 @@ async function sendMessage() {
     }
 }
 
-function appendUserMessage(text) {
+function appendUserMessage(text, imageB64 = null) {
+    let imageHtml = imageB64 ? `<img src="${imageB64}" style="max-width: 100%; border-radius: 8px; margin-bottom: 5px; display: block;">` : '';
     const html = `
     <div class="msg-wrapper user">
         <div class="msg-label">Tú</div>
         <div class="msg-row">
-            <div class="bubble user-bubble">${text}</div>
+            <div class="bubble user-bubble">
+                ${imageHtml}
+                ${text}
+            </div>
             <div class="avatar user-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             </div>

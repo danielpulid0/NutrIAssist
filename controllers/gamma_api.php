@@ -1,11 +1,26 @@
 <?php
+// Habilitar reporte de errores para depuración (ERROR DE RED)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 session_start();
 header('Content-Type: application/json');
 
 // 1. Validar seguridad e incluir BD
+if (!file_exists('../config/conexion.php')) {
+    echo json_encode(['status' => 'error', 'message' => 'Falta archivo de conexion.php']);
+    exit();
+}
 require_once '../config/conexion.php';
+
+if (!file_exists('../config/keys.php')) {
+    echo json_encode(['status' => 'error', 'message' => 'Falta archivo de keys.php']);
+    exit();
+}
+require_once '../config/keys.php';
+
 if (!isset($_SESSION['usuario_id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['status' => 'error', 'message' => 'Acceso denegado']);
+    echo json_encode(['status' => 'error', 'message' => 'Acceso denegado o Sesión no iniciada']);
     exit();
 }
 
@@ -36,8 +51,9 @@ $json_input = file_get_contents('php://input');
 $data = json_decode($json_input, true);
 $mensaje_usuario = $data['prompt'] ?? '';
 $historial_js = $data['history'] ?? [];
+$imagen_b64 = $data['image'] ?? null; // Imagen en base64 si el usuario subió una
 
-if (empty($mensaje_usuario)) {
+if (empty($mensaje_usuario) && empty($imagen_b64)) {
     echo json_encode(['status' => 'error', 'message' => 'El mensaje está vacío']);
     exit();
 }
@@ -78,7 +94,8 @@ if (empty($historial_js)) {
     ];
 }
 
-foreach ($historial_js as $msg) {
+foreach ($historial_js as $index => $msg) {
+    $parts = [];
     $texto_limpio = $msg['parts'][0]['text'];
     
     // Inyectamos el cerebro (Prompts + DB) secretamente bajo la alfombra en la primera interacción
@@ -86,10 +103,24 @@ foreach ($historial_js as $msg) {
         $texto_limpio = $system_prompt . "\n\n" . $perfil_texto . "\nAnaliza lo siguiente: " . $texto_limpio;
         $primer_mensaje = false;
     }
+
+    $parts[] = ["text" => $texto_limpio];
+
+    // Si es el último mensaje del usuario y hay una imagen adjunta, la agregamos al turno actual para Gemini
+    if ($index === count($historial_js) - 1 && $msg['role'] === 'user' && !empty($imagen_b64)) {
+        // Limpiar el prefijo data:image/...;base64, si existe
+        $raw_b64 = preg_replace('/^data:image\/\w+;base64,/', '', $imagen_b64);
+        $parts[] = [
+            "inlineData" => [
+                "mimeType" => "image/jpeg",
+                "data" => $raw_b64
+            ]
+        ];
+    }
     
     $contents[] = [
         "role" => $msg['role'],
-        "parts" => [["text" => $texto_limpio]]
+        "parts" => $parts
     ];
 }
 

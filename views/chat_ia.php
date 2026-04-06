@@ -49,15 +49,26 @@ require_once 'includes/header.php';
 
     <div class="chat-input-container">
         <div class="chat-input-row">
-            <button class="btn-mic">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+            <button class="btn-action" id="btn-camera" title="Tomar Foto">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            </button>
+            <button class="btn-action" id="btn-gallery" title="Galería">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
             </button>
             <div class="input-wrapper">
-                <input type="text" id="user-input" class="chat-input" placeholder="Escribe o dicta tu comida..." autocomplete="off">
+                <input type="text" id="user-input" class="chat-input" placeholder="Comida o sube foto..." autocomplete="off">
                 <button class="btn-send" id="btn-send">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
                 </button>
             </div>
+            <!-- Inputs ocultos para archivos -->
+            <input type="file" id="input-camera" accept="image/*" capture="environment" style="display: none;">
+            <input type="file" id="input-gallery" accept="image/*" style="display: none;">
+        </div>
+        <!-- Previsualización de imagen -->
+        <div id="image-preview-container" style="display: none; padding: 0.5rem; background: #f8fafc; border-radius: 8px; margin-bottom: 0.5rem; position: relative;">
+            <img id="image-preview" src="" style="height: 60px; border-radius: 4px; border: 1px solid #ddd;">
+            <button id="remove-image" style="position: absolute; top: -5px; left: 60px; background: #ef4444; color: white; border-radius: 50%; border: none; width: 20px; height: 20px; font-size: 12px; cursor: pointer;">×</button>
         </div>
         <div class="disclaimer">
             NutrIAssist puede cometer errores. Verifica la información.
