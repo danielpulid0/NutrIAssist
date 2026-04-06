@@ -7,6 +7,7 @@
     margin: -1.5rem -1.5rem 1.5rem -1.5rem;
     padding: 1.5rem;
     border-bottom: 1px solid var(--color-border);
+    position: relative; /* Para el botón absolute */
 }
 
 .user-greeting p { color: var(--color-text-gray); font-size: 0.9rem; margin-bottom: 0.2rem; }

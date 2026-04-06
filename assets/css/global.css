@@ -15,6 +15,70 @@
     --color-icon-circle: #D7FFE4;
 }
 
+[data-theme='dark'] {
+    --color-bg:          #111827;
+    --color-bg-app:      #030712;
+    --color-bg-light:    #1F2937;
+    --color-text-dark:   #F9FAFB;
+    --color-text-gray:   #9CA3AF;
+    --color-border:      #374151;
+    --color-icon-circle: #1F2937;
+    --color-mint:        #065F46;
+    --color-mint:        #065F46;
+    --color-spring:      #059669;
+}
+
+[data-theme='dark'] .card,
+[data-theme='dark'] .option-card,
+[data-theme='dark'] .info-row {
+    background-color: var(--color-bg-light);
+    border-color: var(--color-border);
+    color: var(--color-text-dark);
+}
+
+[data-theme='dark'] .form-input,
+[data-theme='dark'] select,
+[data-theme='dark'] input {
+    background-color: var(--color-bg);
+    color: var(--color-text-dark);
+    border-color: var(--color-border);
+}
+
+[data-theme='dark'] .option-icon-box {
+    background-color: var(--color-bg);
+}
+
+[data-theme='dark'] .option-text h3 {
+    color: var(--color-text-dark);
+}
+
+.theme-toggle {
+    width: 40px;
+    height: 40px;
+    background-color: var(--color-mint);
+    border: 2px solid var(--color-malachite);
+    border-radius: 12px;
+    cursor: pointer;
+    color: var(--color-text-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(17, 207, 80, 0.2);
+}
+
+.theme-toggle:hover {
+    background-color: var(--color-bg-light);
+    color: var(--color-malachite);
+}
+
+.theme-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
 /* =========================================
    RESET Y TIPOGRAFÍA
    ========================================= */
@@ -44,6 +108,15 @@ body {
     flex-direction: column;
     box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     position: relative;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+[data-theme='dark'] .mobile-container {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, select, textarea {
+    transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
 h1 { font-size: 1.8rem; font-weight: 700; color: var(--color-text-dark); margin-bottom: 0.4rem; }

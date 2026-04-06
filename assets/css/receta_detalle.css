@@ -62,7 +62,14 @@
 .step-text { font-size: 0.92rem; line-height: 1.6; color: var(--color-text-dark); padding-top: 5px; }
 
 /* ── FLOATING ACTION ── */
-.floating-action { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--color-border); padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom)); z-index: 100; }
+.floating-action { 
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 430px;
+    background: #fff; border-top: 1px solid var(--color-border); 
+    padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom)); 
+    z-index: 100;
+    box-sizing: border-box;
+}
 .btn-registrar { width: 100%; background: var(--color-malachite); color: #fff; border: none; border-radius: 99px; padding: 1rem; font-size: 1rem; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.6rem; transition: background 0.15s; }
 .btn-registrar:hover { background: #0db844; }
 .btn-registrar svg { width: 20px; height: 20px; }
@@ -92,3 +99,29 @@
 
 .btn-cancelar { width: 100%; background: none; border: none; color: var(--color-text-gray); font-size: 0.95rem; font-family: 'Inter', sans-serif; cursor: pointer; padding: 0.5rem; }
 .btn-cancelar:hover { color: var(--color-text-dark); }
+
+/* ── MODO OSCURO (RECETA DETALLE) ── */
+[data-theme='dark'] .detail-header,
+[data-theme='dark'] .recipe-content,
+[data-theme='dark'] .floating-action,
+[data-theme='dark'] .modal-sheet {
+    background: var(--color-bg-light);
+    border-color: var(--color-border);
+}
+
+[data-theme='dark'] .info-pill {
+    background: var(--color-bg);
+    border-color: var(--color-border);
+}
+
+[data-theme='dark'] .ingr-check,
+[data-theme='dark'] .btn-swap,
+[data-theme='dark'] .btn-elegir {
+    background: var(--color-bg);
+    border-color: var(--color-border);
+    color: var(--color-text-dark);
+}
+
+[data-theme='dark'] .modal-handle {
+    background: var(--color-border);
+}

@@ -13,7 +13,12 @@ require_once 'includes/header.php';
             <p><?= htmlspecialchars($saludo) ?></p>
             <h1><?= htmlspecialchars($nombre_usuario) ?></h1>
         </div>
-        <div style="text-align: right;">
+        <button class="theme-toggle" id="theme-toggle-btn" aria-label="Cambiar tema" style="position: absolute; top: 1rem; right: 1rem; margin-bottom: 0;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+        </button>
+        <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.1rem; margin-top: 1rem;">
             <p style="color: var(--color-malachite); font-size: 0.75rem; font-weight: 700;">HOY</p>
             <p style="color: var(--color-text-gray); font-size: 0.8rem;"><?= $label_hoy ?></p>
         </div>

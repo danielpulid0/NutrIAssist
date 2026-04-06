@@ -114,3 +114,28 @@
     color: var(--color-text-gray); grid-column: 1 / -1;
 }
 .empty-state p { font-size: 0.95rem; margin-top: 0.5rem; }
+
+/* ── MODO OSCURO (RECETAS) ── */
+[data-theme='dark'] .search-bar,
+[data-theme='dark'] .chip,
+[data-theme='dark'] .receta-card {
+    background: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-dark);
+}
+
+[data-theme='dark'] .receta-title {
+    color: var(--color-text-dark);
+}
+
+[data-theme='dark'] .receta-kcal {
+    color: var(--color-spring);
+}
+
+[data-theme='dark'] .receta-meta {
+    color: var(--color-text-gray);
+}
+
+[data-theme='dark'] .search-bar::placeholder {
+    color: var(--color-text-gray);
+}

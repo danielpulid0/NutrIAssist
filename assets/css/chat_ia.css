@@ -482,3 +482,23 @@ body {
         transform: scale(1);
     }
 }
+
+/* ── MODO OSCURO (CHAT) ── */
+[data-theme='dark'] body,
+[data-theme='dark'] .mobile-container { background-color: #030712 !important; }
+[data-theme='dark'] .chat-header { background-color: #111827; border-bottom: 1px solid #374151; }
+[data-theme='dark'] .chat-header h1 { color: #f8fafc; }
+[data-theme='dark'] .chat-messages { background-color: #030712; }
+[data-theme='dark'] .bubble.bot-bubble { background: #1F2937; color: #f1f5f9; border: 1px solid #374151; }
+[data-theme='dark'] .bubble.user-bubble { background: #111827; color: #1DF157; border: 1px solid #1DF157; }
+[data-theme='dark'] .chat-input-container { background: #111827; border-top: 1px solid #374151; }
+[data-theme='dark'] .chat-input { background: #1F2937; color: #f8fafc; border-color: #374151; }
+[data-theme='dark'] .btn-action { background: #1F2937; color: #94a3b8; }
+[data-theme='dark'] .msg-label { color: #64748b; }
+[data-theme='dark'] .date-badge { background: #1F2937; color: #94a3b8; }
+[data-theme='dark'] .disclaimer { color: #4b5563; }
+
+    40% {
+        transform: scale(1);
+    }
+}

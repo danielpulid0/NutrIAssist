@@ -385,3 +385,37 @@
     white-space: nowrap;
 }
 .toast.show { opacity: 1; }
+
+/* ── MODO OSCURO (DIARIO) ── */
+[data-theme='dark'] .calendar-card,
+[data-theme='dark'] .cals-card,
+[data-theme='dark'] .meal-card,
+[data-theme='dark'] .modal-sheet,
+[data-theme='dark'] .ac-dropdown {
+    background: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+}
+
+[data-theme='dark'] .cal-day-num {
+    color: #fff;
+}
+
+[data-theme='dark'] .cal-day.future .cal-day-num {
+    color: #4B5563;
+}
+
+[data-theme='dark'] .search-wrap input,
+[data-theme='dark'] .qty-input {
+    background: var(--color-bg);
+    color: var(--color-text-dark);
+    border-color: var(--color-border);
+}
+
+[data-theme='dark'] .preview-table td {
+    color: var(--color-text-dark);
+}
+
+[data-theme='dark'] .btn-editar {
+    background: var(--color-bg);
+    color: var(--color-text-dark);
+}

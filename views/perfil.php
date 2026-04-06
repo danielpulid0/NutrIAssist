@@ -8,8 +8,9 @@ require_once 'includes/header.php';
 
 <div class="mobile-container">
     
-    <div class="header-top">
-        Mi Perfil y Metas
+    <div class="header-top" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>Mi Perfil y Metas</span>
+        <button class="theme-toggle" id="theme-toggle-btn" aria-label="Cambiar tema"></button>
     </div>
 
     <form action="../controllers/procesar_perfil.php" method="POST" class="perfil-body">
