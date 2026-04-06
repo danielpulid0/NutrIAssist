@@ -5,8 +5,14 @@ const typingMsg = document.getElementById('typing-msg');
 
 let chatHistory = [];
 let selectedImageBase64 = null;
+let selectedAudioBase64 = null;
+let mediaRecorder;
+let audioChunks = [];
+let recordingInterval;
+let startTime;
+let isMuted = false; // Estado del habla de la IA
 
-// Elementos de la UI de imagen
+// Elementos de la UI
 const btnCamera = document.getElementById('btn-camera');
 const btnGallery = document.getElementById('btn-gallery');
 const inputCamera = document.getElementById('input-camera');
@@ -14,6 +20,14 @@ const inputGallery = document.getElementById('input-gallery');
 const previewContainer = document.getElementById('image-preview-container');
 const previewImg = document.getElementById('image-preview');
 const btnRemoveImg = document.getElementById('remove-image');
+
+// Elementos de audio UI
+const btnMic = document.getElementById('btn-mic');
+const audioPreview = document.getElementById('audio-preview-container');
+const recordingStatus = document.getElementById('recording-status');
+const pulse = document.querySelector('.recording-pulse');
+const btnStopRec = document.getElementById('stop-recording');
+const btnRemoveAudio = document.getElementById('remove-audio');
 
 // Eventos para abrir selectores de archivos
 btnCamera.addEventListener('click', () => inputCamera.click());
@@ -42,6 +56,75 @@ btnRemoveImg.addEventListener('click', () => {
     inputGallery.value = '';
 });
 
+// EVENTOS DE AUDIO
+btnMic.addEventListener('click', startRecording);
+btnStopRec.addEventListener('click', stopRecording);
+btnRemoveAudio.addEventListener('click', () => {
+    selectedAudioBase64 = null;
+    audioPreview.style.display = 'none';
+});
+
+// EVENTO MUTE TTS
+const btnMute = document.getElementById('btn-mute');
+const volWaves = document.getElementById('vol-waves');
+btnMute.addEventListener('click', () => {
+    isMuted = !isMuted;
+    if (isMuted) {
+        volWaves.style.display = 'none'; // Ocultar ondas de sonido
+        btnMute.style.opacity = '0.5';
+        btnMute.title = "Activar sonido";
+    } else {
+        volWaves.style.display = 'block'; // Mostrar ondas de sonido
+        btnMute.style.opacity = '1';
+        btnMute.title = "Silenciar asistente";
+    }
+});
+
+async function startRecording() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            selectedAudioBase64 = await blobToBase64(audioBlob);
+            recordingStatus.innerText = "Audio de voz capturado ✓";
+            pulse.style.display = 'none';
+            btnStopRec.style.display = 'none';
+        };
+
+        mediaRecorder.start();
+        startTime = Date.now();
+        audioPreview.style.display = 'flex';
+        pulse.style.display = 'block';
+        btnStopRec.style.display = 'block';
+        
+        recordingInterval = setInterval(() => {
+            const seconds = Math.floor((Date.now() - startTime) / 1000);
+            recordingStatus.innerText = `Grabando Audio... 0:${seconds < 10 ? '0' : ''}${seconds}`;
+        }, 1000);
+    } catch (err) {
+        console.error("No se pudo acceder al micrófono:", err);
+    }
+}
+
+function stopRecording() {
+    if(mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+    }
+    clearInterval(recordingInterval);
+}
+
+function blobToBase64(blob) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+    });
+}
+
 // ==========================================
 // DRAG AND DROP SOPORTE
 // ==========================================
@@ -66,34 +149,65 @@ dropZone.addEventListener('drop', (e) => {
 });
 
 async function sendMessage() {
-    const text = userInput.value.trim();
-    
-    // Si no hay texto NI imagen, no enviamos nada
-    if (!text && !selectedImageBase64) return;
+    let text = userInput.value.trim();
+    const currentAudio = selectedAudioBase64;
+    const currentImage = selectedImageBase64;
 
-    // Almacenar en la memoria de la UI
-    chatHistory.push({ role: "user", parts: [{ text: text }] });
+    if (!text && !currentImage && !currentAudio) return;
 
-    // 1. Mostrar mensaje del usuario localmente (con imagen si existe)
-    appendUserMessage(text, selectedImageBase64);
-    
-    const sendData = { 
-        prompt: text || "Analiza esta imagen de comida", 
-        history: chatHistory,
-        image: selectedImageBase64 
-    };
-
+    // 1. Limpieza inmediata de la UI para el siguiente mensaje
     userInput.value = '';
     selectedImageBase64 = null;
+    selectedAudioBase64 = null;
     previewContainer.style.display = 'none';
-    
-    // 2. Mostrar indicador "escribiendo..." de la IA
-    chatBox.appendChild(typingMsg);
-    typingMsg.style.display = 'flex';
-    chatBox.scrollTop = chatBox.scrollHeight;
+    audioPreview.style.display = 'none';
+
+    // 2. CASO ESPECIAL: ES UN AUDIO SIN TEXTO
+    if (!text && currentAudio) {
+        // Mostramos la burbuja de audio de inmediato para que el usuario sienta rapidez
+        appendUserMessage("Transcribiendo audio...", null, currentAudio);
+
+        try {
+            // DETENER EJECUCIÓN: Esperar a que el backend de Google nos dé el texto real
+            const transResponse = await fetch('../controllers/transcribe_audio.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ audio: currentAudio })
+            });
+            const transData = await transResponse.json();
+            
+            // EL TEXTO PASA DE "Transcribiendo..." A LO QUE REALMENTE DIJERON
+            text = transData.transcripcion || "Audio enviado";
+
+            // Actualizar visualmente la burbuja del usuario para que vea su texto transcrito
+            const lastBubble = chatBox.querySelector('.msg-wrapper.user:last-of-type .bubble');
+            if(lastBubble) {
+                lastBubble.innerHTML = lastBubble.innerHTML.replace("Transcribiendo audio...", `<div style="font-size: 0.75rem; opacity: 0.7; margin-top: 4px; font-style: italic; max-width: 200px; line-height: 1.2;">"${text}"</div>`);
+            }
+        } catch (e) {
+            text = "Audio enviado";
+        }
+    } else {
+        // Envió texto o imagen normal
+        appendUserMessage(text, currentImage, currentAudio);
+    }
+
+    // 3. SOLO AHORA QUE TENEMOS EL TEXTO FINAL (sea de input o audio), MANDAMOS A LA IA
+    chatHistory.push({ role: "user", parts: [{ text: text }] });
 
     try {
-        // 3. Petición POST a la API de Gemma (Backend en PHP)
+        const sendData = { 
+            prompt: text, // Es lo que transcribimos arriba si fue un audio
+            history: chatHistory,
+            image: currentImage,
+            audio: null 
+        };
+        
+        // Mostrar indicador de "IA escribiendo..."
+        chatBox.appendChild(typingMsg);
+        typingMsg.style.display = 'flex';
+        chatBox.scroll({ top: chatBox.scrollHeight, behavior: 'smooth' });
+
         const response = await fetch('../controllers/gamma_api.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -101,46 +215,49 @@ async function sendMessage() {
         });
 
         const data = await response.json();
-        
-        // Ocultamos el indicador de typing
         typingMsg.style.display = 'none';
 
         if (data.status === 'success' && data.food_data) {
             const iaResponse = data.food_data;
-            
-            // Almacenar en la memoria lo que dijo la IA
             chatHistory.push({ role: "model", parts: [{ text: JSON.stringify(iaResponse) }] });
             
             if (iaResponse.tipo_respuesta === 'chat') {
-                // Modo Conversación
                 appendBotText(iaResponse.mensaje_respuesta);
                 playGeminiVoice(iaResponse.mensaje_respuesta);
             } else if (iaResponse.tipo_respuesta === 'food_log') {
-                // Modo Registro de Comida o Sugerencia
                 renderBotCard(iaResponse);
-                // Cuando da la tarjeta, también nos da una descripción o nombre
-                const texto = `He registrado ${iaResponse.alimento}. Tiene ${iaResponse.calorias} calorías. ¿Está correcto?`;
-                playGeminiVoice(texto);
+                const desc = `He registrado ${iaResponse.alimento}. Tiene ${iaResponse.calorias} calorías. ¿Está correcto?`;
+                playGeminiVoice(desc);
             }
         } else {
             appendBotText("Lo siento, tuve un problema analizando eso. ¿Puedes repetirlo?");
         }
-
     } catch (error) {
         typingMsg.style.display = 'none';
         appendBotText("Error de red. Asegúrate de tener conexión.");
     }
 }
 
-function appendUserMessage(text, imageB64 = null) {
+function appendUserMessage(text, imageB64 = null, audioB64 = null) {
     let imageHtml = imageB64 ? `<img src="${imageB64}" style="max-width: 100%; border-radius: 8px; margin-bottom: 5px; display: block;">` : '';
+    let audioHtml = "";
+    if (audioB64) {
+        audioHtml = `
+            <audio controls src="${audioB64}" style="width: 200px; height: 36px; display: block; border-radius: 20px;"></audio>
+            <div style="font-size: 0.75rem; opacity: 0.7; margin-top: 4px; font-style: italic; max-width: 200px; line-height: 1.2;">
+                "${text}"
+            </div>
+        `;
+    }
+    
     const html = `
     <div class="msg-wrapper user">
         <div class="msg-label">Tú</div>
         <div class="msg-row">
             <div class="bubble user-bubble">
                 ${imageHtml}
-                ${text}
+                ${audioHtml}
+                ${!audioB64 ? text : ''} 
             </div>
             <div class="avatar user-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -325,6 +442,7 @@ userInput.addEventListener('keypress', function (e) {
 // MOTOR TTS GEMINI (Texto a Voz nativo)
 // ==========================================
 async function playGeminiVoice(text) {
+    if (isMuted) return; // NO gastar tokens si está silenciado
     try {
         const res = await fetch('../controllers/gemini_tts.php', {
             method: 'POST',

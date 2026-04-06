@@ -51,16 +51,18 @@ $json_input = file_get_contents('php://input');
 $data = json_decode($json_input, true);
 $mensaje_usuario = $data['prompt'] ?? '';
 $historial_js = $data['history'] ?? [];
-$imagen_b64 = $data['image'] ?? null; // Imagen en base64 si el usuario subió una
+$imagen_b64 = $data['image'] ?? null;
+$audio_b64 = $data['audio'] ?? null; // Audio capturado
 
-if (empty($mensaje_usuario) && empty($imagen_b64)) {
+if (empty($mensaje_usuario) && empty($imagen_b64) && empty($audio_b64)) {
     echo json_encode(['status' => 'error', 'message' => 'El mensaje está vacío']);
     exit();
 }
 
 // ==========================================
-require_once '../config/keys.php';
-$api_url = "https://generativelanguage.googleapis.com/v1beta/models/" . GEMINI_MODELO_CHAT . ":generateContent?key=" . GEMINI_API_KEY;
+// 6. Configurar el endpoint dinámico (IA Híbrida)
+$modelo_usar = !empty($audio_b64) ? GEMINI_MODELO_VOZ : GEMINI_MODELO_CHAT;
+$api_url = "https://generativelanguage.googleapis.com/v1beta/models/{$modelo_usar}:generateContent?key=" . GEMINI_API_KEY;
 
 
 // 3. SYSTEM PROMPT
@@ -106,16 +108,30 @@ foreach ($historial_js as $index => $msg) {
 
     $parts[] = ["text" => $texto_limpio];
 
-    // Si es el último mensaje del usuario y hay una imagen adjunta, la agregamos al turno actual para Gemini
-    if ($index === count($historial_js) - 1 && $msg['role'] === 'user' && !empty($imagen_b64)) {
-        // Limpiar el prefijo data:image/...;base64, si existe
-        $raw_b64 = preg_replace('/^data:image\/\w+;base64,/', '', $imagen_b64);
-        $parts[] = [
-            "inlineData" => [
-                "mimeType" => "image/jpeg",
-                "data" => $raw_b64
-            ]
-        ];
+    // Si es el último mensaje del usuario y hay imagen o audio adjunto, lo agregamos al turno actual para Gemini/Gemma
+    if ($index === count($historial_js) - 1 && $msg['role'] === 'user') {
+        
+        // Adjuntar Imagen si existe
+        if (!empty($imagen_b64)) {
+            $raw_img_b64 = preg_replace('/^data:image\/\w+;base64,/', '', $imagen_b64);
+            $parts[] = [
+                "inlineData" => [
+                    "mimeType" => "image/jpeg",
+                    "data" => $raw_img_b64
+                ]
+            ];
+        }
+
+        // Adjuntar Audio si existe
+        if (!empty($audio_b64)) {
+            $raw_audio_b64 = preg_replace('/^data:audio\/\w+;base64,/', '', $audio_b64);
+            $parts[] = [
+                "inlineData" => [
+                    "mimeType" => "audio/mp3",
+                    "data" => $raw_audio_b64
+                ]
+            ];
+        }
     }
     
     $contents[] = [
