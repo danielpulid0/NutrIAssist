@@ -1,3 +1,8 @@
+const chatBox = document.getElementById('chat-box');
+const userInput = document.getElementById('user-input');
+const btnSend = document.getElementById('btn-send');
+const typingMsg = document.getElementById('typing-msg');
+
 let chatHistory = [];
 let selectedImageBase64 = null;
 
@@ -39,7 +44,9 @@ btnRemoveImg.addEventListener('click', () => {
 
 async function sendMessage() {
     const text = userInput.value.trim();
-    if (!text) return;
+    
+    // Si no hay texto NI imagen, no enviamos nada
+    if (!text && !selectedImageBase64) return;
 
     // Almacenar en la memoria de la UI
     chatHistory.push({ role: "user", parts: [{ text: text }] });
