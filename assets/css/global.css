@@ -16,16 +16,17 @@
 }
 
 [data-theme='dark'] {
-    --color-bg:          #111827;
-    --color-bg-app:      #030712;
-    --color-bg-light:    #1F2937;
-    --color-text-dark:   #F9FAFB;
-    --color-text-gray:   #9CA3AF;
-    --color-border:      #374151;
-    --color-icon-circle: #1F2937;
-    --color-mint:        #065F46;
-    --color-mint:        #065F46;
-    --color-spring:      #059669;
+    --color-bg:          #121212; /* Fondo profundo de Spotify */
+    --color-bg-app:      #121212;
+    --color-bg-light:    #181818; /* Cartas elevadas */
+    --color-text-dark:   #FFFFFF;
+    --color-text-gray:   #B3B3B3; /* Texto secundario gris */
+    --color-border:      #282828; /* Bordes sutiles */
+    --color-icon-circle: #282828;
+    --color-primary:     #1DB954; /* Verde Spotify */
+    --color-malachite:   #1DB954; 
+    --color-mint:        #1DB954; /* Usamos el verde en superficies interactivas */
+    --color-spring:      #1ED760; /* Verde más vibrante para acentos */
 }
 
 [data-theme='dark'] .card,
