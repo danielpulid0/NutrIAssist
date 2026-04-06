@@ -50,7 +50,7 @@ require_once 'includes/header.php';
             <!-- Imagen -->
             <div class="receta-img-wrapper">
                 <?php if (!empty($r['imagen_url'])): ?>
-                <img src="../assets/img/recetas/<?= htmlspecialchars($r['imagen_url']) ?>"
+                <img src="<?= (strpos($r['imagen_url'], 'http') === 0) ? htmlspecialchars($r['imagen_url']) : '../assets/img/recetas/' . htmlspecialchars($r['imagen_url']) ?>"
                      alt="<?= htmlspecialchars($r['titulo']) ?>"
                      onerror="this.style.display='none'; this.parentNode.innerHTML='🍲';">
                 <?php else: ?>

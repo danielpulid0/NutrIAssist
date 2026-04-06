@@ -94,7 +94,7 @@ require_once 'includes/header.php';
     <h2 class="section-title">Sugerencia para la Cena</h2>
     <a href="receta_detalle.php?id=<?= $receta_sugerida['id_receta'] ?>" style="text-decoration: none; color: inherit; display: block; margin-bottom: 2rem;">
         <div class="suggestion-card">
-            <img src="../assets/img/<?= htmlspecialchars($receta_sugerida['imagen_url']) ?>" alt="<?= htmlspecialchars($receta_sugerida['titulo']) ?>" class="suggestion-img">
+            <img src="<?= (strpos($receta_sugerida['imagen_url'], 'http') === 0) ? htmlspecialchars($receta_sugerida['imagen_url']) : '../assets/img/' . htmlspecialchars($receta_sugerida['imagen_url']) ?>" alt="<?= htmlspecialchars($receta_sugerida['titulo']) ?>" class="suggestion-img">
             <div class="suggestion-info" style="justify-content: center; gap: 0.6rem;">
                 <h3 class="sug-title" style="margin: 0;"><?= htmlspecialchars($receta_sugerida['titulo']) ?></h3>
                 

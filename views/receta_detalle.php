@@ -20,7 +20,7 @@ require_once 'includes/header.php';
 
     <div class="hero-section">
         <?php if (!empty($receta['imagen_url'])): ?>
-        <img src="../assets/img/recetas/<?= htmlspecialchars($receta['imagen_url']) ?>"
+        <img src="<?= (strpos($receta['imagen_url'], 'http') === 0) ? htmlspecialchars($receta['imagen_url']) : '../assets/img/recetas/' . htmlspecialchars($receta['imagen_url']) ?>"
              alt="<?= htmlspecialchars($receta['titulo']) ?>"
              onerror="this.style.display='none';">
         <?php else: ?>
