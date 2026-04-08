@@ -18,6 +18,11 @@ if (isset($_SESSION['usuario_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/global.css">
     
+    <!-- PWA Config -->
+    <link rel="manifest" href="/nutriassist/manifest.json">
+    <meta name="theme-color" content="#37F677">
+    <link rel="apple-touch-icon" href="/nutriassist/assets/img/icon-192.png">
+    
     <style>
         /* Estilos exclusivos para la pantalla de bienvenida */
         .splash-container {
@@ -115,5 +120,15 @@ if (isset($_SESSION['usuario_id'])) {
 
     </div>
 
+    <!-- Registro de Service Worker para PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/nutriassist/sw.js')
+                    .then(reg => console.log('Service Worker registrado!', reg.scope))
+                    .catch(err => console.log('Error registrando Service Worker:', err));
+            });
+        }
+    </script>
 </body>
 </html>
