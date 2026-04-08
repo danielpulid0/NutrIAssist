@@ -289,22 +289,29 @@ function appendBotText(text) {
 
 function renderBotCard(data) {
     const templateId = 'card_' + Date.now();
-    // Evitar nulos
-    const calorias = data.calorias || 0;
-    const alimento = data.alimento || "Alimento desconocido";
-    const detalle = data.descripcion || "Porción regular";
-    const comida = data.tipo_comida || "Comida";
+    const calorias = Math.round(data.calorias) || 0;
+    const alimento = data.alimento || "Alimento Detectado";
+    const detalle = data.descripcion || "Porción estimada";
+    const comida = data.tipo_comida || "Registro";
     const proteina = data.proteina || 0;
     const carbs = data.carbs || 0;
     const grasas = data.grasas || 0;
 
-    const iconClass = data.tipo_icono === 'liquid' ? 'liquid' : 'solid';
-    const iconSvg = iconClass === 'liquid' 
-        ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 22h8"></path><path d="M12 2v20"></path><path d="M16 8l-4 4-4-4"></path><path d="M12 12V2"></path></svg>'
-        : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg>';
+    const isLiquid = data.tipo_icono === 'liquid' || alimento.toLowerCase().includes('jugo') || alimento.toLowerCase().includes('leche') || alimento.toLowerCase().includes('café');
+    const iconClass = isLiquid ? 'liquid' : 'solid';
+    const iconSvg = isLiquid 
+        ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 2l4 4-4 4"></path><path d="M12 2v20"></path><path d="M20 20a4 4 0 0 1-8 0c0-2.2 4-7 4-7s4 4.8 4 7z"></path></svg>'
+        : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>';
 
-    // Estructura stringificada para el botón
-    const jsonPayload = JSON.stringify({ calorias, proteina, carbs, grasas }).replace(/"/g, '&quot;');
+    // Imágenes aleatorias de comida si no hay una específica (opcional, por ahora una genérica bonita)
+    const foodImgs = [
+        'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=140&fit=crop',
+        'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=140&fit=crop',
+        'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=140&fit=crop'
+    ];
+    const bannerImg = foodImgs[Math.floor(Math.random() * foodImgs.length)];
+
+    const jsonPayload = JSON.stringify({ calorias, proteina, carbs, grasas, alimento, tipo_comida: comida }).replace(/"/g, '&quot;');
 
     const html = `
     <div class="msg-wrapper ai" id="${templateId}">
@@ -314,10 +321,10 @@ function renderBotCard(data) {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path></svg>
             </div>
             <div class="food-card">
-                <div class="fc-banner" style="background-image: url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=140&fit=crop');">
+                <div class="fc-banner" style="background-image: url('${bannerImg}');">
                     <div class="fc-banner-overlay">
-                        <h3>Confirmación de Registro</h3>
-                        <p>${comida} • ${calorias} kcal total</p>
+                        <h3>${comida}</h3>
+                        <p>${alimento}</p>
                     </div>
                     <div class="fc-badge">+${calorias} kcal</div>
                 </div>
@@ -337,7 +344,10 @@ function renderBotCard(data) {
                 </div>
 
                 <div class="fc-actions">
-                    <button class="fc-btn outline" onclick="editFoodData('${templateId}', ${calorias}, ${proteina}, ${carbs}, ${grasas})">Editar Detalles</button>
+                    <button class="fc-btn outline" onclick="editFoodData('${templateId}', ${calorias}, ${proteina}, ${carbs}, ${grasas}, '${alimento}', '${comida}')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        Editar
+                    </button>
                     <button class="fc-btn primary confirm-btn" onclick="saveFoodData('${templateId}', '${jsonPayload}')">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         Confirmar
@@ -353,53 +363,91 @@ function renderBotCard(data) {
     chatBox.scroll({ top: chatBox.scrollHeight, behavior: 'smooth' });
 }
 
-function editFoodData(templateId, c, p, cb, g) {
+
+function editFoodData(templateId, c, p, cb, g, alimento, comida) {
     const card = document.getElementById(templateId);
     if(card) {
         const body = card.querySelector('.fc-body');
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const inputBg = isDark ? '#282828' : '#F8FAFC';
+        const inputColor = isDark ? '#FFFFFF' : '#0F172A';
+        const borderColor = isDark ? '#404040' : '#CBD5E1';
+
         body.innerHTML = `
-            <div style="padding: 1rem; background-color: #F8FAFC; border-bottom: 1px solid #E2E8F0;">
-                <h4 style="margin-top:0; font-size: 0.9rem; color: #0F172A;">Edición Manual de Macros</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; font-size: 0.85rem; color: #475569;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;"><label>Calorías:</label> <input type="number" id="e_cal_${templateId}" value="${c}" style="width: 50px; padding: 0.2rem; border: 1px solid #CBD5E1; border-radius:4px;"></div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;"><label>Proteína:</label> <input type="number" id="e_pro_${templateId}" value="${p}" style="width: 50px; padding: 0.2rem; border: 1px solid #CBD5E1; border-radius:4px;"></div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;"><label>Carbs:</label> <input type="number" id="e_car_${templateId}" value="${cb}" style="width: 50px; padding: 0.2rem; border: 1px solid #CBD5E1; border-radius:4px;"></div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;"><label>Grasas:</label> <input type="number" id="e_fat_${templateId}" value="${g}" style="width: 50px; padding: 0.2rem; border: 1px solid #CBD5E1; border-radius:4px;"></div>
+            <div style="padding: 0.5rem 0;">
+                <h4 style="margin-top:0; font-size: 0.85rem; color: ${isDark ? '#FFFFFF' : '#1E293B'}; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    Ajustar Macros
+                </h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; font-size: 0.8rem;">
+                    <div style="display:flex; flex-direction: column; gap: 4px;">
+                        <label style="color: ${isDark ? '#B3B3B3' : '#64748B'}; font-size: 0.7rem; font-weight: 600;">CALORÍAS</label> 
+                        <input type="number" id="e_cal_${templateId}" value="${c}" style="width: 100%; padding: 0.5rem; border: 1px solid ${borderColor}; border-radius:8px; background: ${inputBg}; color: ${inputColor}; outline: none; box-sizing: border-box;">
+                    </div>
+                    <div style="display:flex; flex-direction: column; gap: 4px;">
+                        <label style="color: ${isDark ? '#B3B3B3' : '#64748B'}; font-size: 0.7rem; font-weight: 600;">PROTEÍNA (g)</label> 
+                        <input type="number" id="e_pro_${templateId}" value="${p}" style="width: 100%; padding: 0.5rem; border: 1px solid ${borderColor}; border-radius:8px; background: ${inputBg}; color: ${inputColor}; outline: none; box-sizing: border-box;">
+                    </div>
+                    <div style="display:flex; flex-direction: column; gap: 4px;">
+                        <label style="color: ${isDark ? '#B3B3B3' : '#64748B'}; font-size: 0.7rem; font-weight: 600;">CARBS (g)</label> 
+                        <input type="number" id="e_car_${templateId}" value="${cb}" style="width: 100%; padding: 0.5rem; border: 1px solid ${borderColor}; border-radius:8px; background: ${inputBg}; color: ${inputColor}; outline: none; box-sizing: border-box;">
+                    </div>
+                    <div style="display:flex; flex-direction: column; gap: 4px;">
+                        <label style="color: ${isDark ? '#B3B3B3' : '#64748B'}; font-size: 0.7rem; font-weight: 600;">GRASAS (g)</label> 
+                        <input type="number" id="e_fat_${templateId}" value="${g}" style="width: 100%; padding: 0.5rem; border: 1px solid ${borderColor}; border-radius:8px; background: ${inputBg}; color: ${inputColor}; outline: none; box-sizing: border-box;">
+                    </div>
                 </div>
             </div>
         `;
         const action = card.querySelector('.fc-actions');
-        action.innerHTML = `<button class="fc-btn primary" onclick="saveEditData('${templateId}')">Hecho</button>`;
+        action.innerHTML = `<button class="fc-btn primary" style="grid-column: span 2; width: 100%; height: 40px;" onclick="saveEditData('${templateId}', '${alimento}', '${comida}')">Actualizar Valores</button>`;
     }
 }
 
-function saveEditData(templateId) {
+function saveEditData(templateId, alimento, comida) {
     const c = document.getElementById('e_cal_'+templateId).value || 0;
     const p = document.getElementById('e_pro_'+templateId).value || 0;
     const cb = document.getElementById('e_car_'+templateId).value || 0;
     const f = document.getElementById('e_fat_'+templateId).value || 0;
     
-    // Reconstruir Payload JSON
-    const jsonStr = JSON.stringify({calorias: c, proteina: p, carbs: cb, grasas: f}).replace(/"/g, '&quot;');
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const jsonStr = JSON.stringify({calorias: c, proteina: p, carbs: cb, grasas: f, alimento: alimento, tipo_comida: comida}).replace(/"/g, '&quot;');
     
-    // Retornar la visualización
+    // Actualizar también el badge de calorías en el banner
+    const badge = document.querySelector(`#${templateId} .fc-badge`);
+    if(badge) badge.innerText = `+${c} kcal`;
+
     const body = document.querySelector(`#${templateId} .fc-body`);
     body.innerHTML = `
-        <div style="padding: 1rem; text-align:center;">
-            <span style="color:#15803D; font-weight:700; font-size:0.85rem;">Valores actualizados listos</span><br>
-            <p style="font-size:0.8rem; color:#475569; margin-top:0.4rem;">Calorías: <b>${c}</b> • Proteína: <b>${p}g</b> • Carbs: <b>${cb}g</b> • Grasas: <b>${f}g</b></p>
+        <div style="padding: 0.5rem 0; text-align:center;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 0.5rem;">
+                <div style="width: 20px; height: 20px; background: #1DF157; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <span style="color:#15803D; font-weight:700; font-size:0.85rem;">Valores ajustados</span>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <div style="background: ${isDark ? '#282828' : '#F1F5F9'}; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; color: ${isDark ? '#B3B3B3' : '#475569'};"><b>${p}g</b> Prot</div>
+                <div style="background: ${isDark ? '#282828' : '#F1F5F9'}; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; color: ${isDark ? '#B3B3B3' : '#475569'};"><b>${cb}g</b> Carb</div>
+                <div style="background: ${isDark ? '#282828' : '#F1F5F9'}; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; color: ${isDark ? '#B3B3B3' : '#475569'};"><b>${f}g</b> Fat</div>
+            </div>
         </div>
     `;
     
     const action = document.querySelector(`#${templateId} .fc-actions`);
     action.innerHTML = `
-        <button class="fc-btn outline" onclick="editFoodData('${templateId}', ${c}, ${p}, ${cb}, ${f})">Editar</button>
+        <button class="fc-btn outline" onclick="editFoodData('${templateId}', ${c}, ${p}, ${cb}, ${f}, '${alimento}', '${comida}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            Editar
+        </button>
         <button class="fc-btn primary confirm-btn" onclick="saveFoodData('${templateId}', '${jsonStr}')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
             Confirmar
         </button>
     `;
 }
+
+
 
 async function saveFoodData(templateId, jsonDataStr) {
     const btn = document.querySelector(`#${templateId} .confirm-btn`);
