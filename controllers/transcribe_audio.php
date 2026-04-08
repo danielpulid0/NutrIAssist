@@ -17,17 +17,18 @@ require_once '../config/keys.php';
 $json_input = file_get_contents('php://input');
 $data = json_decode($json_input, true);
 $audio_b64 = $data['audio'] ?? null;
+$mime_type  = $data['mimeType'] ?? 'audio/webm'; // Formato real del navegador
 
 if (empty($audio_b64)) {
     echo json_encode(['status' => 'error', 'message' => 'No se recibió audio para transcribir']);
     exit();
 }
 
-// 2. Limpiar prefijo base64
-$raw_audio_b64 = preg_replace('/^data:audio\/\w+;base64,/', '', $audio_b64);
+// 2. Limpiar prefijo base64 (acepta cualquier tipo de audio)
+$raw_audio_b64 = preg_replace('/^data:audio\/[\w;]+;base64,/', '', $audio_b64);
 
-// 3. Llamar a la API de Gemini (solo para transcripción rápida)
-// Usamos Gemini 1.5 Flash que es excelente y barato para transcribir audio a texto
+// 3. Llamar a la API de Gemini para transcripción
+// Usamos gemini-1.5-flash que es excelente y barato para transcribir audio
 $api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . GEMINI_API_KEY;
 
 $payload = [
@@ -37,7 +38,7 @@ $payload = [
                 ["text" => "Transcribe este audio exactamente como se escucha, sin añadir comentarios ni saludos. Solo devuelve el texto transcrito."],
                 [
                     "inlineData" => [
-                        "mimeType" => "audio/mp3",
+                        "mimeType" => $mime_type,
                         "data" => $raw_audio_b64
                     ]
                 ]

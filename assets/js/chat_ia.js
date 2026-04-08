@@ -6,6 +6,7 @@ const typingMsg = document.getElementById('typing-msg');
 let chatHistory = [];
 let selectedImageBase64 = null;
 let selectedAudioBase64 = null;
+let selectedAudioMimeType = 'audio/webm'; // MIME type real del audio grabado
 let mediaRecorder;
 let audioChunks = [];
 let recordingInterval;
@@ -83,13 +84,21 @@ btnMute.addEventListener('click', () => {
 async function startRecording() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
+
+        // Detectar el MIME type real que soporta el navegador
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
+                        : MediaRecorder.isTypeSupported('audio/ogg') ? 'audio/ogg'
+                        : 'audio/mp4';
+
+        mediaRecorder = new MediaRecorder(stream, { mimeType });
         audioChunks = [];
 
         mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
         mediaRecorder.onstop = async () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            const audioBlob = new Blob(audioChunks, { type: mimeType });
+            // Guardamos también el mimeType para enviarlo al backend
             selectedAudioBase64 = await blobToBase64(audioBlob);
+            selectedAudioMimeType = mimeType;
             recordingStatus.innerText = "Audio de voz capturado ✓";
             pulse.style.display = 'none';
             btnStopRec.style.display = 'none';
@@ -172,7 +181,7 @@ async function sendMessage() {
             const transResponse = await fetch('../controllers/transcribe_audio.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ audio: currentAudio })
+                body: JSON.stringify({ audio: currentAudio, mimeType: selectedAudioMimeType })
             });
             const transData = await transResponse.json();
             
