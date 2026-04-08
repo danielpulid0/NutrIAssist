@@ -41,8 +41,8 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // PHP views → Network-First con fallback a cache
-  if (url.pathname.endsWith('.php')) {
+  // PHP views o la raíz del sitio → Network-First con fallback a cache
+  if (url.pathname.endsWith('.php') || url.pathname === '/nutriassist/') {
     event.respondWith(
       fetch(event.request)
         .then(res => {
@@ -59,11 +59,16 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
-      return fetch(event.request).then(res => {
-        const clone = res.clone();
-        caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
-        return res;
-      });
+      return fetch(event.request)
+        .then(res => {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+          return res;
+        })
+        .catch(() => {
+          // Si falla el fetch y no está en cache, retornamos error controlado o nada
+          return new Response('Red no disponible', { status: 503, statusText: 'Service Unavailable' });
+        });
     })
   );
 });
