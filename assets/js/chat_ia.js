@@ -389,6 +389,15 @@ function editFoodData(templateId, c, p, cb, g, alimento, comida) {
                     Ajustar Macros
                 </h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; font-size: 0.8rem;">
+                    <div style="display:flex; flex-direction: column; gap: 4px; grid-column: span 2;">
+                        <label style="color: ${isDark ? '#B3B3B3' : '#64748B'}; font-size: 0.7rem; font-weight: 600;">EN QUÉ COMIDA REGISTRAR</label>
+                        <select id="e_tipo_${templateId}" style="width: 100%; padding: 0.5rem; border: 1px solid ${borderColor}; border-radius:8px; background: ${inputBg}; color: ${inputColor}; outline: none; cursor:pointer;">
+                            <option value="Desayuno" ${comida.toLowerCase()=='desayuno'?'selected':''}>☀️ Desayuno</option>
+                            <option value="Comida" ${comida.toLowerCase()=='comida'?'selected':''}>🌱 Comida</option>
+                            <option value="Cena" ${comida.toLowerCase()=='cena'?'selected':''}>🌙 Cena</option>
+                            <option value="Snack" ${!['desayuno','comida','cena'].includes(comida.toLowerCase())?'selected':''}>🍪 Snack</option>
+                        </select>
+                    </div>
                     <div style="display:flex; flex-direction: column; gap: 4px;">
                         <label style="color: ${isDark ? '#B3B3B3' : '#64748B'}; font-size: 0.7rem; font-weight: 600;">CALORÍAS</label> 
                         <input type="number" id="e_cal_${templateId}" value="${c}" style="width: 100%; padding: 0.5rem; border: 1px solid ${borderColor}; border-radius:8px; background: ${inputBg}; color: ${inputColor}; outline: none; box-sizing: border-box;">
@@ -418,9 +427,13 @@ function saveEditData(templateId, alimento, comida) {
     const p = document.getElementById('e_pro_'+templateId).value || 0;
     const cb = document.getElementById('e_car_'+templateId).value || 0;
     const f = document.getElementById('e_fat_'+templateId).value || 0;
+    const t = document.getElementById('e_tipo_'+templateId) ? document.getElementById('e_tipo_'+templateId).value : comida;
     
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const jsonStr = JSON.stringify({calorias: c, proteina: p, carbs: cb, grasas: f, alimento: alimento, tipo_comida: comida}).replace(/"/g, '&quot;');
+    const jsonStr = JSON.stringify({calorias: c, proteina: p, carbs: cb, grasas: f, alimento: alimento, tipo_comida: t}).replace(/"/g, '&quot;');
+    
+    const bannerSubtitle = document.querySelector(`#${templateId} .fc-banner-overlay h3`);
+    if(bannerSubtitle) bannerSubtitle.innerText = t;
     
     // Actualizar también el badge de calorías en el banner
     const badge = document.querySelector(`#${templateId} .fc-badge`);
@@ -466,20 +479,19 @@ async function saveFoodData(templateId, jsonDataStr) {
     btn.disabled = true;
 
     try {
-        // Desescapar comillas para que el body sí sea JSON válido para PHP
-        const validJsonString = jsonDataStr.replace(/&quot;/g, '"');
+        const payloadObj = JSON.parse(jsonDataStr.replace(/&quot;/g, '"'));
         
         const response = await fetch('../controllers/guardar_comida_ia.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: validJsonString
+            body: JSON.stringify(payloadObj)
         });
 
         const repObj = await response.json();
 
         if (response.ok && repObj.status === 'success') {
             const actions = document.querySelector(`#${templateId} .fc-actions`);
-            actions.innerHTML = '<div style="width: 100%; text-align: center; color: #15803D; font-weight: 700; padding: 0.5rem 0; font-size: 0.9rem;">Guardado correctamente</div>';
+            actions.innerHTML = '<div style="grid-column: span 2; width: 100%; text-align: center; color: #15803D; font-weight: 700; padding: 0.5rem 0; font-size: 0.9rem;">Guardado correctamente</div>';
         } else {
             btn.innerHTML = 'Fallo al guardar';
             btn.disabled = false;

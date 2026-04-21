@@ -54,9 +54,6 @@ require_once 'includes/header.php';
         <ul class="ingredient-list">
             <?php foreach ($ingredientes as $i => $ing): ?>
             <li class="ingredient-item">
-                <div class="ingr-check" id="check-<?= $i ?>"
-                     onclick="toggleIngrediente(<?= $i ?>)"
-                     role="checkbox" aria-checked="false"></div>
                 <div class="ingr-text">
                     <div class="ingr-name" id="ingr-name-<?= $i ?>">
                         <?php
@@ -124,7 +121,7 @@ require_once 'includes/header.php';
                            background:#fff;font-size:0.95rem;font-weight:600;
                            font-family:'Inter',sans-serif;cursor:pointer;
                            transition:border-color 0.15s,background 0.15s;">
-                <?= ['Desayuno'=>'☀️','Comida'=>'🌱','Cena'=>'🌙','Snack'=>'🍪'][$tipo] ?> <?= $tipo ?>
+                <?= ['Desayuno'=>'☀️','Comida'=>'🌱','Cena'=>'🌙','Snack'=>'🍪'][$tipo] ?? '' ?> <?= $tipo ?>
             </button>
             <?php endforeach; ?>
         </div>

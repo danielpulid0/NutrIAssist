@@ -39,13 +39,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edad'])) {
         <!-- Ícono héroe: persona corriendo -->
         <div class="icon-circle">
             <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- cabeza -->
-                <circle cx="32" cy="10" r="5" fill="#11CF50"/>
-                <!-- cuerpo corriendo -->
-                <path d="M28 16 L20 26 L14 34" stroke="#11CF50" stroke-width="3" stroke-linecap="round"/>
-                <path d="M28 16 L34 26 L40 30" stroke="#11CF50" stroke-width="3" stroke-linecap="round"/>
-                <path d="M20 26 L16 38" stroke="#11CF50" stroke-width="3" stroke-linecap="round"/>
-                <path d="M34 26 L38 38" stroke="#11CF50" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="26" cy="26" r="24" stroke="#11CF50" stroke-width="2" stroke-dasharray="4 4" opacity="0.5"/>
+                <path d="M8 26H18L22 14L30 38L34 26H44" stroke="#11CF50" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </div>
 
