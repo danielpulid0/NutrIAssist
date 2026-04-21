@@ -44,7 +44,7 @@ function handleImageSelect(file) {
     reader.onload = (event) => {
         selectedImageBase64 = event.target.result;
         previewImg.src = selectedImageBase64;
-        previewContainer.style.display = 'block';
+        previewContainer.classList.remove('hidden');
     };
     reader.readAsDataURL(file);
 }
@@ -52,7 +52,7 @@ function handleImageSelect(file) {
 // Quitar imagen
 btnRemoveImg.addEventListener('click', () => {
     selectedImageBase64 = null;
-    previewContainer.style.display = 'none';
+    previewContainer.classList.add('hidden');
     inputCamera.value = '';
     inputGallery.value = '';
 });
@@ -62,7 +62,7 @@ btnMic.addEventListener('click', startRecording);
 btnStopRec.addEventListener('click', stopRecording);
 btnRemoveAudio.addEventListener('click', () => {
     selectedAudioBase64 = null;
-    audioPreview.style.display = 'none';
+    audioPreview.classList.add('hidden');
 });
 
 // EVENTO MUTE TTS
@@ -71,11 +71,11 @@ const volWaves = document.getElementById('vol-waves');
 btnMute.addEventListener('click', () => {
     isMuted = !isMuted;
     if (isMuted) {
-        volWaves.style.display = 'none'; // Ocultar ondas de sonido
+        volWaves.style.display = 'none';
         btnMute.style.opacity = '0.5';
         btnMute.title = "Activar sonido";
     } else {
-        volWaves.style.display = 'block'; // Mostrar ondas de sonido
+        volWaves.style.display = 'block';
         btnMute.style.opacity = '1';
         btnMute.title = "Silenciar asistente";
     }
@@ -96,19 +96,20 @@ async function startRecording() {
         mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
         mediaRecorder.onstop = async () => {
             const audioBlob = new Blob(audioChunks, { type: mimeType });
-            // Guardamos también el mimeType para enviarlo al backend
             selectedAudioBase64 = await blobToBase64(audioBlob);
             selectedAudioMimeType = mimeType;
             recordingStatus.innerText = "Audio de voz capturado ✓";
-            pulse.style.display = 'none';
-            btnStopRec.style.display = 'none';
+            pulse.classList.remove('active');
+            btnStopRec.classList.add('hidden');
         };
 
         mediaRecorder.start();
         startTime = Date.now();
-        audioPreview.style.display = 'flex';
-        pulse.style.display = 'block';
-        btnStopRec.style.display = 'block';
+        audioPreview.classList.remove('hidden');
+        audioPreview.classList.add('active');
+        pulse.classList.remove('hidden');
+        pulse.classList.add('active');
+        btnStopRec.classList.remove('hidden');
         
         recordingInterval = setInterval(() => {
             const seconds = Math.floor((Date.now() - startTime) / 1000);
@@ -168,8 +169,9 @@ async function sendMessage() {
     userInput.value = '';
     selectedImageBase64 = null;
     selectedAudioBase64 = null;
-    previewContainer.style.display = 'none';
-    audioPreview.style.display = 'none';
+    previewContainer.classList.add('hidden');
+    audioPreview.classList.add('hidden');
+    audioPreview.classList.remove('active');
 
     // 2. CASO ESPECIAL: ES UN AUDIO SIN TEXTO
     if (!text && currentAudio) {
@@ -214,6 +216,7 @@ async function sendMessage() {
         
         // Mostrar indicador de "IA escribiendo..."
         chatBox.appendChild(typingMsg);
+        typingMsg.classList.remove('hidden');
         typingMsg.style.display = 'flex';
         chatBox.scroll({ top: chatBox.scrollHeight, behavior: 'smooth' });
 
@@ -224,6 +227,7 @@ async function sendMessage() {
         });
 
         const data = await response.json();
+        typingMsg.classList.add('hidden');
         typingMsg.style.display = 'none';
 
         if (data.status === 'success' && data.food_data) {
@@ -242,6 +246,7 @@ async function sendMessage() {
             appendBotText("Lo siento, tuve un problema analizando eso. ¿Puedes repetirlo?");
         }
     } catch (error) {
+        typingMsg.classList.add('hidden');
         typingMsg.style.display = 'none';
         appendBotText("Error de red. Asegúrate de tener conexión.");
     }
@@ -377,48 +382,43 @@ function editFoodData(templateId, c, p, cb, g, alimento, comida) {
     const card = document.getElementById(templateId);
     if(card) {
         const body = card.querySelector('.fc-body');
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        const inputBg = isDark ? '#282828' : '#F8FAFC';
-        const inputColor = isDark ? '#FFFFFF' : '#0F172A';
-        const borderColor = isDark ? '#404040' : '#CBD5E1';
-
         body.innerHTML = `
-            <div style="padding: 0.5rem 0;">
-                <h4 style="margin-top:0; font-size: 0.85rem; color: ${isDark ? '#FFFFFF' : '#1E293B'}; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 6px;">
+            <div class="fc-edit-pane">
+                <h4 class="fc-edit-title">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     Ajustar Macros
                 </h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; font-size: 0.8rem;">
-                    <div style="display:flex; flex-direction: column; gap: 4px; grid-column: span 2;">
-                        <label style="color: ${isDark ? '#B3B3B3' : '#64748B'}; font-size: 0.7rem; font-weight: 600;">EN QUÉ COMIDA REGISTRAR</label>
-                        <select id="e_tipo_${templateId}" style="width: 100%; padding: 0.5rem; border: 1px solid ${borderColor}; border-radius:8px; background: ${inputBg}; color: ${inputColor}; outline: none; cursor:pointer;">
+                <div class="fc-macro-grid">
+                    <div class="fc-macro-col span-2">
+                        <label class="fc-macro-label">EN QUÉ COMIDA REGISTRAR</label>
+                        <select id="e_tipo_${templateId}" class="fc-macro-input">
                             <option value="Desayuno" ${comida.toLowerCase()=='desayuno'?'selected':''}>☀️ Desayuno</option>
                             <option value="Comida" ${comida.toLowerCase()=='comida'?'selected':''}>🌱 Comida</option>
                             <option value="Cena" ${comida.toLowerCase()=='cena'?'selected':''}>🌙 Cena</option>
                             <option value="Snack" ${!['desayuno','comida','cena'].includes(comida.toLowerCase())?'selected':''}>🍪 Snack</option>
                         </select>
                     </div>
-                    <div style="display:flex; flex-direction: column; gap: 4px;">
-                        <label style="color: ${isDark ? '#B3B3B3' : '#64748B'}; font-size: 0.7rem; font-weight: 600;">CALORÍAS</label> 
-                        <input type="number" id="e_cal_${templateId}" value="${c}" style="width: 100%; padding: 0.5rem; border: 1px solid ${borderColor}; border-radius:8px; background: ${inputBg}; color: ${inputColor}; outline: none; box-sizing: border-box;">
+                    <div class="fc-macro-col">
+                        <label class="fc-macro-label">CALORÍAS</label> 
+                        <input type="number" id="e_cal_${templateId}" value="${c}" class="fc-macro-input">
                     </div>
-                    <div style="display:flex; flex-direction: column; gap: 4px;">
-                        <label style="color: ${isDark ? '#B3B3B3' : '#64748B'}; font-size: 0.7rem; font-weight: 600;">PROTEÍNA (g)</label> 
-                        <input type="number" id="e_pro_${templateId}" value="${p}" style="width: 100%; padding: 0.5rem; border: 1px solid ${borderColor}; border-radius:8px; background: ${inputBg}; color: ${inputColor}; outline: none; box-sizing: border-box;">
+                    <div class="fc-macro-col">
+                        <label class="fc-macro-label">PROTEÍNA (g)</label> 
+                        <input type="number" id="e_pro_${templateId}" value="${p}" class="fc-macro-input">
                     </div>
-                    <div style="display:flex; flex-direction: column; gap: 4px;">
-                        <label style="color: ${isDark ? '#B3B3B3' : '#64748B'}; font-size: 0.7rem; font-weight: 600;">CARBS (g)</label> 
-                        <input type="number" id="e_car_${templateId}" value="${cb}" style="width: 100%; padding: 0.5rem; border: 1px solid ${borderColor}; border-radius:8px; background: ${inputBg}; color: ${inputColor}; outline: none; box-sizing: border-box;">
+                    <div class="fc-macro-col">
+                        <label class="fc-macro-label">CARBS (g)</label> 
+                        <input type="number" id="e_car_${templateId}" value="${cb}" class="fc-macro-input">
                     </div>
-                    <div style="display:flex; flex-direction: column; gap: 4px;">
-                        <label style="color: ${isDark ? '#B3B3B3' : '#64748B'}; font-size: 0.7rem; font-weight: 600;">GRASAS (g)</label> 
-                        <input type="number" id="e_fat_${templateId}" value="${g}" style="width: 100%; padding: 0.5rem; border: 1px solid ${borderColor}; border-radius:8px; background: ${inputBg}; color: ${inputColor}; outline: none; box-sizing: border-box;">
+                    <div class="fc-macro-col">
+                        <label class="fc-macro-label">GRASAS (g)</label> 
+                        <input type="number" id="e_fat_${templateId}" value="${g}" class="fc-macro-input">
                     </div>
                 </div>
             </div>
         `;
         const action = card.querySelector('.fc-actions');
-        action.innerHTML = `<button class="fc-btn primary" style="grid-column: span 2; width: 100%; height: 40px;" onclick="saveEditData('${templateId}', '${alimento}', '${comida}')">Actualizar Valores</button>`;
+        action.innerHTML = `<button class="fc-btn primary fc-btn-full" onclick="saveEditData('${templateId}', '${alimento}', '${comida}')">Actualizar Valores</button>`;
     }
 }
 
@@ -429,7 +429,6 @@ function saveEditData(templateId, alimento, comida) {
     const f = document.getElementById('e_fat_'+templateId).value || 0;
     const t = document.getElementById('e_tipo_'+templateId) ? document.getElementById('e_tipo_'+templateId).value : comida;
     
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const jsonStr = JSON.stringify({calorias: c, proteina: p, carbs: cb, grasas: f, alimento: alimento, tipo_comida: t}).replace(/"/g, '&quot;');
     
     const bannerSubtitle = document.querySelector(`#${templateId} .fc-banner-overlay h3`);
@@ -441,17 +440,17 @@ function saveEditData(templateId, alimento, comida) {
 
     const body = document.querySelector(`#${templateId} .fc-body`);
     body.innerHTML = `
-        <div style="padding: 0.5rem 0; text-align:center;">
-            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 0.5rem;">
-                <div style="width: 20px; height: 20px; background: #1DF157; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+        <div class="fc-success-pane">
+            <div class="fc-success-badge-container">
+                <div class="fc-success-icon">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 </div>
-                <span style="color:#15803D; font-weight:700; font-size:0.85rem;">Valores ajustados</span>
+                <span class="fc-success-text">Valores ajustados</span>
             </div>
-            <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
-                <div style="background: ${isDark ? '#282828' : '#F1F5F9'}; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; color: ${isDark ? '#B3B3B3' : '#475569'};"><b>${p}g</b> Prot</div>
-                <div style="background: ${isDark ? '#282828' : '#F1F5F9'}; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; color: ${isDark ? '#B3B3B3' : '#475569'};"><b>${cb}g</b> Carb</div>
-                <div style="background: ${isDark ? '#282828' : '#F1F5F9'}; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; color: ${isDark ? '#B3B3B3' : '#475569'};"><b>${f}g</b> Fat</div>
+            <div class="fc-adjusted-values">
+                <div class="fc-adjusted-item"><b>${p}g</b> Prot</div>
+                <div class="fc-adjusted-item"><b>${cb}g</b> Carb</div>
+                <div class="fc-adjusted-item"><b>${f}g</b> Fat</div>
             </div>
         </div>
     `;
@@ -491,7 +490,7 @@ async function saveFoodData(templateId, jsonDataStr) {
 
         if (response.ok && repObj.status === 'success') {
             const actions = document.querySelector(`#${templateId} .fc-actions`);
-            actions.innerHTML = '<div style="grid-column: span 2; width: 100%; text-align: center; color: #15803D; font-weight: 700; padding: 0.5rem 0; font-size: 0.9rem;">Guardado correctamente</div>';
+            actions.innerHTML = '<div class="fc-msg-full">Guardado correctamente</div>';
         } else {
             btn.innerHTML = 'Fallo al guardar';
             btn.disabled = false;

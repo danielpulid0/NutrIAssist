@@ -83,3 +83,20 @@
 
 /* Contenedor principal ajustado para el footer plano */
 .mobile-container { padding-bottom: 90px; background-color: var(--color-bg-app); min-height: 100vh; }
+
+/* CLASES EXTRAÍDAS DE ESTILOS EN LÍNEA */
+.header-theme-btn { position: absolute; top: 1rem; right: 1rem; margin-bottom: 0; }
+.header-date-box { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.1rem; margin-top: 1rem; }
+.header-date-label { color: var(--color-malachite); font-size: 0.75rem; font-weight: 700; }
+.header-date-value { color: var(--color-text-gray); font-size: 0.8rem; }
+
+.ring-icon { color: var(--color-malachite); font-size: 1.2rem; margin-bottom: 0.2rem; }
+.ring-subtitle { font-size: 0.8rem; }
+.ring-badge { background-color: var(--color-mint); color: var(--color-malachite); font-size: 0.75rem; font-weight: 600; padding: 0.3rem 0.6rem; border-radius: 12px; margin-top: 0.5rem; display: inline-block; }
+
+.sug-link { text-decoration: none; color: inherit; display: block; margin-bottom: 2rem; }
+.sug-info-box { justify-content: center; gap: 0.6rem; }
+.sug-title-no-margin { margin: 0; }
+.sug-meta-row { color: var(--color-text-gray); font-size: 0.8rem; display: flex; align-items: center; gap: 0.8rem; font-weight: 500; }
+.sug-meta-item { display: flex; align-items: center; gap: 0.3rem; }
+.sug-tags-box { margin-top: 0.2rem; }

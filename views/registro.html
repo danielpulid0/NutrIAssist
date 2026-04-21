@@ -65,12 +65,11 @@
 
         <script>
             if (new URLSearchParams(window.location.search).get('error') === 'email_existente') {
-                document.write('<div style="background-color: #fef2f2; color: #dc2626; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.9rem; font-weight: 500; border: 1px solid #fecaca; text-align: center;">Este correo electrónico ya está registrado. Por favor, intenta iniciar sesión.</div>');
+                document.write('<div class="alert-error">Este correo electrónico ya está registrado. Por favor, intenta iniciar sesión.</div>');
             }
         </script>
 
-        <form action="../controllers/procesar_registro.php" method="POST"
-              style="display:flex;flex-direction:column;flex-grow:1;">
+        <form action="../controllers/procesar_registro.php" method="POST" class="flex-form-container">
 
             <label class="form-label" for="nombre">Nombre completo</label>
             <input class="form-input" type="text" id="nombre" name="nombre"

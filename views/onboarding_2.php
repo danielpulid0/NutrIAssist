@@ -104,8 +104,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
         </div>
 
         <!-- Formulario oculto con los verdaderos valores -->
-        <form id="form-sobre-ti" action="onboarding_3.php" method="POST"
-              style="display:flex;flex-direction:column;flex-grow:1;">
+        <form id="form-sobre-ti" action="onboarding_3.php" method="POST" class="flex-form-container">
             <input type="hidden" id="h-sexo"   name="sexo"   value="">
             <input type="hidden" id="h-edad"   name="edad"   value="">
             <input type="hidden" id="h-altura" name="altura" value="">

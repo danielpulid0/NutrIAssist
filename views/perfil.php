@@ -8,9 +8,8 @@ require_once 'includes/header.php';
 
 <div class="mobile-container">
     
-    <div class="header-top" style="display: flex; justify-content: space-between; align-items: center;">
+    <div class="header-top">
         <span>Mi Perfil y Metas</span>
-        <button class="theme-toggle" id="theme-toggle-btn" aria-label="Cambiar tema"></button>
     </div>
 
     <form action="../controllers/procesar_perfil.php" method="POST" class="perfil-body">
@@ -105,6 +104,20 @@ require_once 'includes/header.php';
             <div class="meta-radio"></div>
         </label>
 
+        <h2 class="section-title">Preferencias</h2>
+        <div class="preferencias-card">
+            <div class="pref-item">
+                <div class="pref-info">
+                    <h4>Modo Oscuro</h4>
+                    <p>Cambiar tema visual</p>
+                </div>
+                <label class="theme-switch">
+                    <input type="checkbox" id="theme-switch-checkbox">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+
         <h2 class="section-title">Restricciones Médicas / Alérgenos</h2>
         
         <div class="restricciones-list">
@@ -136,7 +149,7 @@ require_once 'includes/header.php';
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn-primary" style="margin-top: 0;">Guardar Cambios</button>
+            <button type="submit" class="btn-primary">Guardar Cambios</button>
             <a href="../controllers/logout.php" class="btn-logout">Cerrar sesión</a>
         </div>
 

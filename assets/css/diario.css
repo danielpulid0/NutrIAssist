@@ -49,6 +49,11 @@
 .cal-week-slide.labels {
     margin-bottom: 0.35rem;
 }
+.cal-day-labels {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 0.3rem;
+}
 .cal-day-label {
     text-align: center; font-size: 0.7rem;
     font-weight: 500; color: var(--color-text-gray);

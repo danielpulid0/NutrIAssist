@@ -55,7 +55,7 @@
             font-weight: 700;
             text-decoration: none;
         }
-        .error-msg {
+        .alert-error {
             display: none;
             background-color: #FEE2E2;
             color: #DC2626;
@@ -87,7 +87,7 @@
             Correo o contraseña incorrectos.
         </div>
 
-        <form action="../controllers/procesar_login.php" method="POST" style="display:flex;flex-direction:column;flex-grow:1;">
+        <form action="../controllers/procesar_login.php" method="POST" class="flex-form-container">
 
             <label class="form-label" for="email">Correo electrónico</label>
             <input class="form-input" type="email" id="email" name="email"

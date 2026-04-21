@@ -3,6 +3,88 @@ body {
     background-color: #E7EBEE;
 }
 
+/* Utilidad global para elementos inicialmente ocultos */
+.hidden { display: none !important; }
+
+/* Botón mute */
+.btn-mute {
+    background: none;
+    border: none;
+    color: #4B5563;
+    cursor: pointer;
+    padding: 5px;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}
+
+/* Burbuja del indicador de escritura */
+.bubble--typing { padding: 1rem 1.2rem; }
+
+/* Preview de imagen adjunta */
+.preview-container {
+    padding: 0.5rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+.preview-img {
+    height: 60px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+.btn-remove-preview {
+    position: absolute;
+    top: -5px;
+    left: 60px;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    border: none;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* Preview de grabación de audio */
+.audio-preview-container {
+    padding: 0.5rem;
+    background: #f0fdf4;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    position: relative;
+    align-items: center;
+    gap: 10px;
+}
+.audio-preview-container.active { display: flex; }
+
+.recording-pulse {
+    width: 12px;
+    height: 12px;
+    background: #ef4444;
+    border-radius: 50%;
+}
+.recording-pulse.active { display: block; }
+
+.recording-status {
+    font-size: 0.8rem;
+    color: #15803d;
+    font-weight: 600;
+}
+
+/* Botones de grabación */
+.btn-rec {
+    border: none;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+.btn-rec--stop  { background: #15803d; }
+.btn-rec--remove { background: #ef4444; }
 .mobile-container {
     padding: 0;
     height: 100vh;
@@ -406,6 +488,11 @@ body {
     transform: translateY(-1px);
 }
 
+.fc-btn-full {
+    grid-column: span 2;
+    width: 100%;
+}
+
 /* DARK MODE FOOD CARD */
 [data-theme='dark'] .food-card {
     background: #1E1E1E;
@@ -440,3 +527,119 @@ body {
 
 [data-theme='dark'] .fc-icon.solid { background-color: #1E3A8A; color: #93C5FD; }
 [data-theme='dark'] .fc-icon.liquid { background-color: #064E3B; color: #6EE7B7; }
+
+/* ── ESTILOS PARA EDICIÓN DE MACROS ── */
+.fc-edit-pane { padding: 0.5rem 0; }
+
+.fc-edit-title {
+    margin-top: 0;
+    font-size: 0.85rem;
+    color: #1E293B;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.fc-macro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    font-size: 0.8rem;
+}
+
+.fc-macro-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.fc-macro-col.span-2 {
+    grid-column: span 2;
+}
+
+.fc-macro-label {
+    color: #64748B;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.fc-macro-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    background: #F8FAFC;
+    color: #0F172A;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.fc-macro-input:focus {
+    border-color: #1DF157;
+}
+
+select.fc-macro-input {
+    cursor: pointer;
+}
+
+/* ── ESTILOS PARA MENSAJE DE ÉXITO Y VALORES AJUSTADOS ── */
+.fc-success-pane {
+    padding: 0.5rem 0;
+    text-align: center;
+}
+
+.fc-success-badge-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.fc-success-icon {
+    width: 20px;
+    height: 20px;
+    background: #1DF157;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fc-success-text {
+    color: #15803D;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.fc-adjusted-values {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.fc-adjusted-item {
+    background: #F1F5F9;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: #475569;
+}
+
+.fc-msg-full {
+    grid-column: span 2;
+    width: 100%;
+    text-align: center;
+    color: #15803D;
+    font-weight: 700;
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+/* ── MODO OSCURO PARA EDICIÓN DE MACROS ── */
+[data-theme='dark'] .fc-edit-title { color: #FFFFFF; }
+[data-theme='dark'] .fc-macro-label { color: #B3B3B3; }
+[data-theme='dark'] .fc-macro-input { background: #282828; color: #FFFFFF; border-color: #404040; }
+[data-theme='dark'] .fc-adjusted-item { background: #282828; color: #B3B3B3; }

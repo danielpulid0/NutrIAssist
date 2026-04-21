@@ -18,7 +18,7 @@ require_once 'includes/header.php';
         </div>
 
         <!-- Etiquetas de días (fijas) -->
-        <div style="display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:0.3rem;">
+        <div class="cal-day-labels">
             <?php foreach ($dias_cortos as $d): ?>
                 <div class="cal-day-label"><?= $d ?></div>
             <?php endforeach; ?>

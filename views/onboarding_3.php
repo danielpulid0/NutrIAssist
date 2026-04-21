@@ -49,8 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edad'])) {
             <p>Esto nos ayuda a calcular tus necesidades calóricas diarias con precisión.</p>
         </div>
 
-        <form action="../controllers/procesar_onboarding.php" method="POST"
-              style="display:flex;flex-direction:column;flex-grow:1;">
+        <form action="../controllers/procesar_onboarding.php" method="POST" class="flex-form-container">
 
             <!-- Sedentario -->
             <input type="radio" id="act_sedentario" name="actividad" value="1.2" class="radio-hidden" required>

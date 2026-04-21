@@ -1,12 +1,3 @@
-// ── Checkboxes ────────────────────────────────────────────────────────
-function toggleIngrediente(i) {
-    const check = document.getElementById('check-' + i);
-    const label = document.getElementById('ingr-name-' + i);
-    const done  = check.classList.toggle('done');
-    check.setAttribute('aria-checked', done);
-    label.classList.toggle('done-text', done);
-}
-
 // ── Modal Swap ────────────────────────────────────────────────────────
 const swapModal = document.getElementById('swapModal');
 const swapTitle = document.getElementById('swapTitle');
@@ -56,9 +47,7 @@ function pedirSwap(nombre, gramos) {
             swapList.innerHTML = `
                 <li style="padding:1rem 0;text-align:center;color:#EF4444">
                     ⚠️ ${esc(json.message || 'Error')}
-                    <br><button onclick="pedirSwap('${esc(_ing)}',${_gr})"
-                        style="margin-top:0.5rem;background:none;border:1px solid #ddd;
-                               border-radius:8px;padding:0.3rem 0.8rem;cursor:pointer">
+                    <br><button class="btn-reintentar" onclick="pedirSwap('${esc(_ing)}',${_gr})">
                         🔄 Reintentar</button>
                 </li>`;
         }
@@ -67,9 +56,7 @@ function pedirSwap(nombre, gramos) {
         swapList.innerHTML = `
             <li style="padding:1rem 0;text-align:center;color:#EF4444">
                 ⚠️ Error de conexión
-                <br><button onclick="pedirSwap('${esc(_ing)}',${_gr})"
-                    style="margin-top:0.5rem;background:none;border:1px solid #ddd;
-                           border-radius:8px;padding:0.3rem 0.8rem;cursor:pointer">
+                <br><button class="btn-reintentar" onclick="pedirSwap('${esc(_ing)}',${_gr})">
                     🔄 Reintentar</button>
             </li>`;
     });

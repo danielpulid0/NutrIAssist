@@ -13,14 +13,9 @@ require_once 'includes/header.php';
             <p><?= htmlspecialchars($saludo) ?></p>
             <h1><?= htmlspecialchars($nombre_usuario) ?></h1>
         </div>
-        <button class="theme-toggle" id="theme-toggle-btn" aria-label="Cambiar tema" style="position: absolute; top: 1rem; right: 1rem; margin-bottom: 0;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-        </button>
-        <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.1rem; margin-top: 1rem;">
-            <p style="color: var(--color-malachite); font-size: 0.75rem; font-weight: 700;">HOY</p>
-            <p style="color: var(--color-text-gray); font-size: 0.8rem;"><?= $label_hoy ?></p>
+        <div class="header-date-box">
+            <p class="header-date-label">HOY</p>
+            <p class="header-date-value"><?= $label_hoy ?></p>
         </div>
     </div>
 
@@ -28,10 +23,10 @@ require_once 'includes/header.php';
     <div class="ring-container">
         <div class="calorie-ring" style="background: conic-gradient(var(--color-malachite) <?= $porcentaje_anillo ?>%, var(--color-mint) <?= $porcentaje_anillo ?>% 100%);">
             <div class="ring-inner">
-                <p style="color: var(--color-malachite); font-size: 1.2rem; margin-bottom: 0.2rem;">🔥</p>
+                <p class="ring-icon">🔥</p>
                 <h2><?= number_format($calorias_consumidas) ?></h2>
-                <p style="font-size: 0.8rem;">de <?= number_format($meta_calorias) ?> kcal</p>
-                <div style="background-color: var(--color-mint); color: var(--color-malachite); font-size: 0.75rem; font-weight: 600; padding: 0.3rem 0.6rem; border-radius: 12px; margin-top: 0.5rem; display: inline-block;">
+                <p class="ring-subtitle">de <?= number_format($meta_calorias) ?> kcal</p>
+                <div class="ring-badge">
                     <?= number_format($calorias_restantes) ?> restantes
                 </div>
             </div>
@@ -97,22 +92,22 @@ require_once 'includes/header.php';
         }
     ?>
     <h2 class="section-title">Sugerencia para la Cena</h2>
-    <a href="receta_detalle.php?id=<?= $receta_sugerida['id_receta'] ?>" style="text-decoration: none; color: inherit; display: block; margin-bottom: 2rem;">
+    <a href="receta_detalle.php?id=<?= $receta_sugerida['id_receta'] ?>" class="sug-link">
         <div class="suggestion-card">
             <img src="<?= (strpos($receta_sugerida['imagen_url'], 'http') === 0) ? htmlspecialchars($receta_sugerida['imagen_url']) : '../assets/img/' . htmlspecialchars($receta_sugerida['imagen_url']) ?>" alt="<?= htmlspecialchars($receta_sugerida['titulo']) ?>" class="suggestion-img">
-            <div class="suggestion-info" style="justify-content: center; gap: 0.6rem;">
-                <h3 class="sug-title" style="margin: 0;"><?= htmlspecialchars($receta_sugerida['titulo']) ?></h3>
+            <div class="suggestion-info sug-info-box">
+                <h3 class="sug-title sug-title-no-margin"><?= htmlspecialchars($receta_sugerida['titulo']) ?></h3>
                 
-                <div class="sug-meta" style="color: var(--color-text-gray); font-size: 0.8rem; display: flex; align-items: center; gap: 0.8rem; font-weight: 500;">
+                <div class="sug-meta-row">
                     <?php if ($receta_sugerida['tiempo_prep_min']): ?>
-                    <span style="display: flex; align-items: center; gap: 0.3rem;">
+                    <span class="sug-meta-item">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                         </svg>
                         <?= $receta_sugerida['tiempo_prep_min'] ?> min
                     </span>
                     <?php endif; ?>
-                    <span style="display: flex; align-items: center; gap: 0.3rem;">
+                    <span class="sug-meta-item">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/>
                         </svg>
@@ -120,7 +115,7 @@ require_once 'includes/header.php';
                     </span>
                 </div>
 
-                <div class="sug-tags" style="margin-top: 0.2rem;">
+                <div class="sug-tags sug-tags-box">
                     <span class="tag-light tag-green"><?= $receta_sugerida['calorias_totales'] ?> kcal</span>
                     <?php if(!empty($tag_visible)): ?>
                         <span class="tag-light tag-gray"><?= htmlspecialchars($tag_visible) ?></span>

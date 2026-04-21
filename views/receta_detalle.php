@@ -110,17 +110,13 @@ require_once 'includes/header.php';
 
 <!-- MODAL TIPO DE COMIDA -->
 <div class="modal-overlay" id="registroModal">
-    <div class="modal-sheet" style="padding:0 1.5rem 2rem">
+    <div class="modal-sheet">
         <div class="modal-handle"></div>
-        <div class="modal-title-text" style="margin-bottom:0.3rem">Registrar en tu Diario</div>
+        <div class="modal-title-text">Registrar en tu Diario</div>
         <p class="modal-subtitle">¿En qué momento del día fue?</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.5rem">
+        <div class="meal-type-grid">
             <?php foreach(['Desayuno','Comida','Cena','Snack'] as $tipo): ?>
-            <button class="btn-tipo-comida" onclick="guardarReceta('<?= $tipo ?>')"
-                    style="padding:0.9rem;border:1.5px solid var(--color-border);border-radius:14px;
-                           background:#fff;font-size:0.95rem;font-weight:600;
-                           font-family:'Inter',sans-serif;cursor:pointer;
-                           transition:border-color 0.15s,background 0.15s;">
+            <button class="btn-tipo-comida" onclick="guardarReceta('<?= $tipo ?>')">
                 <?= ['Desayuno'=>'☀️','Comida'=>'🌱','Cena'=>'🌙','Snack'=>'🍪'][$tipo] ?? '' ?> <?= $tipo ?>
             </button>
             <?php endforeach; ?>

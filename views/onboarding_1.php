@@ -43,8 +43,7 @@ if (!isset($_SESSION['usuario_id'])) {
             <p>Calcularemos tus calorías necesarias para lograrlo</p>
         </div>
 
-        <form action="onboarding_2.php" method="POST"
-              style="display:flex;flex-direction:column;flex-grow:1;">
+        <form action="onboarding_2.php" method="POST" class="flex-form-container">
 
             <!-- Perder Grasa -->
             <input type="radio" id="goal_lose" name="objetivo" value="perder_grasa" class="radio-hidden" required>
