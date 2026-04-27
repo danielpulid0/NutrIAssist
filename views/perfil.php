@@ -124,7 +124,7 @@ require_once 'includes/header.php';
             <?php foreach($restricciones as $rest): ?>
             <div class="restriccion-item">
                 <?= htmlspecialchars($rest['nombre']) ?>
-                <a href="../controllers/procesar_perfil.php?eliminar_rest=<?= $rest['id_restriccion'] ?>" class="btn-remove">✕</a>
+                <a href="../controllers/procesar_perfil.php?eliminar_rest=<?= $rest['id_restriccion'] ?>" class="btn-remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></a>
             </div>
             <?php endforeach; ?>
             

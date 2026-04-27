@@ -39,7 +39,7 @@ require_once 'includes/header.php';
     <div class="recetas-grid">
         <?php if (empty($recetas)): ?>
         <div class="empty-state">
-            <div style="font-size:2.5rem">🍽️</div>
+            <div style="opacity:0.4;margin-bottom:0.5rem"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M6 12V7a6 6 0 0 1 12 0v5"/><path d="M4 12c0 4.418 3.582 8 8 8s8-3.582 8-8"/></svg></div>
             <p>No se encontraron recetas.</p>
         </div>
         <?php endif; ?>
@@ -52,9 +52,9 @@ require_once 'includes/header.php';
                 <?php if (!empty($r['imagen_url'])): ?>
                 <img src="<?= (strpos($r['imagen_url'], 'http') === 0) ? htmlspecialchars($r['imagen_url']) : '../assets/img/recetas/' . htmlspecialchars($r['imagen_url']) ?>"
                      alt="<?= htmlspecialchars($r['titulo']) ?>"
-                     onerror="this.style.display='none'; this.parentNode.innerHTML='🍲';">
+                     onerror="this.style.display='none'; this.parentNode.innerHTML='<svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23ccc\' stroke-width=\'1.5\' style=\'width:48px;height:48px\'><path d=\'M2 12h20M6 12V7a6 6 0 0 1 12 0v5\'/><path d=\'M4 12c0 4.418 3.582 8 8 8s8-3.582 8-8\'/></svg>';">
                 <?php else: ?>
-                🍲
+                <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;opacity:0.3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:48px;height:48px"><path d="M2 12h20M6 12V7a6 6 0 0 1 12 0v5"/><path d="M4 12c0 4.418 3.582 8 8 8s8-3.582 8-8"/></svg></div>
                 <?php endif; ?>
             </div>
 

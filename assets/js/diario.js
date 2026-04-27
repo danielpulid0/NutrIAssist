@@ -281,7 +281,7 @@ if (inputBusq) {
         clearTimeout(acTimer);
         const q = inputBusq.value.trim();
         if (q.length < 2) { acDrop.classList.remove('open'); return; }
-        acDrop.innerHTML = '<div class="ac-status">🔍 Buscando…</div>';
+        acDrop.innerHTML = '<div class="ac-status">Buscando…</div>';
         acDrop.classList.add('open');
         acTimer = setTimeout(() => buscarAlimento(q), 450);
     });

@@ -2,7 +2,7 @@
 require_once '../controllers/diario_controller.php';
 
 $page_title = 'NutrIAssist – Diario';
-$extra_css  = '../assets/css/diario.css';
+$extra_css = '../assets/css/diario.css';
 require_once 'includes/header.php';
 ?>
 
@@ -39,7 +39,6 @@ require_once 'includes/header.php';
     <div class="cals-card">
         <div>
             <div class="cals-date-label"><?= htmlspecialchars($label_fecha) ?></div>
-            <div class="cals-label">Calorías Totales</div>
             <div>
                 <span class="cals-num"><?= number_format($total_calorias) ?></span>
                 <span class="cals-meta"> / <?= number_format($meta_calorias) ?> kcal</span>
@@ -51,82 +50,85 @@ require_once 'includes/header.php';
     <!-- ── MEAL CARDS DINÁMICAS ── -->
     <?php
     $meal_cfg = [
-        'Desayuno' => ['bg' => '#FFF3E0',
-            'icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg>'],
-        'Comida'   => ['bg' => '#F0FFF4',
-            'icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="#11CF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>'],
-        'Cena'     => ['bg' => '#EDE9FE',
-            'icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'],
-        'Snack'    => ['bg' => '#FFF0F6',
-            'icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1" fill="#EC4899"/><circle cx="14" cy="9" r="1" fill="#EC4899"/><circle cx="10" cy="14" r="1" fill="#EC4899"/><circle cx="15" cy="14" r="1" fill="#EC4899"/></svg>'],
+        'Desayuno' => [
+            'bg' => '#FFF3E0',
+            'icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg>'
+        ],
+        'Comida' => [
+            'bg' => '#F0FFF4',
+            'icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="#11CF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>'
+        ],
+        'Cena' => [
+            'bg' => '#EDE9FE',
+            'icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+        ],
+        'Snack' => [
+            'bg' => '#FFF0F6',
+            'icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1" fill="#EC4899"/><circle cx="14" cy="9" r="1" fill="#EC4899"/><circle cx="10" cy="14" r="1" fill="#EC4899"/><circle cx="15" cy="14" r="1" fill="#EC4899"/></svg>'
+        ],
     ];
 
     foreach ($tipos_orden as $tipo):
-        $alimentos   = $comidas_grupos[$tipo] ?? [];
+        $alimentos = $comidas_grupos[$tipo] ?? [];
         $tiene_datos = count($alimentos) > 0;
-        $total_tipo  = round(array_sum(array_column($alimentos, 'calorias')));
-        $cfg         = $meal_cfg[$tipo];
-        $safe_id     = strtolower($tipo);
-        $es_snack    = ($tipo === 'Snack');
+        $total_tipo = round(array_sum(array_column($alimentos, 'calorias')));
+        $cfg = $meal_cfg[$tipo];
+        $safe_id = strtolower($tipo);
+        $es_snack = ($tipo === 'Snack');
 
         // Lógica de botones (la regla de negocio central):
         // - Snack: siempre muestra +; también muestra chevron si tiene datos
         // - Resto: solo muestra chevron SI tiene datos; solo muestra + si NO tiene datos
-        $mostrar_add     = !$tiene_datos || $es_snack;
+        $mostrar_add = !$tiene_datos || $es_snack;
         $mostrar_chevron = $tiene_datos;
         $header_clickable = $tiene_datos ? 'clickable' : '';
         $onclick_hdr = $tiene_datos ? "onclick=\"toggleMeal('{$safe_id}')\"" : '';
-    ?>
-    <div class="meal-card">
-        <div class="meal-header <?= $header_clickable ?>"
-             id="hdr-<?= $safe_id ?>"
-             <?= $onclick_hdr ?>
-             aria-expanded="<?= $tiene_datos ? 'true' : 'false' ?>">
+        ?>
+        <div class="meal-card">
+            <div class="meal-header <?= $header_clickable ?>" id="hdr-<?= $safe_id ?>" <?= $onclick_hdr ?>
+                aria-expanded="<?= $tiene_datos ? 'true' : 'false' ?>">
 
-            <div class="meal-icon-bubble" style="background:<?= $cfg['bg'] ?>;">
-                <?= $cfg['icon'] ?>
+                <div class="meal-icon-bubble" style="background:<?= $cfg['bg'] ?>;">
+                    <?= $cfg['icon'] ?>
+                </div>
+
+                <div class="meal-text">
+                    <div class="meal-name"><?= $tipo ?><?= $tiene_datos ? ' ✓' : '' ?></div>
+                    <?php if ($tiene_datos): ?>
+                        <div class="meal-kcal"><?= $total_tipo ?> kcal</div>
+                    <?php else: ?>
+                        <div class="meal-pending-label">Sin registros</div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="meal-actions">
+                    <?php if ($mostrar_add): ?>
+                        <button class="btn-add-item" title="Agregar alimento"
+                            onclick="event.stopPropagation(); abrirModal('<?= $tipo ?>')">+</button>
+                    <?php endif; ?>
+
+                    <?php if ($mostrar_chevron): ?>
+                        <svg id="chevron-<?= $safe_id ?>" class="meal-chevron up" width="20" height="20" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                    <?php endif; ?>
+                </div>
             </div>
 
-            <div class="meal-text">
-                <div class="meal-name"><?= $tipo ?><?= $tiene_datos ? ' ✓' : '' ?></div>
-                <?php if ($tiene_datos): ?>
-                    <div class="meal-kcal"><?= $total_tipo ?> kcal</div>
-                <?php else: ?>
-                    <div class="meal-pending-label">Sin registros</div>
-                <?php endif; ?>
-            </div>
-
-            <div class="meal-actions">
-                <?php if ($mostrar_add): ?>
-                <button class="btn-add-item" title="Agregar alimento"
-                        onclick="event.stopPropagation(); abrirModal('<?= $tipo ?>')">+</button>
-                <?php endif; ?>
-
-                <?php if ($mostrar_chevron): ?>
-                <svg id="chevron-<?= $safe_id ?>"
-                     class="meal-chevron up"
-                     width="20" height="20" viewBox="0 0 24 24"
-                     fill="none" stroke="currentColor" stroke-width="2"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"/>
-                </svg>
-                <?php endif; ?>
-            </div>
+            <?php if ($tiene_datos): ?>
+                <div class="meal-content open" id="meal-<?= $safe_id ?>">
+                    <div class="meal-divider"></div>
+                    <?php foreach ($alimentos as $alim): ?>
+                        <div class="meal-item">
+                            <div class="meal-item-dot"></div>
+                            <span class="meal-item-name"><?= htmlspecialchars($alim['nombre'] ?? '—') ?></span>
+                            <span class="meal-item-meta"><?= round($alim['calorias']) ?> kcal</span>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </div>
-
-        <?php if ($tiene_datos): ?>
-        <div class="meal-content open" id="meal-<?= $safe_id ?>">
-            <div class="meal-divider"></div>
-            <?php foreach ($alimentos as $alim): ?>
-            <div class="meal-item">
-                <div class="meal-item-dot"></div>
-                <span class="meal-item-name"><?= htmlspecialchars($alim['nombre'] ?? '—') ?></span>
-                <span class="meal-item-meta"><?= round($alim['calorias']) ?> kcal</span>
-            </div>
-            <?php endforeach; ?>
-        </div>
-        <?php endif; ?>
-    </div>
     <?php endforeach; ?>
 
     <?php include 'includes/footer.php'; ?>
@@ -154,15 +156,13 @@ require_once 'includes/header.php';
             <!-- Fila de entrada -->
             <div class="add-row">
                 <div class="search-wrap" id="search-wrap">
-                    <input type="text" id="input-busqueda"
-                           placeholder="Ej: Arroz, Manzana…"
-                           autocomplete="off" spellcheck="false">
+                    <input type="text" id="input-busqueda" placeholder="Ej: Arroz, Manzana…" autocomplete="off"
+                        spellcheck="false">
                     <div class="ac-dropdown" id="ac-dropdown"></div>
                 </div>
-                <input type="number" id="input-cantidad" class="qty-input"
-                       placeholder="—" min="1" max="5000" step="1">
-                <button type="button" class="btn-add-alim" id="btn-add-alim"
-                        disabled title="Selecciona un alimento y escribe la cantidad">+</button>
+                <input type="number" id="input-cantidad" class="qty-input" placeholder="—" min="1" max="5000" step="1">
+                <button type="button" class="btn-add-alim" id="btn-add-alim" disabled
+                    title="Selecciona un alimento y escribe la cantidad">+</button>
             </div>
 
             <!-- Lista de ítems -->
@@ -173,10 +173,9 @@ require_once 'includes/header.php';
             <!-- Botón registrar -->
             <button class="btn-registrar" id="btn-registrar" disabled>
                 Revisar registro
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2.5"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9 18 15 12 9 6"/>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6" />
                 </svg>
             </button>
         </div>
@@ -204,8 +203,8 @@ require_once 'includes/header.php';
                 </table>
             </div>
             <div class="preview-actions">
-                <button class="btn-editar" id="btn-editar">← Editar</button>
-                <button class="btn-confirmar" id="btn-confirmar">✓ Confirmar</button>
+                <button class="btn-editar" id="btn-editar">Editar</button>
+                <button class="btn-confirmar" id="btn-confirmar">Confirmar</button>
             </div>
         </div>
 
@@ -220,10 +219,11 @@ require_once 'includes/header.php';
     window.NutriConfig = {
         FECHA_HOY: '<?= $fecha_hoy ?>',
         FECHA_SEL: '<?= $fecha_sel ?>',
-        MESES: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+        MESES: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
     };
 </script>
 <script src="../assets/js/diario.js"></script>
 
 </body>
+
 </html>

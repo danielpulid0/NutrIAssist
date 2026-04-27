@@ -10,7 +10,7 @@ function abrirSwap(nombre, gramos, idx) {
     _ing = nombre; _gr = gramos; _idx = idx;
     swapTitle.textContent = 'Sustituir ' + nombre;
     swapSub.textContent   = 'Buscando alternativas...';
-    swapList.innerHTML    = '<li class="swap-loading">Buscando alternativas...</li>';
+    swapList.innerHTML    = '';
     swapModal.classList.add('active');
     pedirSwap(nombre, gramos);
 }

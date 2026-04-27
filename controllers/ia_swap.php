@@ -41,9 +41,10 @@ try {
 $str_restricciones = empty($restricciones) ? 'Ninguna' : implode(', ', $restricciones);
 
 // ─── Subtítulo dinámico según restricciones ───────────────────────────
-$subtitulo = empty($restricciones)
-    ? "Sugerencias basadas en tus macros:"
-    : "Sugerencias sin " . implode(' ni ', $restricciones) . " basadas en tus macros:";
+$subtitulo = "Sugerencias personalizadas:";
+//$subtitulo = empty($restricciones)
+  //  ? "Sugerencias basadas en tus macros:"
+    //: "Sugerencias sin " . implode(' ni ', $restricciones) . " basadas en tus macros:";
 
 // ─── Prompt para Gemma ────────────────────────────────────────────────
 $prompt = <<<PROMPT

@@ -16,11 +16,11 @@ if (isset($_SESSION['usuario_id'])) {
     <title>NutrIAssist - Bienvenido</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/global.css">
+    <link rel="stylesheet" href="assets/css/global.css?v=3">
     
     <!-- PWA Config -->
     <link rel="manifest" href="/nutriassist/manifest.json">
-    <meta name="theme-color" content="#37F677">
+    <meta name="theme-color" content="#15B85E">
     <link rel="apple-touch-icon" href="/nutriassist/assets/img/icon-192.png">
     
     <style>
@@ -39,14 +39,18 @@ if (isset($_SESSION['usuario_id'])) {
         .logo-container {
             width: 120px;
             height: 120px;
-            background-color: var(--color-mint);
-            border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 4rem;
             margin-bottom: 2rem;
-            box-shadow: 0 10px 25px rgba(55, 246, 119, 0.2);
+        }
+
+        .logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 28px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
 
         .splash-container h1 {
@@ -106,7 +110,7 @@ if (isset($_SESSION['usuario_id'])) {
         
         <div class="splash-container">
             <div class="logo-container">
-                🥑
+                <img src="assets/img/icon-192.png" alt="NutrIAssist Logo">
             </div>
             
             <h1>NutrIAssist</h1>

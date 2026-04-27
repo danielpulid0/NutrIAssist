@@ -9,7 +9,7 @@
     
     <!-- PWA Config -->
     <link rel="manifest" href="/nutriassist/manifest.json">
-    <meta name="theme-color" content="#37F677">
+    <meta name="theme-color" content="#15B85E">
     <link rel="apple-touch-icon" href="/nutriassist/assets/img/icon-192.png">
 
     <script src="../assets/js/theme.js?v=<?= time() ?>"></script>

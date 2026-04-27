@@ -24,7 +24,7 @@ require_once 'includes/header.php';
              alt="<?= htmlspecialchars($receta['titulo']) ?>"
              onerror="this.style.display='none';">
         <?php else: ?>
-        <span class="hero-emoji">🍲</span>
+        <span class="hero-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:64px;height:64px;opacity:0.4"><path d="M2 12h20M6 12V7a6 6 0 0 1 12 0v5"/><path d="M4 12c0 4.418 3.582 8 8 8s8-3.582 8-8"/></svg></span>
         <?php endif; ?>
         <div class="hero-overlay"></div>
         <h1 class="hero-title"><?= htmlspecialchars($receta['titulo']) ?></h1>
@@ -117,7 +117,7 @@ require_once 'includes/header.php';
         <div class="meal-type-grid">
             <?php foreach(['Desayuno','Comida','Cena','Snack'] as $tipo): ?>
             <button class="btn-tipo-comida" onclick="guardarReceta('<?= $tipo ?>')">
-                <?= ['Desayuno'=>'☀️','Comida'=>'🌱','Cena'=>'🌙','Snack'=>'🍪'][$tipo] ?? '' ?> <?= $tipo ?>
+                <?= $tipo ?>
             </button>
             <?php endforeach; ?>
         </div>

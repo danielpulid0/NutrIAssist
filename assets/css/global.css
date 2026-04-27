@@ -2,10 +2,10 @@
    VARIABLES GLOBALES (Paleta de NutrIAssist)
    ========================================= */
 :root {
-    --color-mint:        #D7FFE4;
-    --color-spring:      #5BFF92;
-    --color-primary:     #37F677;
-    --color-malachite:   #11CF50;
+    --color-mint:        #D1F2DE;
+    --color-spring:      #4ADE80;
+    --color-primary:     #1CD06A;
+    --color-malachite:   #15B85E;
     --color-bg:          #FFFFFF;
     --color-bg-app:      #F3F4F6;
     --color-bg-light:    #F7FAF7;
@@ -150,19 +150,19 @@ p  { font-size: 0.92rem; color: var(--color-text-gray); line-height: 1.5; }
 .icon-circle {
     width: 96px;
     height: 96px;
-    background-color: var(--color-icon-circle);
-    border-radius: 50%;
+    border-radius: 22px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0.5rem auto 1.5rem;
-    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .icon-circle img {
-    width: 64px;
-    height: 64px;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 22px;
 }
 
 .icon-circle svg {
