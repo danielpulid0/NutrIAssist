@@ -91,7 +91,7 @@ require_once 'includes/header.php';
             }
         }
     ?>
-    <h2 class="section-title">Sugerencia para la Cena</h2>
+    <h2 class="section-title">Sugerencia para ti</h2>
     <a href="receta_detalle.php?id=<?= $receta_sugerida['id_receta'] ?>" class="sug-link">
         <div class="suggestion-card">
             <img src="<?= (strpos($receta_sugerida['imagen_url'], 'http') === 0) ? htmlspecialchars($receta_sugerida['imagen_url']) : '../assets/img/' . htmlspecialchars($receta_sugerida['imagen_url']) ?>" alt="<?= htmlspecialchars($receta_sugerida['titulo']) ?>" class="suggestion-img">

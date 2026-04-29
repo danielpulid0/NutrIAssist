@@ -9,7 +9,7 @@ require_once 'includes/header.php';
 <div class="mobile-container">
     
     <div class="header-top">
-        <span>Mi Perfil y Metas</span>
+        <span>Perfil y Metas</span>
     </div>
 
     <form action="../controllers/procesar_perfil.php" method="POST" class="perfil-body">

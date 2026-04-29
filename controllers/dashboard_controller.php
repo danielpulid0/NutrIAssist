@@ -13,6 +13,7 @@ $meta_carbs     = 220;
 $meta_grasas    = 70;
 
 // ─ Fecha y saludo dinámico ────────────────────────────────────────────
+date_default_timezone_set('America/Mexico_City');
 $hora_actual = (int) date('H');
 if ($hora_actual < 12)      $saludo = 'Buenos días';
 elseif ($hora_actual < 19)  $saludo = 'Buenas tardes';
