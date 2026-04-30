@@ -13,6 +13,15 @@
     <meta name="theme-color" content="#15B85E">
     <link rel="apple-touch-icon" href="/nutriassist/assets/img/icon-192.png">
 
+    <script>
+        // Forzar recarga si se regresa usando el botón 'Atrás' del móvil (BFCache)
+        window.addEventListener("pageshow", function(event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
+
     <script src="../assets/js/theme.js?v=<?= time() ?>"></script>
     <?php if (isset($extra_css)): ?>
         <link rel="stylesheet" href="<?= $extra_css ?>?v=<?= time() ?>">

@@ -148,6 +148,19 @@ require_once 'includes/header.php';
             </div>
         </div>
 
+        <h2 class="section-title">Reportes</h2>
+        <div class="preferencias-card" onclick="generarReportePDF()" style="cursor: pointer; margin-bottom: 20px;">
+            <div class="pref-item">
+                <div class="pref-info">
+                    <h4>Generar Reporte Semanal</h4>
+                    <p>Descarga un resumen en PDF para tu nutriólogo</p>
+                </div>
+                <div style="color: var(--color-malachite);" id="pdf-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
+            </div>
+        </div>
+
         <h2 class="section-title">Ayuda</h2>
         <div class="preferencias-card" onclick="resetTutorial()" style="cursor: pointer; margin-bottom: 20px;">
             <div class="pref-item">
@@ -172,10 +185,253 @@ require_once 'includes/header.php';
 
 </div>
 
+<!-- jsPDF + autoTable (generación directa, sin dependencias de DOM oculto) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
 function resetTutorial() {
     localStorage.removeItem('nutriassist_tutorial_shown_v4');
     window.location.href = 'dashboard.php';
+}
+
+async function generarReportePDF() {
+    const iconDiv = document.getElementById('pdf-icon');
+    const originalIcon = iconDiv.innerHTML;
+    iconDiv.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>';
+    iconDiv.querySelector('svg').animate([{transform:'rotate(0deg)'},{transform:'rotate(360deg)'}],{duration:1000,iterations:Infinity});
+
+    try {
+        const response = await fetch('../controllers/reporte_semanal_api.php');
+        const data = await response.json();
+
+        if (!data.success) {
+            alert('Error al obtener datos: ' + (data.error || 'Desconocido'));
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const W = doc.internal.pageSize.getWidth();
+        const margin = 20;
+
+        // ── Colores de marca (mismo verde que la app: #15B85E) ──
+        const verde = [21, 184, 94];      // #15B85E (--color-malachite)
+        const grisOsc = [30, 41, 59];    // #1E293B
+        const grisMed = [100, 116, 139];  // #64748B
+        const grisClaro = [241, 245, 249]; // #F1F5F9
+
+        // ── FRANJA SUPERIOR VERDE ──
+        doc.setFillColor(...verde);
+        doc.rect(0, 0, W, 38, 'F');
+
+        // ── Título en la franja ──
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(22);
+        doc.setTextColor(255, 255, 255);
+        doc.text('NutrIAssist', W / 2, 16, { align: 'center' });
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(12);
+        doc.setTextColor(220, 255, 240);
+        doc.text('Reporte Nutricional Semanal', W / 2, 25, { align: 'center' });
+
+        doc.setFontSize(9);
+        doc.text('Semana del ' + data.datos[0].fecha + '  al  ' + data.datos[6].fecha, W / 2, 33, { align: 'center' });
+
+        // ── DATOS DEL PACIENTE ──
+        let y = 50;
+        doc.setFontSize(11);
+        doc.setTextColor(...grisOsc);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Paciente:', margin, y);
+        doc.setFont('helvetica', 'normal');
+        doc.text(data.nombre, margin + 28, y);
+
+        y += 8;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Meta Calórica Diaria:', margin, y);
+        doc.setFont('helvetica', 'normal');
+        doc.text(data.meta + ' kcal', margin + 52, y);
+
+        y += 4;
+        doc.setDrawColor(...verde);
+        doc.setLineWidth(0.5);
+        doc.line(margin, y, W - margin, y);
+
+        // ── TABLA DE DATOS DIARIOS ──
+        y += 8;
+        const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        let sumCal = 0, sumPro = 0, sumCar = 0, sumGra = 0;
+        let diasConRegistro = 0;
+
+        const tableRows = data.datos.map(dia => {
+            const d = new Date(dia.fecha + 'T12:00:00');
+            const label = diasSemana[d.getDay()] + '  ' + dia.fecha;
+            sumCal += dia.cals;
+            sumPro += dia.pro;
+            sumCar += dia.car;
+            sumGra += dia.gra;
+            if (dia.cals > 0) diasConRegistro++;
+            return [label, dia.cals.toFixed(0), dia.pro.toFixed(1), dia.car.toFixed(1), dia.gra.toFixed(1)];
+        });
+
+        // Fila de promedio
+        const n = diasConRegistro || 1;
+        tableRows.push([
+            'PROMEDIO',
+            (sumCal / 7).toFixed(0),
+            (sumPro / 7).toFixed(1),
+            (sumCar / 7).toFixed(1),
+            (sumGra / 7).toFixed(1)
+        ]);
+
+        doc.autoTable({
+            startY: y,
+            margin: { left: margin, right: margin },
+            head: [['Día / Fecha', 'Calorías (kcal)', 'Proteínas (g)', 'Carbohidratos (g)', 'Grasas (g)']],
+            body: tableRows,
+            theme: 'grid',
+            headStyles: {
+                fillColor: verde,
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                halign: 'center',
+                fontSize: 10
+            },
+            bodyStyles: {
+                halign: 'center',
+                fontSize: 10,
+                textColor: grisOsc
+            },
+            alternateRowStyles: {
+                fillColor: grisClaro
+            },
+            // La última fila (PROMEDIO) con estilo especial
+            didParseCell: function(hookData) {
+                if (hookData.section === 'body' && hookData.row.index === tableRows.length - 1) {
+                    hookData.cell.styles.fillColor = [30, 41, 59];
+                    hookData.cell.styles.textColor = [255, 255, 255];
+                    hookData.cell.styles.fontStyle = 'bold';
+                }
+            },
+            columnStyles: {
+                0: { halign: 'left', cellWidth: 45 }
+            }
+        });
+
+        // ── RESUMEN VISUAL ──
+        let finalY = doc.lastAutoTable.finalY + 15;
+
+        // Tarjetas de resumen
+        const cardW = (W - margin * 2 - 15) / 4;
+        const cards = [
+            { label: 'Calorías', value: (sumCal / 7).toFixed(0), unit: 'kcal', color: verde },
+            { label: 'Proteínas', value: (sumPro / 7).toFixed(1), unit: 'g', color: [59, 130, 246] },
+            { label: 'Carbohidratos', value: (sumCar / 7).toFixed(1), unit: 'g', color: [249, 115, 22] },
+            { label: 'Grasas', value: (sumGra / 7).toFixed(1), unit: 'g', color: [234, 179, 8] }
+        ];
+
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...grisOsc);
+        doc.text('Promedios Diarios', margin, finalY);
+        finalY += 8;
+
+        cards.forEach((card, i) => {
+            const x = margin + i * (cardW + 5);
+            // Fondo de tarjeta
+            doc.setFillColor(...grisClaro);
+            doc.roundedRect(x, finalY, cardW, 30, 3, 3, 'F');
+            // Barra de color superior
+            doc.setFillColor(...card.color);
+            doc.roundedRect(x, finalY, cardW, 5, 3, 3, 'F');
+            doc.setFillColor(...grisClaro);
+            doc.rect(x, finalY + 3, cardW, 2, 'F'); // Recorta la esquina inferior del color
+
+            // Valor
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(14);
+            doc.setTextColor(...card.color);
+            doc.text(card.value + ' ' + card.unit, x + cardW / 2, finalY + 17, { align: 'center' });
+
+            // Label
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(...grisMed);
+            doc.text(card.label, x + cardW / 2, finalY + 25, { align: 'center' });
+        });
+
+        finalY += 42;
+
+        // ── ADHERENCIA A META ──
+        const adherencia = Math.min(100, Math.round((sumCal / 7) / data.meta * 100));
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.setTextColor(...grisOsc);
+        doc.text('Adherencia a Meta Calórica', margin, finalY);
+        finalY += 8;
+
+        // Barra de progreso
+        const barW = W - margin * 2;
+        doc.setFillColor(226, 232, 240);
+        doc.roundedRect(margin, finalY, barW, 8, 4, 4, 'F');
+        const fillW = barW * (adherencia / 100);
+        doc.setFillColor(...(adherencia > 110 ? [239, 68, 68] : verde));
+        doc.roundedRect(margin, finalY, Math.max(fillW, 8), 8, 4, 4, 'F');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(255, 255, 255);
+        if (fillW > 25) {
+            doc.text(adherencia + '%', margin + fillW / 2, finalY + 6, { align: 'center' });
+        }
+
+        finalY += 14;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(...grisMed);
+        const adherMsg = adherencia < 80 ? 'El paciente consume significativamente por debajo de su meta.'
+                       : adherencia <= 110 ? 'El paciente mantiene una ingesta adecuada respecto a su meta.'
+                       : 'El paciente excede su meta calórica diaria.';
+        doc.text(adherMsg, margin, finalY);
+
+        // ── OBSERVACIONES ──
+        finalY += 15;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.setTextColor(...grisOsc);
+        doc.text('Observaciones del Profesional', margin, finalY);
+        finalY += 6;
+
+        // Líneas punteadas para escribir
+        doc.setDrawColor(203, 213, 225);
+        doc.setLineDashPattern([2, 2], 0);
+        for (let i = 0; i < 4; i++) {
+            doc.line(margin, finalY + (i * 10), W - margin, finalY + (i * 10));
+        }
+        doc.setLineDashPattern([], 0);
+
+        // ── PIE DE PÁGINA ──
+        const pageH = doc.internal.pageSize.getHeight();
+        doc.setDrawColor(...verde);
+        doc.setLineWidth(0.5);
+        doc.line(margin, pageH - 18, W - margin, pageH - 18);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(...grisMed);
+        doc.text('Generado automáticamente por NutrIAssist — Este documento es informativo y no sustituye la valoración médica.', W / 2, pageH - 12, { align: 'center' });
+        doc.text('Fecha de generación: ' + new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' }), W / 2, pageH - 7, { align: 'center' });
+
+        // ── GUARDAR ──
+        doc.save('Reporte_Nutricional_' + data.datos[6].fecha + '.pdf');
+
+    } catch (error) {
+        console.error('Error generando PDF:', error);
+        alert('Hubo un problema al generar el reporte: ' + error.message);
+    } finally {
+        iconDiv.innerHTML = originalIcon;
+    }
 }
 </script>
 
