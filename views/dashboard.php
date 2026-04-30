@@ -18,6 +18,15 @@ require_once 'includes/header.php';
             </div>
             <h1><?= htmlspecialchars($nombre_usuario) ?></h1>
         </div>
+
+        <!-- STREAK (RACHA) -->
+        <div class="streak-badge <?= $racha_activa_hoy ? 'active' : 'inactive' ?>" title="Racha de días: <?= $racha_actual ?>">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fire-icon">
+                <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+            </svg>
+            <span class="streak-count"><?= $racha_actual ?></span>
+        </div>
+
         <div class="header-date-box">
             <p class="header-date-label">HOY</p>
             <p class="header-date-value"><?= $label_hoy ?></p>
@@ -229,6 +238,47 @@ require_once 'includes/header.php';
         transition: opacity 0.2s;
     }
     .tutorial-trigger:hover { opacity: 1; }
+
+    /* Streak Badge Styles */
+    .streak-badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 800;
+        transition: all 0.3s ease;
+        background: rgba(226, 232, 240, 0.5); /* Soft slate */
+    }
+    .streak-badge.active {
+        background: linear-gradient(135deg, #ff9d00, #ff5e00);
+        color: white;
+        box-shadow: 0 4px 12px rgba(255, 94, 0, 0.3);
+    }
+    .streak-badge.inactive {
+        color: #94a3b8;
+    }
+    .fire-icon {
+        transition: transform 0.3s ease;
+    }
+    .streak-badge.active .fire-icon {
+        filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
+        animation: flicker 1.5s infinite alternate;
+        stroke: white;
+        fill: white;
+    }
+    .streak-badge.inactive .fire-icon {
+        stroke: #94a3b8;
+        fill: none;
+    }
+    @keyframes flicker {
+        0% { transform: scale(1); opacity: 0.9; }
+        100% { transform: scale(1.1); opacity: 1; }
+    }
+    .streak-count {
+        font-size: 16px;
+        line-height: 1;
+    }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/intro.min.js"></script>
 

@@ -85,7 +85,6 @@ try {
     $stmt_sug->execute([':kw' => "%\"$keyword\"%"]);
     $receta_sugerida = $stmt_sug->fetch(PDO::FETCH_ASSOC);
 
-    // Si no hay receta con ese tag, obtener una aleatoria
     if (!$receta_sugerida) {
         $stmt_rand = $conn->query("SELECT * FROM Recetas ORDER BY RAND() LIMIT 1");
         $receta_sugerida = $stmt_rand->fetch(PDO::FETCH_ASSOC);
@@ -93,4 +92,50 @@ try {
 } catch (PDOException $e) {
     $receta_sugerida = null;
 }
+
+// ─── LÓGICA DE RACHA (STREAK) ──────────────────────────────────────────
+$racha_actual = 0;
+$racha_activa_hoy = false;
+
+try {
+    $stmt_racha = $conn->prepare("SELECT racha_dias, fecha_ultima_conexion FROM Usuarios WHERE id_usuario = :uid");
+    $stmt_racha->execute([':uid' => $id_usuario]);
+    $user_data = $stmt_racha->fetch(PDO::FETCH_ASSOC);
+
+    $racha_actual = (int)($user_data['racha_dias'] ?? 0);
+    $ultima_fecha = $user_data['fecha_ultima_conexion'];
+    $hoy = date('Y-m-d');
+
+    if ($ultima_fecha) {
+        $fecha_u = new DateTime($ultima_fecha);
+        $fecha_h = new DateTime($hoy);
+        $diff = $fecha_h->diff($fecha_u)->days;
+
+        if ($diff == 0) {
+            // Ya entró hoy
+            $racha_activa_hoy = true;
+        } elseif ($diff <= 3) {
+            // Entró ayer o hace menos de 3 días (racha continúa)
+            $racha_actual++;
+            $racha_activa_hoy = true;
+            $stmt_upd = $conn->prepare("UPDATE Usuarios SET racha_dias = :r, fecha_ultima_conexion = :f WHERE id_usuario = :uid");
+            $stmt_upd->execute([':r' => $racha_actual, ':f' => $hoy, ':uid' => $id_usuario]);
+        } else {
+            // Pasaron más de 3 días, se apaga el fuego (según el usuario, se resetea)
+            $racha_actual = 1;
+            $racha_activa_hoy = true;
+            $stmt_upd = $conn->prepare("UPDATE Usuarios SET racha_dias = 1, fecha_ultima_conexion = :f WHERE id_usuario = :uid");
+            $stmt_upd->execute([':f' => $hoy, ':uid' => $id_usuario]);
+        }
+    } else {
+        // Primera racha
+        $racha_actual = 1;
+        $racha_activa_hoy = true;
+        $stmt_upd = $conn->prepare("UPDATE Usuarios SET racha_dias = 1, fecha_ultima_conexion = :f WHERE id_usuario = :uid");
+        $stmt_upd->execute([':f' => $hoy, ':uid' => $id_usuario]);
+    }
+} catch (PDOException $e) {
+    error_log('[streak] DB ERROR: ' . $e->getMessage());
+}
+?>
 
