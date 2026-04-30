@@ -10,7 +10,12 @@ require_once 'includes/header.php';
     
     <div class="header-dashboard">
         <div class="user-greeting">
-            <p><?= htmlspecialchars($saludo) ?></p>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <p><?= htmlspecialchars($saludo) ?></p>
+                <button onclick="startTutorial(false)" class="tutorial-trigger" title="Ver guía de esta página">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/></svg>
+                </button>
+            </div>
             <h1><?= htmlspecialchars($nombre_usuario) ?></h1>
         </div>
         <div class="header-date-box">
@@ -141,133 +146,170 @@ require_once 'includes/header.php';
     .introjs-tooltip {
         background-color: var(--color-bg-card, #ffffff) !important;
         border-radius: 16px !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
         color: var(--color-text) !important;
         font-family: 'Inter', sans-serif !important;
-        max-width: 90vw !important; /* Fixes overflowing off-screen on mobile */
-        min-width: 280px !important;
+        max-width: 90vw !important;
+        min-width: 320px !important; /* Slightly larger base size */
         box-sizing: border-box !important;
+        padding: 10px !important;
     }
     .introjs-tooltiptext {
-        font-size: 14px !important;
-        line-height: 1.5 !important;
-        color: var(--color-text-gray) !important;
-        padding-bottom: 10px !important;
+        font-size: 15px !important;
+        line-height: 1.6 !important;
+        color: #1e293b !important; /* Higher contrast (Slate 800) */
+        padding-bottom: 12px !important;
     }
     .introjs-tooltiptitle {
-        font-size: 18px !important;
-        font-weight: 700 !important;
+        font-size: 20px !important;
+        font-weight: 800 !important;
         color: var(--color-text) !important;
-        margin-bottom: 8px !important;
-        padding-right: 50px !important; /* Prevent overlap with skip button */
-        line-height: 1.3 !important;
+        margin-bottom: 10px !important;
+        padding-right: 50px !important;
+        line-height: 1.2 !important;
     }
     .introjs-tooltip-header {
         position: relative !important;
     }
     .introjs-button {
-        border-radius: 8px !important;
+        border-radius: 10px !important;
         text-shadow: none !important;
         box-shadow: none !important;
         border: none !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
         font-family: 'Inter', sans-serif !important;
-        padding: 8px 16px !important;
-        transition: opacity 0.2s !important;
+        padding: 10px 20px !important;
+        transition: all 0.2s !important;
     }
     .introjs-nextbutton, .introjs-donebutton {
-        background-color: var(--color-malachite) !important;
+        background: var(--color-malachite) !important;
         color: white !important;
     }
     .introjs-prevbutton {
         background-color: #f1f5f9 !important;
-        color: var(--color-text-gray) !important;
+        color: #475569 !important;
     }
     .introjs-skipbutton {
         position: absolute !important;
         top: 15px !important;
         right: 15px !important;
-        color: var(--color-text-gray) !important;
+        color: #94a3b8 !important;
         font-size: 14px !important;
         font-weight: 600 !important;
         text-decoration: none !important;
         line-height: 1 !important;
     }
+    .introjs-bullets ul li a.active {
+        background: var(--color-malachite) !important;
+    }
     .introjs-button:hover {
-        opacity: 0.9 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
     }
     body.dark-mode .introjs-tooltip {
-        background-color: var(--color-bg-card) !important;
-        color: var(--color-text) !important;
+        background-color: #1e293b !important;
+        color: #f8fafc !important;
+    }
+    body.dark-mode .introjs-tooltiptext {
+        color: #cbd5e1 !important;
     }
     body.dark-mode .introjs-prevbutton {
-        background-color: var(--color-border) !important;
-        color: var(--color-text) !important;
+        background-color: #334155 !important;
+        color: #f8fafc !important;
     }
+    .tutorial-trigger {
+        background: none;
+        border: none;
+        padding: 0;
+        color: var(--color-malachite);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+    .tutorial-trigger:hover { opacity: 1; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/intro.min.js"></script>
 
 <script>
+function startTutorial(isMultiPage = true) {
+    var intro = introJs();
+    intro.setOptions({
+        steps: [
+            {
+                title: '¡Bienvenido! 👋',
+                intro: 'Esta es tu nueva central de salud. Hemos diseñado una experiencia rápida para que aprendas a usarla en segundos.',
+                tooltipClass: 'welcome-step'
+            },
+            {
+                element: document.querySelector('.ring-container'),
+                title: 'Control de Energía',
+                intro: 'Este anillo te muestra exactamente cuánto has comido y cuánto te queda para alcanzar tu meta diaria.'
+            },
+            {
+                element: document.querySelector('.macros-list'),
+                title: 'Tus Macros',
+                intro: 'No solo importan las calorías. Aquí vigilamos tus proteínas, carbohidratos y grasas para que tu cuerpo rinda al máximo.'
+            },
+            <?php if ($receta_sugerida): ?>
+            {
+                element: document.querySelector('.suggestion-card'),
+                title: 'Recomendación del día',
+                intro: '¿No sabes qué comer? Nuestra IA selecciona cada día una receta perfecta para tus metas actuales.'
+            },
+            <?php endif; ?>
+            {
+                element: document.querySelector('.fab-chat'),
+                title: 'Tu Asistente 24/7',
+                intro: 'Pulsa aquí para hablar con nuestra IA. Puedes preguntarle recetas, dudas nutricionales o pedirle que registre algo por ti.',
+                position: 'left'
+            },
+            {
+                element: document.querySelectorAll('.nav-item')[1],
+                title: 'Siguiente parada: El Diario',
+                intro: isMultiPage ? '¡Pulsa aquí para registrar tus comidas! Haz clic en el ícono de Diario para continuar la guía allí.' : 'Desde aquí puedes ir a tu diario de comidas para registrar lo que consumes.',
+                position: 'top'
+            }
+        ],
+        nextLabel: 'Siguiente',
+        prevLabel: 'Atrás',
+        doneLabel: isMultiPage ? '¡Ir al Diario!' : '¡Entendido!',
+        showSkipButton: true,
+        skipLabel: 'Saltar guía',
+        showBullets: true,
+        overlayOpacity: 0.8
+    });
+
+    intro.oncomplete(function() {
+        if (isMultiPage) {
+            localStorage.setItem('nutriassist_tutorial_shown_v4', 'true');
+            window.location.href = 'diario.php?tutorial=1';
+        }
+    });
+    
+    intro.onexit(function() {
+        if (isMultiPage) {
+            localStorage.setItem('nutriassist_tutorial_shown_v4', 'true');
+        }
+    });
+
+    intro.start();
+}
+
 document.addEventListener("DOMContentLoaded", function() {
+    // Force tutorial to show if the user just registered/onboarded
+    <?php if (isset($_SESSION['mostrar_tutorial']) && $_SESSION['mostrar_tutorial']): ?>
+        localStorage.removeItem('nutriassist_tutorial_shown_v4');
+        localStorage.removeItem('active_tutorial_part');
+        <?php unset($_SESSION['mostrar_tutorial']); ?>
+    <?php endif; ?>
+
     // Check if the tutorial has already been shown
     if (!localStorage.getItem('nutriassist_tutorial_shown_v4')) {
-        var intro = introJs();
-        intro.setOptions({
-            steps: [
-                {
-                    title: '¡Bienvenido a NutrIAssist!',
-                    intro: 'Vamos a dar un rápido paseo para que conozcas cómo aprovechar al máximo la aplicación.'
-                },
-                {
-                    element: document.querySelector('.ring-container'),
-                    title: 'Tus Calorías Diarias',
-                    intro: 'Aquí verás el progreso de tus calorías consumidas hoy frente a tu meta.'
-                },
-                {
-                    element: document.querySelector('.macros-list'),
-                    title: 'Macronutrientes',
-                    intro: 'Lleva el control de tus Proteínas, Carbohidratos y Grasas fácilmente.'
-                },
-                <?php if ($receta_sugerida): ?>
-                {
-                    element: document.querySelector('.suggestion-card'),
-                    title: 'Sugerencias para ti',
-                    intro: 'Te recomendaremos recetas basadas en tus gustos y necesidades nutricionales.'
-                },
-                <?php endif; ?>
-                {
-                    element: document.querySelector('.fab-chat'),
-                    title: 'Asistente IA',
-                    intro: '¿Tienes dudas o necesitas una receta rápida? Nuestra IA está aquí para ayudarte en cualquier momento.',
-                    position: 'left'
-                },
-                {
-                    element: document.querySelector('.bottom-nav'),
-                    title: 'Navegación',
-                    intro: 'Registra tus comidas en el Diario, explora Recetas o ajusta tu Perfil desde aquí. ¡Estás listo para empezar!'
-                }
-            ],
-            nextLabel: 'Siguiente',
-            prevLabel: 'Atrás',
-            doneLabel: '¡Empezar!',
-            showSkipButton: true,
-            skipLabel: 'Saltar',
-            showBullets: true,
-            overlayOpacity: 0.7
-        });
-
-        // Set the flag when tutorial is completed or exited
-        intro.oncomplete(function() {
-            localStorage.setItem('nutriassist_tutorial_shown_v4', 'true');
-        });
-        intro.onexit(function() {
-            localStorage.setItem('nutriassist_tutorial_shown_v4', 'true');
-        });
-
-        // Start the intro after a short delay for smooth rendering
         setTimeout(() => {
-            intro.start();
-        }, 600);
+            startTutorial(true);
+        }, 800);
     }
 });
 </script>

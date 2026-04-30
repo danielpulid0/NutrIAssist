@@ -68,6 +68,7 @@ try {
 
     // 7. Guardar las metas calculadas en la sesión para el Dashboard
     $_SESSION['meta_calorias'] = $calorias_finales;
+    $_SESSION['mostrar_tutorial'] = true;
 
     // 8. ¡Redirigir al Dashboard!
     header("Location: ../views/dashboard.php");

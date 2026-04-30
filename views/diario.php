@@ -8,7 +8,12 @@ require_once 'includes/header.php';
 
 <div class="mobile-container">
 
-    <h1 class="page-title-center">Diario de Comidas</h1>
+    <h1 class="page-title-center">
+        Diario de Comidas
+        <button onclick="startTutorial(false)" class="tutorial-trigger" title="Ver guía de esta página" style="display: inline-flex; vertical-align: middle; margin-left: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/></svg>
+        </button>
+    </h1>
 
     <!-- ── CALENDARIO SEMANAL ── -->
     <div class="calendar-card">
@@ -213,6 +218,124 @@ require_once 'includes/header.php';
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- Intro.js CSS & JS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/introjs.min.css">
+<style>
+    /* Tutorial styling (reused for consistency) */
+    .introjs-tooltip {
+        background-color: var(--color-bg-card, #ffffff) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+        color: var(--color-text) !important;
+        font-family: 'Inter', sans-serif !important;
+        max-width: 90vw !important;
+        min-width: 320px !important;
+        box-sizing: border-box !important;
+        padding: 10px !important;
+    }
+    .introjs-tooltiptext {
+        font-size: 15px !important;
+        line-height: 1.6 !important;
+        color: #1e293b !important;
+        padding-bottom: 12px !important;
+    }
+    .introjs-tooltiptitle {
+        font-size: 20px !important;
+        font-weight: 800 !important;
+        color: var(--color-text) !important;
+        margin-bottom: 10px !important;
+        padding-right: 50px !important;
+        line-height: 1.2 !important;
+    }
+    .introjs-button {
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        padding: 10px 20px !important;
+    }
+    .introjs-nextbutton, .introjs-donebutton {
+        background: var(--color-malachite) !important;
+        color: white !important;
+    }
+    .introjs-skipbutton {
+        position: absolute !important;
+        top: 15px !important;
+        right: 15px !important;
+        color: #94a3b8 !important;
+    }
+    body.dark-mode .introjs-tooltip { background-color: #1e293b !important; color: #f8fafc !important; }
+    body.dark-mode .introjs-tooltiptext { color: #cbd5e1 !important; }
+    .tutorial-trigger {
+        background: none;
+        border: none;
+        padding: 0;
+        color: var(--color-malachite);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+    .tutorial-trigger:hover { opacity: 1; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/intro.min.js"></script>
+
+<script>
+function startTutorial(isMultiPage = true) {
+    var intro = introJs();
+    intro.setOptions({
+        steps: [
+            {
+                title: 'Tu Diario Personal 📓',
+                intro: 'Aquí es donde sucede la magia. Registrar tus comidas es el hábito #1 para alcanzar tus metas.'
+            },
+            {
+                element: document.querySelector('.calendar-card'),
+                title: 'Calendario Semanal',
+                intro: 'Puedes navegar entre los días de la semana para revisar qué comiste o planificar el futuro.'
+            },
+            {
+                element: document.querySelector('.cals-card'),
+                title: 'Resumen del Día',
+                intro: 'Aquí ves el total acumulado de hoy. ¡Mantén esa llama encendida!'
+            },
+            {
+                element: document.querySelector('.meal-card'),
+                title: 'Registrar Comidas',
+                intro: 'Pulsa en el botón "+" de cualquier sección (Desayuno, Comida, etc.) para buscar y agregar alimentos.',
+                position: 'bottom'
+            },
+            {
+                element: document.querySelectorAll('.nav-item')[2],
+                title: '¡Casi terminamos!',
+                intro: isMultiPage ? 'Ahora, vamos a echar un vistazo a la biblioteca de recetas. Pulsa aquí para terminar la guía.' : 'Desde aquí puedes ir a la sección de recetas para descubrir nuevas ideas saludables.',
+                position: 'top'
+            }
+        ],
+        nextLabel: 'Siguiente',
+        prevLabel: 'Atrás',
+        doneLabel: isMultiPage ? 'Ir a Recetas' : '¡Entendido!',
+        showSkipButton: true,
+        skipLabel: 'Saltar',
+        overlayOpacity: 0.8
+    });
+
+    intro.oncomplete(function() {
+        if (isMultiPage) {
+            window.location.href = 'recetas.php?tutorial=1';
+        }
+    });
+
+    intro.start();
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tutorial') === '1') {
+        setTimeout(() => { startTutorial(true); }, 800);
+    }
+});
+</script>
 
 <script>
     // Variables globales para el script modular

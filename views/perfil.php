@@ -148,6 +148,19 @@ require_once 'includes/header.php';
             </div>
         </div>
 
+        <h2 class="section-title">Ayuda</h2>
+        <div class="preferencias-card" onclick="resetTutorial()" style="cursor: pointer; margin-bottom: 20px;">
+            <div class="pref-item">
+                <div class="pref-info">
+                    <h4>Ver Tutorial</h4>
+                    <p>Repasar guía interactiva de la aplicación</p>
+                </div>
+                <div style="color: var(--color-malachite);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </div>
+            </div>
+        </div>
+
         <div class="form-actions">
             <button type="submit" class="btn-primary">Guardar Cambios</button>
             <a href="../controllers/logout.php" class="btn-logout">Cerrar sesión</a>
@@ -158,6 +171,13 @@ require_once 'includes/header.php';
     <?php include 'includes/footer.php'; ?>
 
 </div>
+
+<script>
+function resetTutorial() {
+    localStorage.removeItem('nutriassist_tutorial_shown_v4');
+    window.location.href = 'dashboard.php';
+}
+</script>
 
 <script src="../assets/js/perfil.js?v=<?= time() ?>"></script>
 </body>
