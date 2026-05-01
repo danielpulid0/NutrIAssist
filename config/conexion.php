@@ -1,6 +1,6 @@
 <?php
 // config/db.php
-date_default_timezone_set('America/Mexico_City');
+date_default_timezone_set('America/Tijuana');
 
 $host = "localhost";
 $dbname = "nutriassist_db"; // Ajusta al nombre exacto que creaste

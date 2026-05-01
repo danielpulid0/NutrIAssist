@@ -27,6 +27,8 @@ if (count($datos['items']) > 20) {
     exit();
 }
 
+require_once '../config/conexion.php';
+
 $id_usuario = (int) $_SESSION['usuario_id'];
 $fecha_hoy  = date('Y-m-d');
 
@@ -76,9 +78,6 @@ foreach ($datos['items'] as $idx => $item) {
 
     $items_saneados[] = compact('nombre','gramos','calorias','proteina','carbs','grasas','id_alim');
 }
-
-// ── Persistir en la DB ────────────────────────────────────────────
-require_once '../config/conexion.php';
 
 try {
     // Paso A: Garantizar el registro diario

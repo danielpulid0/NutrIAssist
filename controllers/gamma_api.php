@@ -68,13 +68,15 @@ $api_url = "https://generativelanguage.googleapis.com/v1beta/models/{$modelo_usa
 // 3. SYSTEM PROMPT
 $system_prompt = "Eres NutrIAssist, un inteligente asistente nutricional creado para chatear, analizar y recomendar comida.
 REGLA ABSOLUTA: Responde SIEMPRE con un objeto JSON válido.
+REGLA CRÍTICA DE FORMATO: Los campos numéricos (calorias, proteina, carbs, grasas) DEBEN ser NÚMEROS PUROS sin unidades. Ejemplo correcto: \"calorias\": 350. Ejemplo INCORRECTO: \"calorias\": \"350 kcal\". NUNCA uses strings para valores numéricos. NUNCA agregues unidades como 'kcal', 'g', 'gr' dentro del valor.
 Estructuras JSON permitidas según el Caso:
 
 CASO A) Saludo o charla general:
 { \"tipo_respuesta\": \"chat\", \"mensaje_respuesta\": \"[Tu respuesta amigable y natural aquí]\" }
 
 CASO B) El usuario reporta una comida explícitamente consumida:
-{ \"tipo_respuesta\": \"food_log\", \"alimento\": \"[Deduce nombre]\", \"descripcion\": \"[Porción]\", \"calorias\": 0, \"proteina\": 0, \"carbs\": 0, \"grasas\": 0, \"tipo_comida\": \"Comida\", \"tipo_icono\": \"solid\" }
+{ \"tipo_respuesta\": \"food_log\", \"alimento\": \"[Deduce nombre corto sin apóstrofes ni comillas]\", \"descripcion\": \"[Porción estimada]\", \"calorias\": 350, \"proteina\": 25, \"carbs\": 40, \"grasas\": 10, \"tipo_comida\": \"Comida\", \"tipo_icono\": \"solid\" }
+ATENCIÓN: calorias, proteina, carbs, grasas DEBEN ser números enteros o decimales, NUNCA strings.
 
 CASO C) El usuario pone una cantidad de comida irreal (ej. 40 pasteles):
 { \"tipo_respuesta\": \"chat\", \"mensaje_respuesta\": \"[Pregúntale amigablemente si está seguro para comprobar que no hubo errores al escribir. Si dice que sí en otro mensaje, procesas como CASO B]\" }
@@ -83,7 +85,8 @@ CASO D) Temas ajenos a la dieta o nutrición:
 { \"tipo_respuesta\": \"chat\", \"mensaje_respuesta\": \"Lo siento, solo ayudo con comida y nutrición.\" }
 
 CASO E) El usuario PIDIÓ CONSEJOS de qué alimento/receta COMER AHORA MISMO:
-{ \"tipo_respuesta\": \"food_log\", \"alimento\": \"[Nombre Platillo Sugerido adaptado estrictamente a su PERFIL, META Y RESTRICCIONES]\", \"descripcion\": \"[Mini receta o justificación de por qué le sirve]\", \"calorias\": 0, \"proteina\": 0, \"carbs\": 0, \"grasas\": 0, \"tipo_comida\": \"Sugerencia\", \"tipo_icono\": \"solid\" }";
+{ \"tipo_respuesta\": \"food_log\", \"alimento\": \"[Nombre Platillo Sugerido adaptado estrictamente a su PERFIL, META Y RESTRICCIONES]\", \"descripcion\": \"[Mini receta o justificación de por qué le sirve]\", \"calorias\": 350, \"proteina\": 25, \"carbs\": 40, \"grasas\": 10, \"tipo_comida\": \"Sugerencia\", \"tipo_icono\": \"solid\" }
+ATENCIÓN: Los valores 350, 25, 40, 10 son solo ejemplos. Calcula valores REALES para el alimento sugerido.";
 
 // 4. CONSTRUIR MEMORIA (Contexto + Historial)
 $contents = [];
@@ -174,6 +177,25 @@ if ($http_code == 200) {
         $json_final = json_decode(trim($contenido_limpio), true);
 
         if ($json_final) {
+            // ── Sanitizar valores numéricos si la IA devolvió strings ──
+            if (isset($json_final['tipo_respuesta']) && $json_final['tipo_respuesta'] === 'food_log') {
+                // Forzar valores numéricos puros (la IA a veces devuelve "350 kcal" o "25g")
+                $json_final['calorias'] = (int) preg_replace('/[^0-9.]/', '', (string)($json_final['calorias'] ?? 0));
+                $json_final['proteina'] = (float) preg_replace('/[^0-9.]/', '', (string)($json_final['proteina'] ?? 0));
+                $json_final['carbs']    = (float) preg_replace('/[^0-9.]/', '', (string)($json_final['carbs'] ?? 0));
+                $json_final['grasas']   = (float) preg_replace('/[^0-9.]/', '', (string)($json_final['grasas'] ?? 0));
+                
+                // Sanitizar nombre de alimento: quitar comillas simples/dobles que rompen onclick HTML
+                $json_final['alimento'] = str_replace(["'", '"', '\\'], ['', '', ''], $json_final['alimento'] ?? 'Alimento');
+                $json_final['descripcion'] = str_replace(["'", '"', '\\'], ['', '', ''], $json_final['descripcion'] ?? '');
+                
+                // Asegurar que tipo_comida sea un valor válido
+                $tipos_validos = ['Desayuno', 'Comida', 'Cena', 'Snack', 'Almuerzo', 'Merienda', 'Sugerencia'];
+                if (!in_array($json_final['tipo_comida'] ?? '', $tipos_validos)) {
+                    $json_final['tipo_comida'] = 'Snack';
+                }
+            }
+            
             echo json_encode([
                 'status' => 'success',
                 'food_data' => $json_final

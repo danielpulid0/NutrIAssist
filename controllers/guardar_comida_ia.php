@@ -24,15 +24,21 @@ if (!$datos || !isset($datos['calorias'])) {
     exit();
 }
 
-// 3. Sanear valores
+// 3. Conectar a la DB (Esto establece el timezone correcto: America/Tijuana)
+require_once '../config/conexion.php';
+
+// 4. Sanear valores — strip any non-numeric chars (AI sometimes sends "350 kcal" or "25g")
 $id_usuario  = (int) $_SESSION['usuario_id'];
 $nombre_ia   = htmlspecialchars(trim($datos['alimento']    ?? 'Alimento'));
 $descripcion = htmlspecialchars(trim($datos['descripcion'] ?? ''));
-$calorias    = (int)   ($datos['calorias']  ?? 0);
-$proteina    = (float) ($datos['proteina']  ?? 0);
-$carbs       = (float) ($datos['carbs']     ?? 0);
-$grasas      = (float) ($datos['grasas']    ?? 0);
+$calorias    = (int)   preg_replace('/[^0-9.]/', '', (string)($datos['calorias']  ?? '0'));
+$proteina    = (float) preg_replace('/[^0-9.]/', '', (string)($datos['proteina']  ?? '0'));
+$carbs       = (float) preg_replace('/[^0-9.]/', '', (string)($datos['carbs']     ?? '0'));
+$grasas      = (float) preg_replace('/[^0-9.]/', '', (string)($datos['grasas']    ?? '0'));
 $fecha_hoy   = date('Y-m-d');
+
+// Log para depuración
+error_log("[guardar_comida_ia] Datos recibidos: usuario=$id_usuario, alimento=$nombre_ia, cal=$calorias, pro=$proteina, carbs=$carbs, grasas=$grasas");
 
 // 4. Normalizar tipo de comida → proteger el ENUM de MySQL
 $tipo_ia  = ucfirst(strtolower($datos['tipo_comida'] ?? 'snack'));
@@ -47,9 +53,6 @@ $mapa_tipos = [
     'Sugerencia' => 'Snack', // Caso E de la IA
 ];
 $tipo_final = $mapa_tipos[$tipo_ia] ?? 'Snack';
-
-// 5. Conectar a la DB
-require_once '../config/conexion.php';
 
 try {
     // ─── Paso A: Garantizar el registro diario de hoy ─────────────────

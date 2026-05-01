@@ -20,6 +20,8 @@ if (!$datos || !isset($datos['alimento'], $datos['calorias'])) {
     exit();
 }
 
+require_once '../config/conexion.php';
+
 $id_usuario  = (int) $_SESSION['usuario_id'];
 $fecha_hoy   = date('Y-m-d');
 
@@ -66,9 +68,6 @@ $mapa_tipos = [
     'Cena' => 'Cena', 'Snack' => 'Snack', 'Merienda' => 'Snack', 'Postre' => 'Snack',
 ];
 $tipo_final = $mapa_tipos[$tipo_ia] ?? 'Snack';
-
-require_once '../config/conexion.php';
-
 try {
     // Paso A: Garantizar registro diario
     $conn->prepare("INSERT IGNORE INTO Registros_Diarios (id_usuario, fecha) VALUES (?,?)")

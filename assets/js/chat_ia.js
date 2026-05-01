@@ -301,15 +301,28 @@ function appendBotText(text) {
     chatBox.scroll({ top: chatBox.scrollHeight, behavior: 'smooth' });
 }
 
+// Helper: coerce any value to a number (strips units like 'kcal', 'g', etc.)
+function toNum(val) {
+    if (typeof val === 'number') return val;
+    const cleaned = String(val).replace(/[^0-9.]/g, '');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
+}
+
+// Helper: escape strings for safe use in HTML attributes
+function escAttr(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 function renderBotCard(data) {
     const templateId = 'card_' + Date.now();
-    const calorias = Math.round(data.calorias) || 0;
-    const alimento = data.alimento || "Alimento Detectado";
-    const detalle = data.descripcion || "Porción estimada";
+    const calorias = Math.round(toNum(data.calorias));
+    const alimento = (data.alimento || "Alimento Detectado").replace(/['"\\/]/g, '');
+    const detalle = (data.descripcion || "Porción estimada").replace(/['"\\/]/g, '');
     const comida = data.tipo_comida || "Registro";
-    const proteina = data.proteina || 0;
-    const carbs = data.carbs || 0;
-    const grasas = data.grasas || 0;
+    const proteina = toNum(data.proteina);
+    const carbs = toNum(data.carbs);
+    const grasas = toNum(data.grasas);
 
     const isLiquid = data.tipo_icono === 'liquid' || alimento.toLowerCase().includes('jugo') || alimento.toLowerCase().includes('leche') || alimento.toLowerCase().includes('café');
     const iconClass = isLiquid ? 'liquid' : 'solid';
@@ -325,7 +338,11 @@ function renderBotCard(data) {
     ];
     const bannerImg = foodImgs[Math.floor(Math.random() * foodImgs.length)];
 
-    const jsonPayload = JSON.stringify({ calorias, proteina, carbs, grasas, alimento, tipo_comida: comida }).replace(/"/g, '&quot;');
+    // Store payload as data attribute to avoid inline onclick string-escaping issues
+    const payloadObj = { calorias, proteina, carbs, grasas, alimento, descripcion: detalle, tipo_comida: comida };
+    const safePayload = escAttr(JSON.stringify(payloadObj));
+    const safeAlimento = escAttr(alimento);
+    const safeComida = escAttr(comida);
 
     const html = `
     <div class="msg-wrapper ai" id="${templateId}">
@@ -334,7 +351,7 @@ function renderBotCard(data) {
             <div class="avatar bot-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path></svg>
             </div>
-            <div class="food-card">
+            <div class="food-card" data-payload="${safePayload}">
                 <div class="fc-banner" style="background-image: url('${bannerImg}');">
                     <div class="fc-banner-overlay">
                         <h3>${comida}</h3>
@@ -358,11 +375,11 @@ function renderBotCard(data) {
                 </div>
 
                 <div class="fc-actions">
-                    <button class="fc-btn outline" onclick="editFoodData('${templateId}', ${calorias}, ${proteina}, ${carbs}, ${grasas}, '${alimento}', '${comida}')">
+                    <button class="fc-btn outline" onclick="editFoodData('${templateId}', ${calorias}, ${proteina}, ${carbs}, ${grasas}, '${safeAlimento}', '${safeComida}')">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                         Editar
                     </button>
-                    <button class="fc-btn primary confirm-btn" onclick="saveFoodData('${templateId}', '${jsonPayload}')">
+                    <button class="fc-btn primary confirm-btn" onclick="saveFoodData('${templateId}')">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         Confirmar
                     </button>
@@ -423,13 +440,17 @@ function editFoodData(templateId, c, p, cb, g, alimento, comida) {
 }
 
 function saveEditData(templateId, alimento, comida) {
-    const c = document.getElementById('e_cal_'+templateId).value || 0;
-    const p = document.getElementById('e_pro_'+templateId).value || 0;
-    const cb = document.getElementById('e_car_'+templateId).value || 0;
-    const f = document.getElementById('e_fat_'+templateId).value || 0;
+    const c = toNum(document.getElementById('e_cal_'+templateId).value);
+    const p = toNum(document.getElementById('e_pro_'+templateId).value);
+    const cb = toNum(document.getElementById('e_car_'+templateId).value);
+    const f = toNum(document.getElementById('e_fat_'+templateId).value);
     const t = document.getElementById('e_tipo_'+templateId) ? document.getElementById('e_tipo_'+templateId).value : comida;
     
-    const jsonStr = JSON.stringify({calorias: c, proteina: p, carbs: cb, grasas: f, alimento: alimento, tipo_comida: t}).replace(/"/g, '&quot;');
+    // Update the data-payload on the card for the confirm button
+    const updatedPayload = { calorias: c, proteina: p, carbs: cb, grasas: f, alimento: alimento, tipo_comida: t };
+    const card = document.getElementById(templateId);
+    const foodCard = card.querySelector('.food-card');
+    if (foodCard) foodCard.setAttribute('data-payload', JSON.stringify(updatedPayload));
     
     const bannerSubtitle = document.querySelector(`#${templateId} .fc-banner-overlay h3`);
     if(bannerSubtitle) bannerSubtitle.innerText = t;
@@ -455,13 +476,15 @@ function saveEditData(templateId, alimento, comida) {
         </div>
     `;
     
+    const safeAlimento = escAttr(alimento);
+    const safeComida = escAttr(t);
     const action = document.querySelector(`#${templateId} .fc-actions`);
     action.innerHTML = `
-        <button class="fc-btn outline" onclick="editFoodData('${templateId}', ${c}, ${p}, ${cb}, ${f}, '${alimento}', '${comida}')">
+        <button class="fc-btn outline" onclick="editFoodData('${templateId}', ${c}, ${p}, ${cb}, ${f}, '${safeAlimento}', '${safeComida}')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             Editar
         </button>
-        <button class="fc-btn primary confirm-btn" onclick="saveFoodData('${templateId}', '${jsonStr}')">
+        <button class="fc-btn primary confirm-btn" onclick="saveFoodData('${templateId}')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
             Confirmar
         </button>
@@ -470,7 +493,7 @@ function saveEditData(templateId, alimento, comida) {
 
 
 
-async function saveFoodData(templateId, jsonDataStr) {
+async function saveFoodData(templateId) {
     const btn = document.querySelector(`#${templateId} .confirm-btn`);
     btn.innerHTML = 'Guardando...';
     btn.style.backgroundColor = '#CBD5E1';
@@ -478,7 +501,18 @@ async function saveFoodData(templateId, jsonDataStr) {
     btn.disabled = true;
 
     try {
-        const payloadObj = JSON.parse(jsonDataStr.replace(/&quot;/g, '"'));
+        // Read payload from data attribute (safe from HTML escaping issues)
+        const foodCard = document.querySelector(`#${templateId} .food-card`);
+        const rawPayload = foodCard.getAttribute('data-payload');
+        const payloadObj = JSON.parse(rawPayload);
+        
+        // Final numeric safety net
+        payloadObj.calorias = toNum(payloadObj.calorias);
+        payloadObj.proteina = toNum(payloadObj.proteina);
+        payloadObj.carbs    = toNum(payloadObj.carbs);
+        payloadObj.grasas   = toNum(payloadObj.grasas);
+        
+        console.log('[NutrIAssist] Saving food:', payloadObj);
         
         const response = await fetch('../controllers/guardar_comida_ia.php', {
             method: 'POST',
@@ -487,15 +521,18 @@ async function saveFoodData(templateId, jsonDataStr) {
         });
 
         const repObj = await response.json();
+        console.log('[NutrIAssist] Save response:', repObj);
 
         if (response.ok && repObj.status === 'success') {
             const actions = document.querySelector(`#${templateId} .fc-actions`);
-            actions.innerHTML = '<div class="fc-msg-full">Guardado correctamente</div>';
+            actions.innerHTML = '<div class="fc-msg-full">✅ Guardado correctamente</div>';
         } else {
+            console.error('[NutrIAssist] Save failed:', repObj);
             btn.innerHTML = 'Fallo al guardar';
             btn.disabled = false;
         }
     } catch (e) {
+        console.error('[NutrIAssist] Save error:', e);
         btn.innerHTML = 'Error conexión';
         btn.disabled = false;
     }
