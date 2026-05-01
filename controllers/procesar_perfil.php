@@ -36,6 +36,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $anio_nac = date('Y') - $edad;
     $fecha_nac = "$anio_nac-01-01";
 
+    // --- RECALCULAR CALORÍAS (TMB + TDEE) ---
+    // Fórmula de Mifflin-St Jeor
+    if ($sexo === 'Hombre' || $sexo === 'M') {
+        $tmb = (10 * $peso) + (6.25 * $altura) - (5 * $edad) + 5;
+    } else {
+        $tmb = (10 * $peso) + (6.25 * $altura) - (5 * $edad) - 161;
+    }
+
+    $multiplicadores = [1 => 1.200, 2 => 1.550, 3 => 1.725];
+    $factor_actividad = $multiplicadores[$actividad] ?? 1.200;
+    
+    $calorias_mantenimiento = $tmb * $factor_actividad;
+
+    $calorias_objetivo = $calorias_mantenimiento;
+    if ($meta === 'Perder Grasa') {
+        $calorias_objetivo -= 500;
+    } elseif ($meta === 'Ganar Músculo' || $meta === 'Ganar Musculo') {
+        $calorias_objetivo += 300;
+    }
+
+    // Actualizar la meta de calorías en la sesión
+    $_SESSION['meta_calorias'] = round($calorias_objetivo);
+
     // --- MIGRACIÓN SILENCIOSA DEL CATÁLOGO DE ACTIVIDAD ---
     // Si la tabla está vacía, llenarla con los 3 niveles base para que la Llave Foránea no falle
     $stmt_check_act = $conn->query("SELECT COUNT(*) FROM Nivel_Actividad");
