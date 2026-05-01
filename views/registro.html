@@ -81,8 +81,11 @@
         </div>
 
         <script>
-            if (new URLSearchParams(window.location.search).get('error') === 'email_existente') {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('error') === 'email_existente') {
                 document.write('<div class="alert-error">Este correo electrónico ya está registrado. Por favor, intenta iniciar sesión.</div>');
+            } else if (urlParams.get('error') === 'password_insegura') {
+                document.write('<div class="alert-error">La contraseña debe tener al menos 8 caracteres, incluir una letra, un número y un carácter especial.</div>');
             }
         </script>
 
@@ -99,7 +102,9 @@
             <label class="form-label" for="password">Contraseña</label>
             <div class="input-wrapper">
                 <input class="form-input" type="password" id="password" name="password"
-                    placeholder="Crea una contraseña segura" required minlength="8" autocomplete="new-password">
+                    placeholder="Crea una contraseña segura" required minlength="8" autocomplete="new-password"
+                    pattern="(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}"
+                    title="La contraseña debe tener al menos 8 caracteres, incluir una letra, un número y un carácter especial.">
                 <button type="button" class="input-icon-right" id="toggle-pw" aria-label="Mostrar contraseña">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">

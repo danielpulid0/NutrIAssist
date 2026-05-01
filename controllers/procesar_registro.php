@@ -13,6 +13,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
     $password_plana = $_POST['password'];
 
+    // 3.5 VALIDACIÓN DE CONTRASEÑA
+    if (strlen($password_plana) < 8 || 
+        !preg_match('/[A-Za-z]/', $password_plana) || 
+        !preg_match('/[0-9]/', $password_plana) || 
+        !preg_match('/[^A-Za-z0-9]/', $password_plana)) {
+        header("Location: ../views/registro.html?error=password_insegura");
+        exit();
+    }
+
     // 4. SEGURIDAD: Encriptar la contraseña (¡NUNCA se guarda en texto plano!)
     $password_hash = password_hash($password_plana, PASSWORD_DEFAULT);
 
