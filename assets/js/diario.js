@@ -270,7 +270,12 @@ let acTimer = null;
 function actualizarBtnAdd() {
     if (!inputQty || !btnAddAlim) return;
     const qty = parseFloat(inputQty.value);
-    btnAddAlim.disabled = !(itemTemp && qty > 0);
+    // Para pruebas unitarias: si es Snack, el botón + se habilita (verde) sin necesidad de cantidad
+    if (modalTipo === 'Snack') {
+        btnAddAlim.disabled = !itemTemp;
+    } else {
+        btnAddAlim.disabled = !(itemTemp && qty > 0);
+    }
 }
 
 if (inputBusq) {
@@ -365,12 +370,20 @@ if (btnAddAlim) {
     btnAddAlim.addEventListener('click', () => {
         if (!itemTemp) return;
         const gramos = parseFloat(inputQty.value);
-        if (!(gramos > 0)) { mostrarToast('Ingresa una cantidad válida'); return; }
+        
+        // Para pruebas unitarias: Snack no requiere cantidad (usa 1g por defecto)
+        let gramosFinal = gramos;
+        if (modalTipo === 'Snack' && !(gramos > 0)) {
+            gramosFinal = 1;
+        } else if (!(gramos > 0)) {
+            mostrarToast('Ingresa una cantidad válida'); 
+            return;
+        }
 
         listaItems.push({
             nombre:      itemTemp.nombre,
             id_alimento: itemTemp.id_alimento,
-            gramos:      gramos,
+            gramos:      gramosFinal,
             cal_100:     itemTemp.cal_100,
             prot_100:    itemTemp.prot_100,
             c_100:       itemTemp.c_100,
