@@ -6,7 +6,7 @@ const typingMsg = document.getElementById('typing-msg');
 let chatHistory = [];
 let selectedImageBase64 = null;
 let selectedAudioBase64 = null;
-let selectedAudioMimeType = 'audio/webm'; // MIME type real del audio grabado
+let selectedAudioMimeType = 'audio/webm'; 
 let mediaRecorder;
 let audioChunks = [];
 let recordingInterval;
@@ -180,7 +180,7 @@ async function sendMessage() {
 
         try {
             // DETENER EJECUCIÓN: Esperar a que el backend de Google nos dé el texto real
-            const transResponse = await fetch('../controllers/transcribe_audio.php', {
+            const transResponse = await fetch('../api/transcribe_audio.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ audio: currentAudio, mimeType: selectedAudioMimeType })
@@ -220,7 +220,7 @@ async function sendMessage() {
         typingMsg.style.display = 'flex';
         chatBox.scroll({ top: chatBox.scrollHeight, behavior: 'smooth' });
 
-        const response = await fetch('../controllers/gamma_api.php', {
+        const response = await fetch('../api/gamma_api.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sendData)
@@ -514,7 +514,7 @@ async function saveFoodData(templateId) {
         
         console.log('[NutrIAssist] Saving food:', payloadObj);
         
-        const response = await fetch('../controllers/guardar_comida_ia.php', {
+        const response = await fetch('../api/guardar_comida_ia.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payloadObj)
@@ -549,7 +549,7 @@ userInput.addEventListener('keypress', function (e) {
 async function playGeminiVoice(text) {
     if (isMuted) return; // NO gastar tokens si está silenciado
     try {
-        const res = await fetch('../controllers/gemini_tts.php', {
+        const res = await fetch('../api/gemini_tts.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ texto: text })

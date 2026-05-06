@@ -298,7 +298,7 @@ async function buscarAlimento(query) {
     if (!acDrop) return;
     try {
         const resp = await fetch(
-            `../controllers/api_alimentos.php?query=${encodeURIComponent(query)}`,
+            `../api/api_alimentos.php?query=${encodeURIComponent(query)}`,
             { credentials: 'same-origin' }
         );
         const json = await resp.json();
@@ -504,7 +504,7 @@ if (btnConfirmar) {
         };
 
         try {
-            const resp = await fetch('../controllers/guardar_comida_lista.php', {
+            const resp = await fetch('../api/guardar_comida_lista.php', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify(payload),

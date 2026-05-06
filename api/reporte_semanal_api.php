@@ -1,40 +1,14 @@
 <?php
-session_start();
-header('Content-Type: application/json');
-
-if (!isset($_SESSION['usuario_id'])) {
-    echo json_encode(['error' => 'No autorizado']);
-    exit;
-}
+require_once '../utils/Auth.php';
+$id_usuario = Auth::requireLogin(true);
 
 require_once '../config/conexion.php';
-
-$id_usuario = (int) $_SESSION['usuario_id'];
+require_once '../models/Diario.php';
 $fecha_fin = date('Y-m-d');
 $fecha_inicio = date('Y-m-d', strtotime('-6 days')); // Last 7 days including today
 
 try {
-    $stmt = $conn->prepare("
-        SELECT 
-            rd.fecha,
-            COALESCE(SUM(ac.calorias_ia), 0) AS cals,
-            COALESCE(SUM(ac.proteina_ia), 0) AS pro,
-            COALESCE(SUM(ac.carbs_ia), 0) AS car,
-            COALESCE(SUM(ac.grasas_ia), 0) AS gra
-        FROM Registros_Diarios rd
-        LEFT JOIN Comidas c ON rd.id_registro = c.id_registro
-        LEFT JOIN Alimentos_Consumidos ac ON c.id_comida = ac.id_comida
-        WHERE rd.id_usuario = :uid AND rd.fecha BETWEEN :inicio AND :fin
-        GROUP BY rd.fecha
-        ORDER BY rd.fecha ASC
-    ");
-    $stmt->execute([
-        ':uid' => $id_usuario,
-        ':inicio' => $fecha_inicio,
-        ':fin' => $fecha_fin
-    ]);
-    
-    $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $resultados = Diario::getWeeklyReport($conn, $id_usuario, $fecha_inicio, $fecha_fin);
     
     // Rellenar días faltantes con 0
     $dias = [];

@@ -1,22 +1,13 @@
 <?php
-session_start();
+require_once '../utils/Auth.php';
+$user_id = Auth::requireLogin();
 require_once '../config/conexion.php';
-
-// Validar que el usuario esté logueado
-if (!isset($_SESSION['usuario_id'])) {
-    header("Location: ../index.php");
-    exit();
-}
-
-$user_id = $_SESSION['usuario_id'];
+require_once '../models/Usuario.php';
 
 // 1. ELIMINAR RESTRICCIÓN (Via URL GET)
 if (isset($_GET['eliminar_rest']) && is_numeric($_GET['eliminar_rest'])) {
     $rest_id = (int)$_GET['eliminar_rest'];
-    $stmt = $conn->prepare("DELETE FROM Usuario_Restriccion WHERE id_usuario = :uid AND id_restriccion = :rid");
-    $stmt->bindParam(':uid', $user_id);
-    $stmt->bindParam(':rid', $rest_id);
-    $stmt->execute();
+    Usuario::removeRestriccion($conn, $user_id, $rest_id);
     header("Location: ../views/perfil.php");
     exit();
 }
@@ -60,60 +51,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $_SESSION['meta_calorias'] = round($calorias_objetivo);
 
     // --- MIGRACIÓN SILENCIOSA DEL CATÁLOGO DE ACTIVIDAD ---
-    // Si la tabla está vacía, llenarla con los 3 niveles base para que la Llave Foránea no falle
-    $stmt_check_act = $conn->query("SELECT COUNT(*) FROM Nivel_Actividad");
-    if ($stmt_check_act->fetchColumn() == 0) {
-        $conn->exec("INSERT INTO Nivel_Actividad (id_nivel_actividad, descripcion, multiplicador_biometrico) VALUES 
-            (1, 'Sedentario', 1.200), 
-            (2, 'Moderado', 1.550), 
-            (3, 'Activo', 1.725)");
-    }
+    Usuario::ensureActivityLevelsExist($conn);
 
     try {
-        $sql = "UPDATE Usuarios 
-                SET fecha_nacimiento = :fecha, 
-                    peso_kg = :peso, 
-                    altura_cm = :altura, 
-                    sexo = :sexo, 
-                    id_nivel_actividad = :act, 
-                    meta_principal = :meta 
-                WHERE id_usuario = :id";
-                
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':fecha', $fecha_nac);
-        $stmt->bindParam(':peso', $peso);
-        $stmt->bindParam(':altura', $altura);
-        $stmt->bindParam(':sexo', $sexo);
-        $stmt->bindParam(':act', $actividad);
-        $stmt->bindParam(':meta', $meta);
-        $stmt->bindParam(':id', $user_id);
-        $stmt->execute();
+        $datos_perfil = [
+            'fecha_nacimiento' => $fecha_nac,
+            'peso_kg' => $peso,
+            'altura_cm' => $altura,
+            'sexo' => $sexo,
+            'actividad' => $actividad,
+            'meta_principal' => $meta
+        ];
+        
+        Usuario::updateProfile($conn, $user_id, $datos_perfil);
         
         // --- Nueva Restricción ---
         if (!empty(trim($_POST['nueva_restriccion']))) {
             $nombre_rest = trim($_POST['nueva_restriccion']);
-            
-            // Buscar si ya existe la restricción en el catálogo global
-            $stmt_buscar = $conn->prepare("SELECT id_restriccion FROM Restricciones_Medicas WHERE nombre = :nombre LIMIT 1");
-            $stmt_buscar->bindParam(':nombre', $nombre_rest);
-            $stmt_buscar->execute();
-            $rest = $stmt_buscar->fetch(PDO::FETCH_ASSOC);
-            
-            if ($rest) {
-                $id_res = $rest['id_restriccion'];
-            } else {
-                // Insertarla
-                $stmt_insert = $conn->prepare("INSERT INTO Restricciones_Medicas (nombre) VALUES (:nombre)");
-                $stmt_insert->bindParam(':nombre', $nombre_rest);
-                $stmt_insert->execute();
-                $id_res = $conn->lastInsertId();
-            }
-            
-            // Vincularla al usuario usando IGNORE para evitar error si ya la tenía
-            $stmt_link = $conn->prepare("INSERT IGNORE INTO Usuario_Restriccion (id_usuario, id_restriccion) VALUES (:u, :r)");
-            $stmt_link->bindParam(':u', $user_id);
-            $stmt_link->bindParam(':r', $id_res);
-            $stmt_link->execute();
+            Usuario::addRestriccion($conn, $user_id, $nombre_rest);
         }
 
         // Redirigir de regreso exitosamente

@@ -5,13 +5,9 @@
 // ya calculados por el frontend (macro_por_100g / 100 * g).
 // Crea 1 registro en Comidas y N filas en Alimentos_Consumidos.
 // ============================================================
-session_start();
-header('Content-Type: application/json');
-
-if (!isset($_SESSION['usuario_id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['status' => 'error', 'message' => 'Acceso denegado']);
-    exit();
-}
+require_once '../utils/Auth.php';
+$id_usuario = Auth::requireLogin(true);
+Auth::requirePost();
 
 $json_input = file_get_contents('php://input');
 $datos      = json_decode($json_input, true);
@@ -29,7 +25,6 @@ if (count($datos['items']) > 20) {
 
 require_once '../config/conexion.php';
 
-$id_usuario = (int) $_SESSION['usuario_id'];
 $fecha_hoy  = date('Y-m-d');
 
 // Validar y sanear fecha
@@ -80,39 +75,9 @@ foreach ($datos['items'] as $idx => $item) {
 }
 
 try {
-    // Paso A: Garantizar el registro diario
-    $conn->prepare("INSERT IGNORE INTO Registros_Diarios (id_usuario, fecha) VALUES (?,?)")
-         ->execute([$id_usuario, $fecha]);
+    require_once '../models/Comida.php';
 
-    $stmt = $conn->prepare("SELECT id_registro FROM Registros_Diarios WHERE id_usuario=? AND fecha=? LIMIT 1");
-    $stmt->execute([$id_usuario, $fecha]);
-    $id_registro = $stmt->fetchColumn();
-
-    // Paso B: Crear bloque de comida
-    $stmt = $conn->prepare("INSERT INTO Comidas (id_registro, tipo) VALUES (?,?)");
-    $stmt->execute([$id_registro, $tipo_final]);
-    $id_comida = $conn->lastInsertId();
-
-    // Paso C: Insertar cada alimento con patrón Snapshot
-    $stmtItem = $conn->prepare("
-        INSERT INTO Alimentos_Consumidos
-            (id_comida, id_alimento, cantidad_gramos, nombre_ia, calorias_ia, proteina_ia, carbs_ia, grasas_ia)
-        VALUES
-            (:id_comida, :id_alim, :gramos, :nombre, :cal, :prot, :carbs, :gras)
-    ");
-
-    foreach ($items_saneados as $it) {
-        $stmtItem->execute([
-            ':id_comida' => $id_comida,
-            ':id_alim'   => $it['id_alim'],
-            ':gramos'    => $it['gramos'],
-            ':nombre'    => $it['nombre'],
-            ':cal'       => $it['calorias'],
-            ':prot'      => $it['proteina'],
-            ':carbs'     => $it['carbs'],
-            ':gras'      => $it['grasas'],
-        ]);
-    }
+    $id_comida = Comida::saveFoodLog($conn, $id_usuario, $fecha, $tipo_final, $items_saneados);
 
     echo json_encode([
         'status'  => 'success',

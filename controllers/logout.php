@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once '../utils/Auth.php';
+Auth::initSession();
 // Destruimos todas las variables de sesión
 $_SESSION = array();
 // Destruimos la sesión en el servidor

@@ -8,14 +8,14 @@
 // Flujo: "manzana" → {es:"Manzana", en:"Apple"} → busca "Apple" en USDA
 //         → guarda "Manzana" en DB → próxima búsqueda: hit local en <10ms
 // ============================================================
-session_start();
-header('Content-Type: application/json');
+require_once '../utils/Auth.php';
+$id_usuario = Auth::requireLogin(true);
 
 require_once '../config/conexion.php';
 require_once '../config/keys.php';
 
-if (!isset($_SESSION['usuario_id']) || !isset($_GET['query'])) {
-    echo json_encode(['status' => 'error', 'message' => 'Acceso denegado o búsqueda vacía.']);
+if (!isset($_GET['query'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Búsqueda vacía.']);
     exit();
 }
 
@@ -102,27 +102,10 @@ function traducirYCanonicalizar(string $texto): array {
 // DEFENSA 2: Buscar en caché local (DB) usando el nombre EN ESPAÑOL
 // Si ya fue buscado antes, está guardado en español → hit inmediato sin APIs
 // ──────────────────────────────────────────────────────────────────────────────
-try {
-    $alimento_local = null;
+require_once '../models/Alimento.php';
 
-    try {
-        // Búsqueda FULLTEXT con el nombre en español
-        $stmt = $conn->prepare("
-            SELECT *, MATCH(nombre) AGAINST (:q IN NATURAL LANGUAGE MODE) AS score
-            FROM Alimentos
-            WHERE MATCH(nombre) AGAINST (:q2 IN NATURAL LANGUAGE MODE)
-            ORDER BY score DESC
-            LIMIT 1
-        ");
-        $stmt->execute([':q' => $nombres['es'], ':q2' => $nombres['es']]);
-        $alimento_local = $stmt->fetch(PDO::FETCH_ASSOC);
-    } catch (PDOException $ftEx) {
-        // Fallback a LIKE si no hay índice FULLTEXT
-        error_log('[api_alimentos] FULLTEXT no disponible, usando LIKE: ' . $ftEx->getMessage());
-        $stmt = $conn->prepare("SELECT * FROM Alimentos WHERE nombre LIKE :q LIMIT 1");
-        $stmt->execute([':q' => '%' . $nombres['es'] . '%']);
-        $alimento_local = $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+try {
+    $alimento_local = Alimento::searchLocal($conn, $nombres['es']);
 
     if ($alimento_local) {
         echo json_encode([
@@ -180,33 +163,17 @@ try {
 
     // ──────────────────────────────────────────────────────────────────────────
     // DEFENSA 3: INSERT con fdc_id UNIQUE → previene duplicados matemáticamente
-    // ON DUPLICATE KEY UPDATE actualiza si ya existe (en vez de lanzar error)
     // ──────────────────────────────────────────────────────────────────────────
-    $stmt = $conn->prepare("
-        INSERT INTO Alimentos (nombre, calorias_por_100g, proteina_por_100g, carbs_por_100g, grasas_por_100g, fdc_id)
-        VALUES (:nombre, :cal, :pro, :car, :gra, :fdc_id)
-        ON DUPLICATE KEY UPDATE
-            nombre             = VALUES(nombre),
-            calorias_por_100g  = VALUES(calorias_por_100g),
-            proteina_por_100g  = VALUES(proteina_por_100g),
-            carbs_por_100g     = VALUES(carbs_por_100g),
-            grasas_por_100g    = VALUES(grasas_por_100g)
-    ");
-    $stmt->execute([
-        ':nombre'  => $nombre_final,
-        ':cal'     => $calorias,
-        ':pro'     => $proteina,
-        ':car'     => $carbs,
-        ':gra'     => $grasas,
-        ':fdc_id'  => $fdc_id ?: null,
-    ]);
-
-    // Obtener el id real (sea insert nuevo o el que ya existía)
-    $nuevo_id = $conn->lastInsertId() ?: (function() use ($conn, $fdc_id, $nombre_final) {
-        $s = $conn->prepare("SELECT id_alimento FROM Alimentos WHERE fdc_id = ? OR nombre = ? LIMIT 1");
-        $s->execute([$fdc_id, $nombre_final]);
-        return $s->fetchColumn();
-    })();
+    $datos_nuevo = [
+        'nombre'            => $nombre_final,
+        'calorias_por_100g' => $calorias,
+        'proteina_por_100g' => $proteina,
+        'carbs_por_100g'    => $carbs,
+        'grasas_por_100g'   => $grasas,
+        'fdc_id'            => $fdc_id
+    ];
+    
+    $nuevo_id = Alimento::upsert($conn, $datos_nuevo);
 
     echo json_encode([
         'status'  => 'success',

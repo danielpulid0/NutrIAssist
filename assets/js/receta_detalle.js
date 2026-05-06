@@ -16,7 +16,7 @@ function abrirSwap(nombre, gramos, idx) {
 }
 
 function pedirSwap(nombre, gramos) {
-    fetch('../controllers/ia_swap.php', {
+    fetch('../api/ia_swap.php', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ ingrediente: nombre, gramos: gramos })
@@ -113,7 +113,7 @@ async function guardarReceta(tipo) {
     btn.innerHTML = 'Guardando...';
 
     try {
-        const resp = await fetch('../controllers/guardar_comida_manual.php', {
+        const resp = await fetch('../api/guardar_comida_manual.php', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

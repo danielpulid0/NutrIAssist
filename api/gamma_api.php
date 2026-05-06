@@ -3,37 +3,19 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-session_start();
-header('Content-Type: application/json');
+require_once '../utils/Auth.php';
+$usuario_id = Auth::requireLogin(true);
+Auth::requirePost();
 
-// 1. Validar seguridad e incluir BD
-if (!file_exists('../config/conexion.php')) {
-    echo json_encode(['status' => 'error', 'message' => 'Falta archivo de conexion.php']);
-    exit();
-}
 require_once '../config/conexion.php';
-
-if (!file_exists('../config/keys.php')) {
-    echo json_encode(['status' => 'error', 'message' => 'Falta archivo de keys.php']);
-    exit();
-}
 require_once '../config/keys.php';
-
-if (!isset($_SESSION['usuario_id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['status' => 'error', 'message' => 'Acceso denegado o Sesión no iniciada']);
-    exit();
-}
-
-$usuario_id = $_SESSION['usuario_id'];
+require_once '../models/Usuario.php';
 
 // --- OBTENER PERFIL DE BASE DE DATOS ---
-$stmt = $conn->prepare("SELECT peso_kg, altura_cm, sexo, fecha_nacimiento, meta_principal FROM Usuarios WHERE id_usuario = ?");
-$stmt->execute([$usuario_id]);
-$u_data = $stmt->fetch(PDO::FETCH_ASSOC);
+$u_data = Usuario::getById($conn, $usuario_id);
 
-$stmt_r = $conn->prepare("SELECT r.nombre FROM Restricciones_Medicas r INNER JOIN Usuario_Restriccion ur ON r.id_restriccion = ur.id_restriccion WHERE ur.id_usuario = ?");
-$stmt_r->execute([$usuario_id]);
-$restricciones = $stmt_r->fetchAll(PDO::FETCH_COLUMN);
+$restricciones_data = Usuario::getRestricciones($conn, $usuario_id);
+$restricciones = array_column($restricciones_data, 'nombre');
 
 $edad = "No definida";
 if ($u_data && $u_data['fecha_nacimiento']) {

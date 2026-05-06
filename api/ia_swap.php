@@ -4,13 +4,9 @@
 // Devuelve 2-3 opciones de sustitución con % similitud,
 // flag de recomendado, y nota comparativa.
 // ============================================================
-session_start();
-header('Content-Type: application/json');
-
-if (!isset($_SESSION['usuario_id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['status' => 'error', 'message' => 'Acceso denegado']);
-    exit();
-}
+require_once '../utils/Auth.php';
+$usuario_id = Auth::requireLogin(true);
+Auth::requirePost();
 
 $input       = json_decode(file_get_contents('php://input'), true);
 $ingrediente = htmlspecialchars(trim($input['ingrediente'] ?? ''));
@@ -24,19 +20,11 @@ if (empty($ingrediente) || $gramos <= 0) {
 require_once '../config/conexion.php';
 require_once '../config/keys.php';
 
+require_once '../models/Usuario.php';
+
 // ─── Restricciones médicas del usuario ────────────────────────────────
-$restricciones = [];
-try {
-    $stmt = $conn->prepare("
-        SELECT rm.nombre FROM Restricciones_Medicas rm
-        INNER JOIN Usuario_Restriccion ur ON rm.id_restriccion = ur.id_restriccion
-        WHERE ur.id_usuario = ?
-    ");
-    $stmt->execute([$_SESSION['usuario_id']]);
-    $restricciones = $stmt->fetchAll(PDO::FETCH_COLUMN);
-} catch (PDOException $e) {
-    error_log('[ia_swap] DB: ' . $e->getMessage());
-}
+$restricciones_data = Usuario::getRestricciones($conn, $usuario_id);
+$restricciones = array_column($restricciones_data, 'nombre');
 
 $str_restricciones = empty($restricciones) ? 'Ninguna' : implode(', ', $restricciones);
 

@@ -4,13 +4,9 @@
 // Recibe un alimento ingresado manualmente en el diario
 // y lo persiste en la DB para la fecha indicada.
 // ============================================================
-session_start();
-header('Content-Type: application/json');
-
-if (!isset($_SESSION['usuario_id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['status' => 'error', 'message' => 'Acceso denegado']);
-    exit();
-}
+require_once '../utils/Auth.php';
+$id_usuario = Auth::requireLogin(true);
+Auth::requirePost();
 
 $json_input = file_get_contents('php://input');
 $datos      = json_decode($json_input, true);
@@ -22,7 +18,6 @@ if (!$datos || !isset($datos['alimento'], $datos['calorias'])) {
 
 require_once '../config/conexion.php';
 
-$id_usuario  = (int) $_SESSION['usuario_id'];
 $fecha_hoy   = date('Y-m-d');
 
 // Validar y sanear la fecha — no permitir fechas futuras
@@ -69,27 +64,17 @@ $mapa_tipos = [
 ];
 $tipo_final = $mapa_tipos[$tipo_ia] ?? 'Snack';
 try {
-    // Paso A: Garantizar registro diario
-    $conn->prepare("INSERT IGNORE INTO Registros_Diarios (id_usuario, fecha) VALUES (?,?)")
-         ->execute([$id_usuario, $fecha]);
+    require_once '../models/Comida.php';
 
-    $stmt = $conn->prepare("SELECT id_registro FROM Registros_Diarios WHERE id_usuario=? AND fecha=? LIMIT 1");
-    $stmt->execute([$id_usuario, $fecha]);
-    $id_registro = $stmt->fetchColumn();
+    $item = [
+        'nombre'   => $nombre_ia,
+        'calorias' => $calorias,
+        'proteina' => $proteina,
+        'carbs'    => $carbs,
+        'grasas'   => $grasas
+    ];
 
-    // Paso B: Crear bloque de comida
-    $stmt = $conn->prepare("INSERT INTO Comidas (id_registro, tipo) VALUES (?,?)");
-    $stmt->execute([$id_registro, $tipo_final]);
-    $id_comida = $conn->lastInsertId();
-
-    // Paso C: Guardar alimento con patrón Snapshot
-    $stmt = $conn->prepare("
-        INSERT INTO Alimentos_Consumidos
-            (id_comida, id_alimento, cantidad_gramos, nombre_ia, calorias_ia, proteina_ia, carbs_ia, grasas_ia)
-        VALUES
-            (?, NULL, 0, ?, ?, ?, ?, ?)
-    ");
-    $stmt->execute([$id_comida, $nombre_ia, $calorias, $proteina, $carbs, $grasas]);
+    $id_comida = Comida::saveFoodLog($conn, $id_usuario, $fecha, $tipo_final, [$item]);
 
     echo json_encode(['status' => 'success', 'message' => 'Alimento guardado']);
 

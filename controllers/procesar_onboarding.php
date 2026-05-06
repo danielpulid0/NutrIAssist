@@ -1,15 +1,10 @@
 <?php
-session_start();
+require_once '../utils/Auth.php';
+$id_usuario = Auth::requireLogin();
+Auth::requirePost();
+
 require_once '../config/conexion.php';
-
-// Si no hay sesión o no llegó el POST, adiós
-if (!isset($_SESSION['usuario_id']) || $_SERVER["REQUEST_METHOD"] != "POST") {
-    header("Location: ../views/registro.html");
-    exit();
-}
-
-// 1. Recopilar todos los datos de la sesión y el último POST
-$id_usuario = $_SESSION['usuario_id'];
+require_once '../models/Usuario.php';
 $objetivo   = $_SESSION['onboarding_objetivo']; // 'perder_grasa', 'mantener_peso', 'ganar_musculo'
 $sexo       = $_SESSION['onboarding_sexo'];     // 'M' o 'F'
 $edad       = (int)$_SESSION['onboarding_edad'];
@@ -43,21 +38,13 @@ $anio_nacimiento = date("Y") - $edad;
 $fecha_nacimiento = "$anio_nacimiento-01-01"; 
 
 try {
-    // 5. Actualizar la base de datos (El UPDATE en lugar del INSERT)
-    // Nota: Como simplificamos el modelo, guardaremos temporalmente el nivel de actividad en otro campo 
-    // o simplemente actualizamos los biométricos.
-    $sql = "UPDATE Usuarios 
-            SET fecha_nacimiento = :fecha, 
-                peso_kg = :peso, 
-                altura_cm = :altura 
-            WHERE id_usuario = :id";
-            
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':fecha', $fecha_nacimiento);
-    $stmt->bindParam(':peso', $peso);
-    $stmt->bindParam(':altura', $altura);
-    $stmt->bindParam(':id', $id_usuario);
-    $stmt->execute();
+    // 5. Actualizar la base de datos a través del modelo
+    $datos_onboarding = [
+        'fecha_nacimiento' => $fecha_nacimiento,
+        'peso_kg' => $peso,
+        'altura_cm' => $altura
+    ];
+    Usuario::updateOnboarding($conn, $id_usuario, $datos_onboarding);
 
     // 6. Limpiar la memoria (buenas prácticas de seguridad)
     unset($_SESSION['onboarding_objetivo']);

@@ -1,35 +1,23 @@
 <?php
-session_start();
-if (!isset($_SESSION['usuario_id']) || !isset($_GET['id'])) {
+require_once '../utils/Auth.php';
+$id_usuario = Auth::requireLogin();
+if (!isset($_GET['id'])) {
     header("Location: recetas.php");
     exit();
 }
 
 require_once '../config/conexion.php';
+require_once '../models/Receta.php';
+
 $id_receta = (int) $_GET['id'];
 
-try {
-    $stmt = $conn->prepare("SELECT * FROM Recetas WHERE id_receta = :id");
-    $stmt->bindParam(':id', $id_receta, PDO::PARAM_INT);
-    $stmt->execute();
-    $receta = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$receta) { header("Location: recetas.php"); exit(); }
-
-    $stmt_ing = $conn->prepare("
-        SELECT ir.id_ingrediente, ir.cantidad_gramos, a.nombre,
-               ROUND(a.calorias_por_100g * ir.cantidad_gramos / 100) AS calorias_calc,
-               ROUND(a.proteina_por_100g * ir.cantidad_gramos / 100, 1) AS proteina_calc
-        FROM Ingredientes_Receta ir
-        JOIN Alimentos a ON ir.id_alimento = a.id_alimento
-        WHERE ir.id_receta = :id
-    ");
-    $stmt_ing->bindParam(':id', $id_receta, PDO::PARAM_INT);
-    $stmt_ing->execute();
-    $ingredientes = $stmt_ing->fetchAll(PDO::FETCH_ASSOC);
-
-} catch (PDOException $e) {
-    die("Error de Base de Datos: " . $e->getMessage());
+$receta = Receta::getById($conn, $id_receta);
+if (!$receta) {
+    header("Location: recetas.php");
+    exit();
 }
+
+$ingredientes = Receta::getIngredients($conn, $id_receta);
 
 // Parsear instrucciones en pasos numerados
 $pasos = [];

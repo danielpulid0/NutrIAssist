@@ -1,12 +1,10 @@
 <?php
-// Iniciar la sesión para recordar al usuario una vez registrado
-session_start();
+require_once '../utils/Auth.php';
+Auth::initSession();
+Auth::requirePost();
 
 // 1. Conectar a la base de datos (subimos un nivel de carpeta con '../')
 require_once '../config/conexion.php';
-
-// 2. Verificar que los datos llegaron por el método POST
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     // 3. Limpiar y capturar los datos del formulario
     $nombre = trim($_POST['nombre']);
@@ -25,11 +23,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // 4. SEGURIDAD: Encriptar la contraseña (¡NUNCA se guarda en texto plano!)
     $password_hash = password_hash($password_plana, PASSWORD_DEFAULT);
 
-    // 4.5 VALIDACIÓN PREVIA: Comprobar que el correo no exista ya
-    $stmt_check = $conn->prepare("SELECT id_usuario FROM Usuarios WHERE email = :email");
-    $stmt_check->bindParam(':email', $email);
-    $stmt_check->execute();
-    if ($stmt_check->rowCount() > 0) {
+    require_once '../models/Usuario.php';
+
+    // 4.5 VALIDACIÓN PREVIA: Comprobar que el correo no exista ya usando el modelo
+    if (Usuario::getByEmail($conn, $email) !== false) {
         // Enviar al usuario de vuelta a registro.html con un mensaje de error
         header("Location: ../views/registro.html?error=email_existente");
         exit();
@@ -41,25 +38,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $altura_temp = 0;
 
     try {
-        // 5. Preparar la consulta SQL (Evita Inyección SQL)
-        $sql = "INSERT INTO Usuarios (email, password_hash, nombre, fecha_nacimiento, peso_kg, altura_cm) 
-                VALUES (:email, :password_hash, :nombre, :fecha, :peso, :altura)";
-        
-        $stmt = $conn->prepare($sql);
-        
-        // 6. Vincular las variables a la consulta
-        $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':password_hash', $password_hash);
-        $stmt->bindParam(':nombre', $nombre);
-        $stmt->bindParam(':fecha', $fecha_temp);
-        $stmt->bindParam(':peso', $peso_temp);
-        $stmt->bindParam(':altura', $altura_temp);
-        
-        // 7. Ejecutar la inserción
-        $stmt->execute();
+        // 5. Crear el usuario a través del modelo
+        $datos_usuario = [
+            'email' => $email,
+            'password_hash' => $password_hash,
+            'nombre' => $nombre,
+            'fecha_nacimiento' => $fecha_temp,
+            'peso_kg' => $peso_temp,
+            'altura_cm' => $altura_temp
+        ];
 
-        // 8. Obtener el ID que MySQL le asignó a este nuevo usuario
-        $id_nuevo_usuario = $conn->lastInsertId();
+        $id_nuevo_usuario = Usuario::create($conn, $datos_usuario);
+        
+        if (!$id_nuevo_usuario) {
+            throw new Exception("No se pudo insertar el usuario.");
+        }
 
         // 9. Guardar el ID en la "Memoria" del servidor (Sesión)
         $_SESSION['usuario_id'] = $id_nuevo_usuario;
@@ -78,9 +71,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             die("Error crítico al registrar: " . $e->getMessage());
         }
     }
-} else {
-    // Si alguien intenta entrar a este archivo directamente por la URL, lo regresamos
-    header("Location: ../views/registro.html");
-    exit();
-}
 ?>

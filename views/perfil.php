@@ -201,7 +201,7 @@ async function generarReportePDF() {
     iconDiv.querySelector('svg').animate([{transform:'rotate(0deg)'},{transform:'rotate(360deg)'}],{duration:1000,iterations:Infinity});
 
     try {
-        const response = await fetch('../controllers/reporte_semanal_api.php');
+        const response = await fetch('../api/reporte_semanal_api.php');
         const data = await response.json();
 
         if (!data.success) {

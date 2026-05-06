@@ -3,13 +3,9 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-session_start();
-header('Content-Type: application/json');
-
-if (!isset($_SESSION['usuario_id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['status' => 'error', 'message' => 'Acceso denegado']);
-    exit();
-}
+require_once '../utils/Auth.php';
+$id_usuario = Auth::requireLogin(true);
+Auth::requirePost();
 
 require_once '../config/keys.php';
 

@@ -1,34 +1,15 @@
 <?php
-session_start();
-if (!isset($_SESSION['usuario_id'])) {
-    header("Location: login.html");
-    exit();
-}
+require_once '../utils/Auth.php';
+$id_usuario = Auth::requireLogin();
 
 require_once '../config/conexion.php';
+require_once '../models/Receta.php';
 
 // ─── Búsqueda / filtro por GET ─────────────────────────────────────────
 $q          = trim($_GET['q'] ?? '');
 $filtro_tag = trim($_GET['tag'] ?? '');
 
-try {
-    $sql = "SELECT id_receta, titulo, imagen_url, tiempo_prep_min,
-                   calorias_totales, etiquetas
-            FROM Recetas";
-    $params = [];
-
-    if ($q !== '') {
-        $sql .= " WHERE titulo LIKE :q";
-        $params[':q'] = '%' . $q . '%';
-    }
-    $sql .= " ORDER BY id_receta ASC";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->execute($params);
-    $recetas_raw = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $recetas_raw = [];
-}
+$recetas_raw = Receta::search($conn, $q);
 
 // ─── Helpers ───────────────────────────────────────────────────────────
 // Colores de tags conocidos

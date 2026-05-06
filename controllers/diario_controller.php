@@ -1,14 +1,10 @@
 <?php
-session_start();
-
-if (!isset($_SESSION['usuario_id'])) {
-    header("Location: login.html");
-    exit();
-}
+require_once '../utils/Auth.php';
+$id_usuario = Auth::requireLogin();
 
 require_once '../config/conexion.php';
 
-$id_usuario    = (int) $_SESSION['usuario_id'];
+$meta_calorias = (int) ($_SESSION['meta_calorias'] ?? 2000);
 $meta_calorias = (int) ($_SESSION['meta_calorias'] ?? 2000);
 $fecha_hoy     = date('Y-m-d');
 
@@ -45,39 +41,11 @@ $label_fecha = $es_hoy
     : $dias_es[$dow_sel] . ', ' . $dia_sel . ' de ' . $meses_es[$mes_sel - 1];
 
 // ─── Consultas DB ─────────────────────────────────────────────────
-$total_calorias = 0;
-try {
-    $stmt = $conn->prepare("
-        SELECT COALESCE(SUM(ac.calorias_ia), 0) AS total
-        FROM Alimentos_Consumidos ac
-        INNER JOIN Comidas c ON ac.id_comida = c.id_comida
-        INNER JOIN Registros_Diarios rd ON c.id_registro = rd.id_registro
-        WHERE rd.id_usuario = :uid AND rd.fecha = :fecha
-    ");
-    $stmt->execute([':uid' => $id_usuario, ':fecha' => $fecha_sel]);
-    $total_calorias = (float) $stmt->fetchColumn();
-} catch (PDOException $e) { error_log('[diario] ' . $e->getMessage()); }
+require_once '../models/Diario.php';
 
-$comidas_grupos = [];
-try {
-    $stmt = $conn->prepare("
-        SELECT c.tipo AS tipo_comida,
-               ac.id_consumo,
-               ac.nombre_ia  AS nombre,
-               ac.calorias_ia AS calorias,
-               ac.proteina_ia AS proteina,
-               ac.carbs_ia    AS carbs,
-               ac.grasas_ia   AS grasas
-        FROM Alimentos_Consumidos ac
-        INNER JOIN Comidas c ON ac.id_comida = c.id_comida
-        INNER JOIN Registros_Diarios rd ON c.id_registro = rd.id_registro
-        WHERE rd.id_usuario = :uid AND rd.fecha = :fecha
-        ORDER BY c.id_comida ASC, ac.id_consumo ASC
-    ");
-    $stmt->execute([':uid' => $id_usuario, ':fecha' => $fecha_sel]);
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-        $comidas_grupos[$row['tipo_comida']][] = $row;
-    }
-} catch (PDOException $e) { error_log('[diario] ' . $e->getMessage()); }
+$macros = Diario::getDailyMacros($conn, $id_usuario, $fecha_sel);
+$total_calorias = (float) $macros['total_cal'];
+
+$comidas_grupos = Diario::getFoodLogGroups($conn, $id_usuario, $fecha_sel);
 
 $tipos_orden = ['Desayuno', 'Comida', 'Cena', 'Snack'];

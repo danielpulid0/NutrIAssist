@@ -1,22 +1,19 @@
 <?php
-session_start();
-require_once '../config/conexion.php';
+require_once '../utils/Auth.php';
+Auth::initSession();
+Auth::requirePost();
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+require_once '../config/conexion.php';
     
     // 1. Limpiar el correo ingresado
     $email = trim($_POST['email']);
     $password_ingresada = $_POST['password'];
 
-    try {
-        // 2. Buscar si existe un usuario con ese correo en la base de datos
-        $sql = "SELECT id_usuario, nombre, password_hash FROM Usuarios WHERE email = :email LIMIT 1";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
+    require_once '../models/Usuario.php';
 
-        // 3. Obtener el resultado como un arreglo asociativo
-        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+    try {
+        // 2. Buscar si existe un usuario con ese correo usando el modelo
+        $usuario = Usuario::getByEmail($conn, $email);
 
         // 4. Validar: ¿Existe el usuario? Y si existe, ¿la contraseña coincide con el Hash?
         if ($usuario && password_verify($password_ingresada, $usuario['password_hash'])) {
@@ -46,9 +43,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("Error de sistema: " . $e->getMessage());
     }
 
-} else {
-    // Si entran directamente al archivo sin usar el formulario
-    header("Location: ../views/login.html");
-    exit();
-}
 ?>

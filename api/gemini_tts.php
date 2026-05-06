@@ -1,4 +1,7 @@
 <?php
+require_once '../utils/Auth.php';
+$usuario_id = Auth::requireLogin(true);
+Auth::requirePost();
 header('Content-Type: application/json');
 
 $json_input = file_get_contents('php://input');
