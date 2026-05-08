@@ -83,7 +83,11 @@ $api_url = "https://generativelanguage.googleapis.com/v1beta/models/"
 
 $payload = json_encode([
     "contents"         => [["role" => "user", "parts" => [["text" => $prompt]]]],
-    "generationConfig" => ["temperature" => 0.2, "maxOutputTokens" => 400],
+    "generationConfig" => [
+        "temperature"    => 0.2,
+        "maxOutputTokens" => 1024,
+        "thinkingConfig" => ["thinkingBudget" => 0]
+    ],
 ]);
 
 $ch = curl_init($api_url);
@@ -99,16 +103,25 @@ $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
 if ($http_code !== 200) {
-    echo json_encode(['status' => 'error', 'message' => 'Error al contactar con la IA.']);
+    error_log('[ia_swap] HTTP Error: ' . $http_code . ' | Response: ' . $response);
+    echo json_encode(['status' => 'error', 'message' => 'Error al contactar con la IA. HTTP: ' . $http_code]);
     exit();
 }
 
 $api_data = json_decode($response, true);
 $raw_text = $api_data['candidates'][0]['content']['parts'][0]['text'] ?? '';
 
+// DEBUG TEMPORAL — registrar respuesta cruda
+error_log('[ia_swap] HTTP: ' . $http_code);
+error_log('[ia_swap] Raw text: ' . substr($raw_text, 0, 500));
+
 // Limpiar markdown residual
 $clean     = trim(preg_replace('/```json|```/i', '', $raw_text));
 $resultado = json_decode($clean, true);
+
+// DEBUG TEMPORAL — registrar resultado del parseo
+error_log('[ia_swap] json_decode error: ' . json_last_error_msg());
+error_log('[ia_swap] Clean text: ' . substr($clean, 0, 500));
 
 if (!$resultado || empty($resultado['opciones'])) {
     error_log('[ia_swap] Respuesta inesperada: ' . $raw_text);
