@@ -409,10 +409,10 @@ function editFoodData(templateId, c, p, cb, g, alimento, comida) {
                     <div class="fc-macro-col span-2">
                         <label class="fc-macro-label">EN QUÉ COMIDA REGISTRAR</label>
                         <select id="e_tipo_${templateId}" class="fc-macro-input">
-                            <option value="Desayuno" ${comida.toLowerCase()=='desayuno'?'selected':''}>☀️ Desayuno</option>
-                            <option value="Comida" ${comida.toLowerCase()=='comida'?'selected':''}>🌱 Comida</option>
-                            <option value="Cena" ${comida.toLowerCase()=='cena'?'selected':''}>🌙 Cena</option>
-                            <option value="Snack" ${!['desayuno','comida','cena'].includes(comida.toLowerCase())?'selected':''}>🍪 Snack</option>
+                            <option value="Desayuno" ${comida.toLowerCase()=='desayuno'?'selected':''}>Desayuno</option>
+                            <option value="Comida" ${comida.toLowerCase()=='comida'?'selected':''}>Comida</option>
+                            <option value="Cena" ${comida.toLowerCase()=='cena'?'selected':''}>Cena</option>
+                            <option value="Snack" ${!['desayuno','comida','cena'].includes(comida.toLowerCase())?'selected':''}>Snack</option>
                         </select>
                     </div>
                     <div class="fc-macro-col">
@@ -525,7 +525,7 @@ async function saveFoodData(templateId) {
 
         if (response.ok && repObj.status === 'success') {
             const actions = document.querySelector(`#${templateId} .fc-actions`);
-            actions.innerHTML = '<div class="fc-msg-full">✅ Guardado correctamente</div>';
+            actions.innerHTML = '<div class="fc-msg-full">✓ Guardado correctamente</div>';
         } else {
             console.error('[NutrIAssist] Save failed:', repObj);
             btn.innerHTML = 'Fallo al guardar';

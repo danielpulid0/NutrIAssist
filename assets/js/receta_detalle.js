@@ -46,18 +46,18 @@ function pedirSwap(nombre, gramos) {
         } else {
             swapList.innerHTML = `
                 <li style="padding:1rem 0;text-align:center;color:#EF4444">
-                    ⚠️ ${esc(json.message || 'Error')}
+                    ${esc(json.message || 'Error')}
                     <br><button class="btn-reintentar" onclick="pedirSwap('${esc(_ing)}',${_gr})">
-                        🔄 Reintentar</button>
+                        Reintentar</button>
                 </li>`;
         }
     })
     .catch(() => {
         swapList.innerHTML = `
             <li style="padding:1rem 0;text-align:center;color:#EF4444">
-                ⚠️ Error de conexión
+                Error de conexión
                 <br><button class="btn-reintentar" onclick="pedirSwap('${esc(_ing)}',${_gr})">
-                    🔄 Reintentar</button>
+                    Reintentar</button>
             </li>`;
     });
 }
@@ -134,17 +134,17 @@ async function guardarReceta(tipo) {
             setTimeout(() => window.location.href = 'diario.php', 1200);
         } else {
             btn.disabled = false;
-            btn.innerHTML = '⚠️ Error. Intenta de nuevo';
+            btn.innerHTML = 'Error. Intenta de nuevo';
             btn.style.background = '#EF4444';
             setTimeout(() => {
-                btn.innerHTML = '🗓️ Registrar Comida';
+                btn.innerHTML = 'Registrar Comida';
                 btn.style.background = '';
                 btn.disabled = false;
             }, 2500);
         }
     } catch {
         btn.disabled = false;
-        btn.innerHTML = '⚠️ Error de conexión';
-        setTimeout(() => { btn.innerHTML = '🗓️ Registrar Comida'; btn.disabled = false; }, 2500);
+        btn.innerHTML = 'Error de conexión';
+        setTimeout(() => { btn.innerHTML = 'Registrar Comida'; btn.disabled = false; }, 2500);
     }
 }

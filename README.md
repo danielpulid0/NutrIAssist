@@ -44,55 +44,60 @@ nutriassist/
 ├── SQlBD.sql                      # Script de inicialización de la base de datos
 ├── .gitignore                     # Configuración de exclusión para Git
 │
+├── api/                           # Endpoints de servicios y lógica de IA
+│   ├── api_alimentos.php          # Integración con USDA y normalización de nombres
+│   ├── gamma_api.php              # Integración directa con Google Gemini API
+│   ├── gemini_tts.php             # Generación de respuestas de audio (Text-to-Speech)
+│   ├── guardar_comida_ia.php      # Persistencia de datos interpretados por la IA
+│   ├── guardar_comida_manual.php  # Registro de entradas manuales del usuario
+│   ├── guardar_comida_lista.php   # Registro desde el buscador de alimentos
+│   ├── ia_swap.php                # Lógica de sustitución de ingredientes mediante IA
+│   ├── reporte_semanal_api.php    # Generación de reportes de progreso
+│   └── transcribe_audio.php       # Procesamiento de voz a texto
+│
 ├── config/                        # Archivos de configuración del sistema
 │   ├── conexion.php               # Configuración de la conexión PDO a MySQL
 │   └── keys.php                   # Definición de API Keys y constantes de modelos
 │
-├── controllers/                   # Lógica de negocio y controladores del sistema
-│   ├── auth.php                   # Gestión de autorización de sesiones
-│   ├── procesar_login.php         # Validación de credenciales de acceso
-│   ├── procesar_registro.php      # Registro de nuevas cuentas de usuario
-│   ├── procesar_onboarding.php    # Registro de datos biométricos iniciales
-│   ├── logout.php                 # Finalización de sesión de usuario
-│   │
-│   ├── dashboard_controller.php   # Cálculo de métricas para el panel principal
-│   ├── diario_controller.php      # Recuperación de registros históricos por fecha
-│   ├── chat_ia_controller.php     # Interfaz entre el frontend y el modelo de lenguaje
-│   ├── gamma_api.php              # Integración directa con Google Gemini API
-│   ├── gemini_tts.php             # Generación de respuestas de audio
-│   │
-│   ├── guardar_comida_ia.php      # Persistencia de datos interpretados por la IA
-│   ├── guardar_comida_manual.php  # Registro de entradas manuales del usuario
-│   ├── guardar_comida_lista.php   # Registro desde el buscador de alimentos
-│   │
-│   ├── api_alimentos.php          # Integración con USDA y normalización de nombres
-│   ├── ia_swap.php                # Lógica de sustitución de ingredientes mediante IA
-│   │
-│   ├── recetas_controller.php     # Gestión y filtrado del catálogo de recetas
-│   ├── receta_detalle_controller.php # Información extendida de preparaciones
-│   ├── perfil_controller.php      # Recuperación de datos de perfil
-│   └── procesar_perfil.php        # Actualización de información de usuario
+├── controllers/                   # Lógica de flujo y manejo de peticiones
+│   ├── chat_ia_controller.php     # Controlador para la vista del asistente
+│   ├── dashboard_controller.php   # Lógica del panel principal y métricas
+│   ├── diario_controller.php      # Gestión de la vista del diario nutricional
+│   ├── perfil_controller.php      # Carga de datos del perfil de usuario
+│   ├── recetas_controller.php     # Gestión del catálogo de recetas
+│   ├── receta_detalle_controller.php # Controlador para la vista detalle
+│   ├── procesar_login.php         # Flujo de autenticación
+│   ├── procesar_registro.php      # Flujo de creación de cuentas
+│   ├── procesar_onboarding.php    # Flujo de datos biométricos iniciales
+│   ├── procesar_perfil.php        # Flujo de actualización de perfil
+│   └── logout.php                 # Cierre de sesión
 │
-├── views/                         # Capa de presentación (Interfaz de Usuario)
-│   ├── login.html                 # Interfaz de acceso al sistema
-│   ├── registro.html              # Interfaz de creación de cuenta
-│   ├── onboarding_1.php           # Configuración de datos personales
-│   ├── onboarding_2.php           # Configuración de actividad y restricciones
-│   ├── onboarding_3.php           # Selección de metas y objetivos
-│   ├── dashboard.php              # Panel principal de seguimiento diario
-│   ├── chat_ia.php                # Interfaz del asistente inteligente
-│   ├── diario.php                 # Vista del registro histórico de alimentos
-│   ├── recetas.php                # Catálogo de preparaciones saludables
-│   ├── receta_detalle.php         # Visualización detallada de ingredientes y pasos
-│   ├── perfil.php                 # Gestión de cuenta y metas
-│   └── includes/
-│       ├── footer.php             # Navegación inferior persistente
-│       └── header.php             # Definiciones comunes de cabecera y PWA
+├── models/                        # Clases de datos (Entidades del sistema)
+│   ├── Usuario.php                # Lógica de persistencia de usuarios
+│   ├── Alimento.php               # Representación de items nutricionales
+│   ├── Comida.php                 # Entidad de registros de consumo
+│   ├── Diario.php                 # Lógica de agrupación diaria
+│   └── Receta.php                 # Estructura de preparaciones y tags
 │
-└── assets/                        # Recursos estáticos y activos del cliente
-    ├── css/                       # Hojas de estilo organizadas por módulo
-    ├── js/                        # Lógica del lado del cliente y fetch dinámicos
-    └── img/                       # Identidad visual, íconos PWA y fotos de recetas
+├── views/                         # Capa de presentación (UI/UX)
+│   ├── login.html                 # Pantalla de acceso
+│   ├── registro.html              # Pantalla de registro
+│   ├── onboarding_1..3.php        # Proceso de configuración inicial
+│   ├── dashboard.php              # Dashboard principal
+│   ├── chat_ia.php                # Interfaz del asistente IA
+│   ├── diario.php                 # Registro histórico
+│   ├── recetas.php                # Buscador de recetas
+│   ├── receta_detalle.php         # Detalle y sustitución IA
+│   ├── perfil.php                 # Perfil y preferencias
+│   └── includes/                  # Fragmentos reutilizables (Header, Footer)
+│
+├── utils/                         # Utilidades y helpers transversales
+│   └── Auth.php                   # Sistema centralizado de sesiones y seguridad
+│
+└── assets/                        # Recursos estáticos
+    ├── css/                       # Estilos (Modo Oscuro, Dashboard, etc.)
+    ├── js/                        # Lógica de cliente y Service Worker helper
+    └── img/                       # Logos, iconos PWA y fotos de recetas
 ```
 
 ---

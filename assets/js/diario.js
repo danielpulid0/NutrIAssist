@@ -321,7 +321,6 @@ async function buscarAlimento(query) {
 
         acDrop.innerHTML = `
             <div class="ac-item" id="ac-result" tabindex="0" role="option">
-                <span class="ac-item-icon">🥗</span>
                 <div class="ac-item-info">
                     <div class="ac-item-name">${escH(displayName)}</div>
                     <div class="ac-item-sub">${kcal} kcal · P ${prot}g · C ${carb}g · G ${gras}g <small>(por 100g)</small></div>
@@ -542,4 +541,29 @@ window.mostrarToast = function(msg) {
     t.textContent = msg;
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2500);
+};
+
+window.eliminarRegistro = async function(id_consumo) {
+    if (!confirm('¿Estás seguro de que quieres eliminar este registro?')) return;
+    
+    try {
+        const resp = await fetch('../api/eliminar_comida.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_consumo: id_consumo })
+        });
+        
+        const json = await resp.json();
+        
+        if (json.status === 'success') {
+            mostrarToast('Registro eliminado');
+            const itemElement = document.getElementById('item-consumo-' + id_consumo);
+            if (itemElement) itemElement.remove();
+            setTimeout(() => location.reload(), 800); // Reload to update macros and rings
+        } else {
+            mostrarToast('Error: ' + json.message);
+        }
+    } catch (e) {
+        mostrarToast('Error de conexión al eliminar');
+    }
 };

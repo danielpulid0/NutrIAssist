@@ -285,5 +285,4 @@ INSERT INTO Ingredientes_Receta (id_receta, id_alimento, cantidad_gramos) VALUES
 (48, 18, 120), (48, 8, 50), (48, 12, 50),
 (49, 1, 150), (49, 4, 30), (49, 9, 30);
 
--- user prueba
 

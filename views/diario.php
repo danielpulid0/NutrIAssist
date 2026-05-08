@@ -10,9 +10,6 @@ require_once 'includes/header.php';
 
     <h1 class="page-title-center">
         Diario de Comidas
-        <button onclick="startTutorial(false)" class="tutorial-trigger" title="Ver guía de esta página" style="display: inline-flex; vertical-align: middle; margin-left: 8px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/></svg>
-        </button>
     </h1>
 
     <!-- ── CALENDARIO SEMANAL ── -->
@@ -125,10 +122,13 @@ require_once 'includes/header.php';
                 <div class="meal-content open" id="meal-<?= $safe_id ?>">
                     <div class="meal-divider"></div>
                     <?php foreach ($alimentos as $alim): ?>
-                        <div class="meal-item">
+                        <div class="meal-item" id="item-consumo-<?= $alim['id_consumo'] ?>">
                             <div class="meal-item-dot"></div>
                             <span class="meal-item-name"><?= htmlspecialchars($alim['nombre'] ?? '—') ?></span>
                             <span class="meal-item-meta"><?= round($alim['calorias']) ?> kcal</span>
+                            <button class="btn-delete-item" onclick="eliminarRegistro(<?= $alim['id_consumo'] ?>)" title="Eliminar registro" style="background:none; border:none; color:var(--color-text-gray); cursor:pointer; padding: 4px; display:flex; align-items:center; margin-left: 8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            </button>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -286,7 +286,7 @@ function startTutorial(isMultiPage = true) {
     intro.setOptions({
         steps: [
             {
-                title: 'Tu Diario Personal 📓',
+                title: 'Tu Diario Personal',
                 intro: 'Aquí es donde sucede la magia. Registrar tus comidas es el hábito #1 para alcanzar tus metas.'
             },
             {

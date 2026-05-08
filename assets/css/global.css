@@ -16,16 +16,16 @@
 }
 
 [data-theme='dark'] {
-    --color-bg:          #121212; /* Fondo profundo de Spotify */
-    --color-bg-app:      #121212;
-    --color-bg-light:    #181818; /* Cartas elevadas */
+    --color-bg:          #181818; /* Superficie de tarjetas (elevado) */
+    --color-bg-app:      #121212; /* Fondo de la aplicación (profundo) */
+    --color-bg-light:    #242424; /* Elementos aún más claros o hover */
     --color-text-dark:   #FFFFFF;
     --color-text-gray:   #B3B3B3; /* Texto secundario gris */
-    --color-border:      #282828; /* Bordes sutiles */
-    --color-icon-circle: #282828;
+    --color-border:      #2A2A2A; /* Bordes sutiles */
+    --color-icon-circle: #2A2A2A;
     --color-primary:     #1DB954; /* Verde Spotify */
     --color-malachite:   #1DB954; 
-    --color-mint:        #1DB954; /* Usamos el verde en superficies interactivas */
+    --color-mint:        rgba(29, 185, 84, 0.15); /* Verde translúcido para superficies */
     --color-spring:      #1ED760; /* Verde más vibrante para acentos */
 }
 
