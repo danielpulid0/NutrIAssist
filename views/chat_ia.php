@@ -1,5 +1,6 @@
 <?php
-require_once '../controllers/chat_ia_controller.php';
+require_once '../utils/Auth.php';
+$id_usuario = Auth::requireLogin();
 
 $page_title = 'NutrIAssist - Chat Inteligente';
 $extra_css  = '../assets/css/chat_ia.css';
