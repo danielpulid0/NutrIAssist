@@ -1,0 +1,61 @@
+/* onboarding.css */
+.onboarding-container {
+    background-color: #FAFBFA;
+}
+
+/* Bottom sheet / selector overlay */
+.sheet-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 100;
+    align-items: flex-end;
+}
+.sheet-overlay.open { display: flex; }
+
+.sheet {
+    background: white;
+    width: 100%;
+    max-width: 430px;
+    margin: 0 auto;
+    border-radius: 20px 20px 0 0;
+    padding: 1.25rem 1.5rem 2rem;
+}
+
+.sheet-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--color-text-dark);
+}
+
+.sheet select,
+.sheet input[type="number"] {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 1.5px solid var(--color-border);
+    border-radius: 14px;
+    font-size: 1rem;
+    color: var(--color-text-dark);
+    outline: none;
+    margin-bottom: 1rem;
+    appearance: none;
+    background: white;
+}
+.sheet select:focus,
+.sheet input[type="number"]:focus {
+    border-color: var(--color-malachite);
+    box-shadow: 0 0 0 3px var(--color-mint);
+}
+
+.sheet-confirm {
+    width: 100%;
+    padding: 0.875rem;
+    background: var(--color-primary);
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+}

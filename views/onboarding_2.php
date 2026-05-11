@@ -16,70 +16,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
     <title>NutrIAssist - Sobre ti</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/global.css">
-    <style>
-        .mobile-container { background-color: #FAFBFA; }
-
-        /* Bottom sheet / selector overlay */
-        .sheet-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.4);
-            z-index: 100;
-            align-items: flex-end;
-        }
-        .sheet-overlay.open { display: flex; }
-
-        .sheet {
-            background: white;
-            width: 100%;
-            max-width: 430px;
-            margin: 0 auto;
-            border-radius: 20px 20px 0 0;
-            padding: 1.25rem 1.5rem 2rem;
-        }
-
-        .sheet-title {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--color-text-dark);
-        }
-
-        .sheet select,
-        .sheet input[type="number"] {
-            width: 100%;
-            padding: 0.9rem 1rem;
-            border: 1.5px solid var(--color-border);
-            border-radius: 14px;
-            font-size: 1rem;
-            color: var(--color-text-dark);
-            outline: none;
-            margin-bottom: 1rem;
-            appearance: none;
-            background: white;
-        }
-        .sheet select:focus,
-        .sheet input[type="number"]:focus {
-            border-color: var(--color-malachite);
-            box-shadow: 0 0 0 3px var(--color-mint);
-        }
-
-        .sheet-confirm {
-            width: 100%;
-            padding: 0.875rem;
-            background: var(--color-primary);
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="../assets/css/onboarding.css">
 </head>
 <body>
 
-    <div class="mobile-container">
+    <div class="mobile-container onboarding-container">
 
         <div class="nav-bar">
             <a href="onboarding_1.php" class="back-btn" aria-label="Volver"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>

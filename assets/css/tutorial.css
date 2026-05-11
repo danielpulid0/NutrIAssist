@@ -1,0 +1,87 @@
+/* Customizing Intro.js to match NutrIAssist's modern theme */
+.introjs-tooltip {
+    background-color: var(--color-bg-card, #ffffff) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+    color: var(--color-text) !important;
+    font-family: 'Inter', sans-serif !important;
+    max-width: 90vw !important;
+    min-width: 320px !important;
+    box-sizing: border-box !important;
+    padding: 10px !important;
+}
+.introjs-tooltiptext {
+    font-size: 15px !important;
+    line-height: 1.6 !important;
+    color: #1e293b !important;
+    padding-bottom: 12px !important;
+}
+.introjs-tooltiptitle {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: var(--color-text) !important;
+    margin-bottom: 10px !important;
+    padding-right: 50px !important;
+    line-height: 1.2 !important;
+}
+.introjs-tooltip-header {
+    position: relative !important;
+}
+.introjs-button {
+    border-radius: 10px !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    font-weight: 700 !important;
+    font-family: 'Inter', sans-serif !important;
+    padding: 10px 20px !important;
+    transition: all 0.2s !important;
+}
+.introjs-nextbutton, .introjs-donebutton {
+    background: var(--color-malachite) !important;
+    color: white !important;
+}
+.introjs-prevbutton {
+    background-color: #f1f5f9 !important;
+    color: #475569 !important;
+}
+.introjs-skipbutton {
+    position: absolute !important;
+    top: 15px !important;
+    right: 15px !important;
+    color: #94a3b8 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    line-height: 1 !important;
+}
+.introjs-bullets ul li a.active {
+    background: var(--color-malachite) !important;
+}
+.introjs-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+body.dark-mode .introjs-tooltip {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+}
+body.dark-mode .introjs-tooltiptext {
+    color: #cbd5e1 !important;
+}
+body.dark-mode .introjs-prevbutton {
+    background-color: #334155 !important;
+    color: #f8fafc !important;
+}
+.tutorial-trigger {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--color-malachite);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+.tutorial-trigger:hover { opacity: 1; }

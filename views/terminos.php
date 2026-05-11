@@ -9,42 +9,7 @@ $page_title = 'NutrIAssist - Términos y Condiciones';
     <title><?= $page_title ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/global.css?v=3">
-    <style>
-        .terms-body {
-            padding-bottom: 2rem;
-        }
-        .terms-header {
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-        .terms-section {
-            margin-bottom: 2rem;
-        }
-        .terms-section h3 {
-            color: var(--color-malachite);
-            margin-bottom: 0.75rem;
-            font-size: 1.1rem;
-        }
-        .terms-section p {
-            font-size: 0.9rem;
-            line-height: 1.6;
-            margin-bottom: 1rem;
-            color: var(--color-text-gray);
-        }
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--color-text-dark);
-            text-decoration: none;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-        }
-        [data-theme='dark'] .terms-section p {
-            color: var(--color-text-gray);
-        }
-    </style>
+    <link rel="stylesheet" href="../assets/css/terminos.css">
 </head>
 <body>
     <div class="mobile-container">
@@ -85,7 +50,7 @@ $page_title = 'NutrIAssist - Términos y Condiciones';
                 <p>Al utilizar esta aplicación, declaras haber leído y aceptado estos términos en su totalidad.</p>
             </div>
 
-            <div style="text-align: center; margin-top: 3rem;">
+            <div class="terms-footer-btn-container">
                 <button onclick="history.back()" class="btn-primary">He leído y acepto</button>
             </div>
         </div>

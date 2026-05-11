@@ -1,5 +1,6 @@
 // NutrIAssist Service Worker — v1.0
 // Cache-First para assets estáticos | Network-First para vistas PHP
+//Sirve como proxy entre la app y el navegador
 
 const CACHE_NAME = 'nutriassist-v4';
 
@@ -12,7 +13,7 @@ const STATIC_ASSETS = [
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'
 ];
 
-// INSTALL — pre-cachear assets
+//pre-cachear assets
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
@@ -20,7 +21,7 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// ACTIVATE — limpiar caches viejos
+//limpiar caches viejos
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>

@@ -289,3 +289,15 @@ input:checked + .slider:before {
 [data-theme='dark'] .preferencias-card {
     background: var(--color-bg);
 }
+
+/* ── CLASES UTILITARIAS PARA TARJETAS INTERACTIVAS ── */
+.pref-action-card {
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.pref-action-card:active {
+    transform: scale(0.98);
+}
+.pref-icon-malachite { color: var(--color-malachite); }
+.pref-icon-gray { color: var(--color-text-gray); }

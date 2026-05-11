@@ -19,13 +19,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edad'])) {
     <title>NutrIAssist - Nivel de Actividad</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/global.css">
-    <style>
-        .mobile-container { background-color: #FAFBFA; }
-    </style>
+    <link rel="stylesheet" href="../assets/css/onboarding.css">
 </head>
 <body>
 
-    <div class="mobile-container">
+    <div class="mobile-container onboarding-container">
 
         <div class="nav-bar">
             <a href="onboarding_2.php" class="back-btn" aria-label="Volver"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>

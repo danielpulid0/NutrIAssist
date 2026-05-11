@@ -1,0 +1,40 @@
+/* terminos.css */
+.terms-body {
+    padding-bottom: 2rem;
+}
+.terms-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+.terms-section {
+    margin-bottom: 2rem;
+}
+.terms-section h3 {
+    color: var(--color-malachite);
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+.terms-section p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    color: var(--color-text-gray);
+}
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-text-dark);
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+[data-theme='dark'] .terms-section p {
+    color: var(--color-text-gray);
+}
+
+.terms-footer-btn-container {
+    text-align: center;
+    margin-top: 3rem;
+}

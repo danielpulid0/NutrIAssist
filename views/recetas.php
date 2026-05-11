@@ -41,7 +41,7 @@ require_once 'includes/header.php';
     <div class="recetas-grid">
         <?php if (empty($recetas)): ?>
         <div class="empty-state">
-            <div style="opacity:0.4;margin-bottom:0.5rem"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M6 12V7a6 6 0 0 1 12 0v5"/><path d="M4 12c0 4.418 3.582 8 8 8s8-3.582 8-8"/></svg></div>
+            <div class="empty-state-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M6 12V7a6 6 0 0 1 12 0v5"/><path d="M4 12c0 4.418 3.582 8 8 8s8-3.582 8-8"/></svg></div>
             <p>No se encontraron recetas.</p>
         </div>
         <?php endif; ?>
@@ -54,9 +54,9 @@ require_once 'includes/header.php';
                 <?php if (!empty($r['imagen_url'])): ?>
                 <img src="<?= (strpos($r['imagen_url'], 'http') === 0) ? htmlspecialchars($r['imagen_url']) : '../assets/img/recetas/' . htmlspecialchars($r['imagen_url']) ?>"
                      alt="<?= htmlspecialchars($r['titulo']) ?>"
-                     onerror="this.style.display='none'; this.parentNode.innerHTML='<svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23ccc\' stroke-width=\'1.5\' style=\'width:48px;height:48px\'><path d=\'M2 12h20M6 12V7a6 6 0 0 1 12 0v5\'/><path d=\'M4 12c0 4.418 3.582 8 8 8s8-3.582 8-8\'/></svg>';">
+                     onerror="this.style.display='none'; this.parentNode.innerHTML='<svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23ccc\' stroke-width=\'1.5\' class=\'img-error-svg\'><path d=\'M2 12h20M6 12V7a6 6 0 0 1 12 0v5\'/><path d=\'M4 12c0 4.418 3.582 8 8 8s8-3.582 8-8\'/></svg>';">
                 <?php else: ?>
-                <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;opacity:0.3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:48px;height:48px"><path d="M2 12h20M6 12V7a6 6 0 0 1 12 0v5"/><path d="M4 12c0 4.418 3.582 8 8 8s8-3.582 8-8"/></svg></div>
+                <div class="receta-img-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M6 12V7a6 6 0 0 1 12 0v5"/><path d="M4 12c0 4.418 3.582 8 8 8s8-3.582 8-8"/></svg></div>
                 <?php endif; ?>
             </div>
 
@@ -103,63 +103,7 @@ require_once 'includes/header.php';
 
 <!-- Intro.js CSS & JS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/introjs.min.css">
-<style>
-    /* Tutorial styling (reused for consistency) */
-    .introjs-tooltip {
-        background-color: var(--color-bg-card, #ffffff) !important;
-        border-radius: 16px !important;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
-        color: var(--color-text) !important;
-        font-family: 'Inter', sans-serif !important;
-        max-width: 90vw !important;
-        min-width: 320px !important;
-        box-sizing: border-box !important;
-        padding: 10px !important;
-    }
-    .introjs-tooltiptext {
-        font-size: 15px !important;
-        line-height: 1.6 !important;
-        color: #1e293b !important;
-        padding-bottom: 12px !important;
-    }
-    .introjs-tooltiptitle {
-        font-size: 20px !important;
-        font-weight: 800 !important;
-        color: var(--color-text) !important;
-        margin-bottom: 10px !important;
-        padding-right: 50px !important;
-        line-height: 1.2 !important;
-    }
-    .introjs-button {
-        border-radius: 10px !important;
-        font-weight: 700 !important;
-        padding: 10px 20px !important;
-    }
-    .introjs-nextbutton, .introjs-donebutton {
-        background: var(--color-malachite) !important;
-        color: white !important;
-    }
-    .introjs-skipbutton {
-        position: absolute !important;
-        top: 15px !important;
-        right: 15px !important;
-        color: #94a3b8 !important;
-    }
-    body.dark-mode .introjs-tooltip { background-color: #1e293b !important; color: #f8fafc !important; }
-    body.dark-mode .introjs-tooltiptext { color: #cbd5e1 !important; }
-    .tutorial-trigger {
-        background: none;
-        border: none;
-        padding: 0;
-        color: var(--color-malachite);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        opacity: 0.7;
-        transition: opacity 0.2s;
-    }
-    .tutorial-trigger:hover { opacity: 1; }
-</style>
+<link rel="stylesheet" href="../assets/css/tutorial.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/intro.min.js"></script>
 
 <script>

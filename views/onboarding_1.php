@@ -13,13 +13,11 @@ if (!isset($_SESSION['usuario_id'])) {
     <title>NutrIAssist - Tu Objetivo</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/global.css">
-    <style>
-        .mobile-container { background-color: #FAFBFA; }
-    </style>
+    <link rel="stylesheet" href="../assets/css/onboarding.css">
 </head>
 <body>
 
-    <div class="mobile-container">
+    <div class="mobile-container onboarding-container">
         <!-- Barra de navegación: sin atrás en el primer paso -->
         <div class="nav-bar">
             <div class="progress-segments">
