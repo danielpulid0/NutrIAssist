@@ -65,7 +65,7 @@ require_once 'includes/header.php';
                 </div>
                 <?php if ($receta['permitir_ia_swap']): ?>
                 <button class="btn-swap"
-                        onclick="abrirSwap('<?= htmlspecialchars(addslashes($ing['nombre'])) ?>', <?= $ing['cantidad_gramos'] ?>, <?= $i ?>)"
+                        onclick="abrirSwap('<?= htmlspecialchars(addslashes($ing['nombre'])) ?>', <?= $ing['cantidad_gramos'] ?>, <?= $i ?>, <?= $ing['calorias_calc'] ?>, <?= $ing['proteina_calc'] ?>, <?= $ing['carbs_calc'] ?>, <?= $ing['grasas_calc'] ?>)"
                         title="Sustitución IA">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="17 1 21 5 17 9"/>

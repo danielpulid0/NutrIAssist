@@ -5,9 +5,11 @@ const swapSub   = document.getElementById('swapSubtitle');
 const swapList  = document.getElementById('swapOptionsList');
 
 let _ing = '', _gr = 0, _idx = -1;
+let _origCals = 0, _origProt = 0, _origCarbs = 0, _origGrasas = 0;
 
-function abrirSwap(nombre, gramos, idx) {
+function abrirSwap(nombre, gramos, idx, cals=0, prot=0, carbs=0, grasas=0) {
     _ing = nombre; _gr = gramos; _idx = idx;
+    _origCals = cals; _origProt = prot; _origCarbs = carbs; _origGrasas = grasas;
     swapTitle.textContent = 'Sustituir ' + nombre;
     swapSub.textContent   = 'Buscando alternativas...';
     swapList.innerHTML    = '';
@@ -67,6 +69,23 @@ function elegirSwap(idx) {
     if (!op) return;
     cerrarSwap();
 
+    // Actualizar matemáticas globales de la receta
+    window.NutriRecetaActual.calorias = Math.round(Math.max(0, window.NutriRecetaActual.calorias - _origCals + op.calorias));
+    window.NutriRecetaActual.proteina = Number(Math.max(0, window.NutriRecetaActual.proteina - _origProt + op.proteina)).toFixed(1);
+    window.NutriRecetaActual.carbs = Number(Math.max(0, window.NutriRecetaActual.carbs - _origCarbs + op.carbs)).toFixed(1);
+    window.NutriRecetaActual.grasas = Number(Math.max(0, window.NutriRecetaActual.grasas - _origGrasas + op.grasas)).toFixed(1);
+
+    if (!window.NutriRecetaActual.titulo.includes('(Modificada)')) {
+        window.NutriRecetaActual.titulo += ' (Modificada)';
+    }
+
+    // Actualizar UI de Calorías Totales
+    const pills = document.querySelectorAll('.pill-value');
+    if (pills.length >= 3) {
+        pills[2].textContent = window.NutriRecetaActual.calorias + ' kcal';
+        pills[2].style.color = 'var(--color-malachite)';
+    }
+
     // Actualizar DOM del ingrediente en pantalla
     if (_idx >= 0) {
         const nameEl = document.getElementById('ingr-name-' + _idx);
@@ -78,6 +97,12 @@ function elegirSwap(idx) {
         }
         if (metaEl) {
             metaEl.textContent = op.calorias + ' kcal • ' + op.proteina + 'g prot';
+        }
+
+        // Actualizar el botón para futuras sustituciones sobre este mismo ingrediente
+        const btnSwap = nameEl.parentElement.nextElementSibling;
+        if (btnSwap && btnSwap.classList.contains('btn-swap')) {
+            btnSwap.setAttribute('onclick', `abrirSwap('${esc(op.nombre)}', ${_gr}, ${_idx}, ${op.calorias}, ${op.proteina}, ${op.carbs}, ${op.grasas})`);
         }
     }
     const t = document.createElement('div');

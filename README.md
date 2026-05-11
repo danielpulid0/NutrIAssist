@@ -33,6 +33,14 @@ NutrIAssist es una Aplicación Web Progresiva (PWA) de nutrición personal que i
 
 ---
 
+## Arquitectura de Datos (Decisiones de Diseño Senior)
+Durante la evolución del sistema, se tomaron decisiones conscientes de **desnormalización intencionada** para optimizar el rendimiento y la integración con Inteligencia Artificial, soportando exitosamente auditorías de normalización:
+1. **Patrón Document-Relational (JSON):** Se utilizan campos JSON (ej. `etiquetas` en `Recetas`) para metadatos volátiles, evitando uniones (`JOINs`) innecesarias para datos que no requieren integridad referencial estricta.
+2. **Materialized View Logic (Triggers):** Se almacenan los macronutrientes totales pre-calculados en la tabla `Recetas` (violación intencionada de 3FN para optimizar lectura masiva). Para proteger la integridad, el sistema utiliza **TRIGGERS SQL** (`tr_actualizar_macros_*`) que recalculan los totales automáticamente ante cualquier cambio en los ingredientes de una receta.
+3. **Restricción XOR Estricta:** La convivencia entre alimentos del catálogo (IDs) y alimentos detectados al vuelo por la IA (Textos libres) en el diario de consumo está asegurada a nivel motor SQL mediante un `CHECK CONSTRAINT`. Esto garantiza que un registro proviene exclusivamente de la IA o del Catálogo, previniendo redundancia.
+
+---
+
 ## Estructura de Directorios
 
 ```

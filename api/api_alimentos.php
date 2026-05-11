@@ -5,8 +5,7 @@
 //   D1: Traducción ES→EN via Gemini (para USDA) + nombre en ES para la DB
 //   D2: Búsqueda FULLTEXT en la DB local (caché)
 //   D3: Upsert por fdc_id UNIQUE (llave maestra USDA)
-// Flujo: "manzana" → {es:"Manzana", en:"Apple"} → busca "Apple" en USDA
-//         → guarda "Manzana" en DB → próxima búsqueda: hit local en <10ms
+// Flujo: "manzana" → {es:"Manzana", en:"Apple"} → busca "Apple" en USDA → guarda "Manzana" en DB → próxima búsqueda: hit local en <10ms
 // ============================================================
 require_once '../utils/Auth.php';
 $id_usuario = Auth::requireLogin(true);
@@ -24,14 +23,9 @@ $busqueda_raw = trim($_GET['query']);
 
 // ──────────────────────────────────────────────────────────────────────────────
 // DEFENSA 1: Traducción y canonicalización con Gemini
-// Convierte la entrada en español a un nombre canónico bilinguë.
-// Entrada:  "piernitas de pollo" (cualquier idioma, cualquier longitud)
-// Salida:   ['es' => 'Pollo, pierna asada', 'en' => 'Chicken, roasted leg']
 // El nombre EN se usa para buscar en USDA; el ES para mostrar y guardar.
 // ──────────────────────────────────────────────────────────────────────────────
 $nombres = traducirYCanonicalizar($busqueda_raw);
-// $nombres['es'] → nombre en español  (DB + frontend)
-// $nombres['en'] → nombre en inglés   (USDA API)
 
 /**
  * Llama a Gemini para obtener el nombre canónico del alimento en ES y EN.

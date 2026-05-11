@@ -81,7 +81,9 @@ class Receta {
             $stmt = $conn->prepare("
                 SELECT ir.id_ingrediente, ir.cantidad_gramos, a.nombre,
                        ROUND(a.calorias_por_100g * ir.cantidad_gramos / 100) AS calorias_calc,
-                       ROUND(a.proteina_por_100g * ir.cantidad_gramos / 100, 1) AS proteina_calc
+                       ROUND(a.proteina_por_100g * ir.cantidad_gramos / 100, 1) AS proteina_calc,
+                       ROUND(a.carbs_por_100g * ir.cantidad_gramos / 100, 1) AS carbs_calc,
+                       ROUND(a.grasas_por_100g * ir.cantidad_gramos / 100, 1) AS grasas_calc
                 FROM Ingredientes_Receta ir
                 JOIN Alimentos a ON ir.id_alimento = a.id_alimento
                 WHERE ir.id_receta = :id

@@ -119,6 +119,50 @@ CREATE TABLE Ingredientes_Receta (
 );
 
 -- ==========================================
+-- 5.1 TRIGGERS DE AUTOMATIZACIÓN (Denormalización Segura)
+-- ==========================================
+
+DELIMITER //
+
+CREATE TRIGGER tr_actualizar_macros_insert
+AFTER INSERT ON Ingredientes_Receta
+FOR EACH ROW
+BEGIN
+    UPDATE Recetas R
+    SET calorias_totales = (SELECT IFNULL(SUM((A.calorias_por_100g / 100) * IR.cantidad_gramos), 0) FROM Ingredientes_Receta IR JOIN Alimentos A ON IR.id_alimento = A.id_alimento WHERE IR.id_receta = R.id_receta),
+        proteina_total = (SELECT IFNULL(SUM((A.proteina_por_100g / 100) * IR.cantidad_gramos), 0) FROM Ingredientes_Receta IR JOIN Alimentos A ON IR.id_alimento = A.id_alimento WHERE IR.id_receta = R.id_receta),
+        carbs_total = (SELECT IFNULL(SUM((A.carbs_por_100g / 100) * IR.cantidad_gramos), 0) FROM Ingredientes_Receta IR JOIN Alimentos A ON IR.id_alimento = A.id_alimento WHERE IR.id_receta = R.id_receta),
+        grasas_total = (SELECT IFNULL(SUM((A.grasas_por_100g / 100) * IR.cantidad_gramos), 0) FROM Ingredientes_Receta IR JOIN Alimentos A ON IR.id_alimento = A.id_alimento WHERE IR.id_receta = R.id_receta)
+    WHERE R.id_receta = NEW.id_receta;
+END //
+
+CREATE TRIGGER tr_actualizar_macros_update
+AFTER UPDATE ON Ingredientes_Receta
+FOR EACH ROW
+BEGIN
+    UPDATE Recetas R
+    SET calorias_totales = (SELECT IFNULL(SUM((A.calorias_por_100g / 100) * IR.cantidad_gramos), 0) FROM Ingredientes_Receta IR JOIN Alimentos A ON IR.id_alimento = A.id_alimento WHERE IR.id_receta = R.id_receta),
+        proteina_total = (SELECT IFNULL(SUM((A.proteina_por_100g / 100) * IR.cantidad_gramos), 0) FROM Ingredientes_Receta IR JOIN Alimentos A ON IR.id_alimento = A.id_alimento WHERE IR.id_receta = R.id_receta),
+        carbs_total = (SELECT IFNULL(SUM((A.carbs_por_100g / 100) * IR.cantidad_gramos), 0) FROM Ingredientes_Receta IR JOIN Alimentos A ON IR.id_alimento = A.id_alimento WHERE IR.id_receta = R.id_receta),
+        grasas_total = (SELECT IFNULL(SUM((A.grasas_por_100g / 100) * IR.cantidad_gramos), 0) FROM Ingredientes_Receta IR JOIN Alimentos A ON IR.id_alimento = A.id_alimento WHERE IR.id_receta = R.id_receta)
+    WHERE R.id_receta = NEW.id_receta;
+END //
+
+CREATE TRIGGER tr_actualizar_macros_delete
+AFTER DELETE ON Ingredientes_Receta
+FOR EACH ROW
+BEGIN
+    UPDATE Recetas R
+    SET calorias_totales = (SELECT IFNULL(SUM((A.calorias_por_100g / 100) * IR.cantidad_gramos), 0) FROM Ingredientes_Receta IR JOIN Alimentos A ON IR.id_alimento = A.id_alimento WHERE IR.id_receta = R.id_receta),
+        proteina_total = (SELECT IFNULL(SUM((A.proteina_por_100g / 100) * IR.cantidad_gramos), 0) FROM Ingredientes_Receta IR JOIN Alimentos A ON IR.id_alimento = A.id_alimento WHERE IR.id_receta = R.id_receta),
+        carbs_total = (SELECT IFNULL(SUM((A.carbs_por_100g / 100) * IR.cantidad_gramos), 0) FROM Ingredientes_Receta IR JOIN Alimentos A ON IR.id_alimento = A.id_alimento WHERE IR.id_receta = R.id_receta),
+        grasas_total = (SELECT IFNULL(SUM((A.grasas_por_100g / 100) * IR.cantidad_gramos), 0) FROM Ingredientes_Receta IR JOIN Alimentos A ON IR.id_alimento = A.id_alimento WHERE IR.id_receta = R.id_receta)
+    WHERE R.id_receta = OLD.id_receta;
+END //
+
+DELIMITER ;
+
+-- ==========================================
 -- 6. INSERCIÓN DE DATOS
 -- ==========================================
 
