@@ -10,14 +10,14 @@ class Receta {
     public static function getSuggestedRecipe($conn, $keyword) {
         try {
             // Buscar una receta que contenga el tag necesario
-            $stmt_sug = $conn->prepare("SELECT * FROM Recetas WHERE etiquetas LIKE :kw ORDER BY RAND() LIMIT 1");
-            $stmt_sug->execute([':kw' => "%\"$keyword\"%"]);
-            $receta_sugerida = $stmt_sug->fetch(PDO::FETCH_ASSOC);
+            $stmt_sugerida = $conn->prepare("SELECT * FROM Recetas WHERE etiquetas LIKE :kw ORDER BY RAND() LIMIT 1");
+            $stmt_sugerida->execute([':kw' => "%\"$keyword\"%"]);
+            $receta_sugerida = $stmt_sugerida->fetch(PDO::FETCH_ASSOC);
 
             // Si no hay receta con ese tag, obtener una aleatoria
             if (!$receta_sugerida) {
-                $stmt_rand = $conn->query("SELECT * FROM Recetas ORDER BY RAND() LIMIT 1");
-                $receta_sugerida = $stmt_rand->fetch(PDO::FETCH_ASSOC);
+                $stmt_aleatoria = $conn->query("SELECT * FROM Recetas ORDER BY RAND() LIMIT 1");
+                $receta_sugerida = $stmt_aleatoria->fetch(PDO::FETCH_ASSOC);
             }
             return $receta_sugerida ?: null;
         } catch (PDOException $e) {
@@ -29,16 +29,16 @@ class Receta {
     /**
      * Busca recetas opcionalmente filtradas por título.
      * @param PDO $conn
-     * @param string $q Término de búsqueda
+     * @param string $termino_busqueda Término de búsqueda
      * @return array Lista de recetas
      */
-    public static function search($conn, $q = '') {
+    public static function search($conn, $termino_busqueda = '') {
         try {
             $sql = "SELECT id_receta, titulo, imagen_url, tiempo_prep_min, calorias_totales, etiquetas FROM Recetas";
             $params = [];
-            if ($q !== '') {
+            if ($termino_busqueda !== '') {
                 $sql .= " WHERE titulo LIKE :q";
-                $params[':q'] = '%' . $q . '%';
+                $params[':q'] = '%' . $termino_busqueda . '%';
             }
             $sql .= " ORDER BY id_receta ASC";
             

@@ -21,18 +21,18 @@ require_once 'includes/header.php';
         </span>
         <input type="text" name="q" class="search-bar"
                placeholder="Buscar ..."
-               value="<?= htmlspecialchars($q) ?>"
+               value="<?= htmlspecialchars($termino_busqueda) ?>"
                autocomplete="off">
     </form>
 
     <!-- Chips de filtro -->
     <div class="chips-container">
-        <a href="recetas.php<?= $q ? '?q='.urlencode($q) : '' ?>"
+        <a href="recetas.php<?= $termino_busqueda ? '?q='.urlencode($termino_busqueda) : '' ?>"
            class="chip <?= $filtro_tag === '' ? 'active' : '' ?>">Todos</a>
-        <?php foreach ($todos_tags as $t): ?>
-        <a href="recetas.php?tag=<?= urlencode($t) ?><?= $q ? '&q='.urlencode($q) : '' ?>"
-           class="chip <?= $filtro_tag === $t ? 'active' : '' ?>">
-            <?= htmlspecialchars($t) ?>
+        <?php foreach ($todos_tags as $tag_actual): ?>
+        <a href="recetas.php?tag=<?= urlencode($tag_actual) ?><?= $termino_busqueda ? '&q='.urlencode($termino_busqueda) : '' ?>"
+           class="chip <?= $filtro_tag === $tag_actual ? 'active' : '' ?>">
+            <?= htmlspecialchars($tag_actual) ?>
         </a>
         <?php endforeach; ?>
     </div>
@@ -46,14 +46,14 @@ require_once 'includes/header.php';
         </div>
         <?php endif; ?>
 
-        <?php foreach ($recetas as $r): ?>
-        <a href="receta_detalle.php?id=<?= $r['id_receta'] ?>" class="receta-card">
+        <?php foreach ($recetas as $receta_card): ?>
+        <a href="receta_detalle.php?id=<?= $receta_card['id_receta'] ?>" class="receta-card">
 
             <!-- Imagen -->
             <div class="receta-img-wrapper">
-                <?php if (!empty($r['imagen_url'])): ?>
-                <img src="<?= (strpos($r['imagen_url'], 'http') === 0) ? htmlspecialchars($r['imagen_url']) : '../assets/img/recetas/' . htmlspecialchars($r['imagen_url']) ?>"
-                     alt="<?= htmlspecialchars($r['titulo']) ?>"
+                <?php if (!empty($receta_card['imagen_url'])): ?>
+                <img src="<?= (strpos($receta_card['imagen_url'], 'http') === 0) ? htmlspecialchars($receta_card['imagen_url']) : '../assets/img/recetas/' . htmlspecialchars($receta_card['imagen_url']) ?>"
+                     alt="<?= htmlspecialchars($receta_card['titulo']) ?>"
                      onerror="this.style.display='none'; this.parentNode.innerHTML='<svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23ccc\' stroke-width=\'1.5\' class=\'img-error-svg\'><path d=\'M2 12h20M6 12V7a6 6 0 0 1 12 0v5\'/><path d=\'M4 12c0 4.418 3.582 8 8 8s8-3.582 8-8\'/></svg>';">
                 <?php else: ?>
                 <div class="receta-img-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M6 12V7a6 6 0 0 1 12 0v5"/><path d="M4 12c0 4.418 3.582 8 8 8s8-3.582 8-8"/></svg></div>
@@ -61,16 +61,16 @@ require_once 'includes/header.php';
             </div>
 
             <div class="receta-info">
-                <div class="receta-title"><?= htmlspecialchars($r['titulo']) ?></div>
+                <div class="receta-title"><?= htmlspecialchars($receta_card['titulo']) ?></div>
 
                 <div class="receta-meta">
-                    <?php if ($r['tiempo_prep_min']): ?>
+                    <?php if ($receta_card['tiempo_prep_min']): ?>
                     <span class="meta-item">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                              stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                         </svg>
-                        <?= $r['tiempo_prep_min'] ?> min
+                        <?= $receta_card['tiempo_prep_min'] ?> min
                     </span>
                     <?php endif; ?>
                     <span class="meta-item">
@@ -79,16 +79,16 @@ require_once 'includes/header.php';
                             <rect x="2" y="6" width="20" height="12" rx="2"/>
                             <circle cx="12" cy="12" r="2"/>
                         </svg>
-                        <?= htmlspecialchars($r['costo_txt']) ?>
+                        <?= htmlspecialchars($receta_card['costo_txt']) ?>
                     </span>
                 </div>
 
                 <div class="receta-footer">
-                    <span class="receta-kcal"><?= $r['calorias_totales'] ?> kcal</span>
-                    <?php if ($r['tag_visible']): ?>
+                    <span class="receta-kcal"><?= $receta_card['calorias_totales'] ?> kcal</span>
+                    <?php if ($receta_card['tag_visible']): ?>
                     <span class="receta-tag"
-                          style="background:<?= $r['color_tag']['bg'] ?>; color:<?= $r['color_tag']['fg'] ?>;">
-                        <?= htmlspecialchars($r['tag_visible']) ?>
+                          style="background:<?= $receta_card['color_tag']['bg'] ?>; color:<?= $receta_card['color_tag']['fg'] ?>;">
+                        <?= htmlspecialchars($receta_card['tag_visible']) ?>
                     </span>
                     <?php endif; ?>
                 </div>

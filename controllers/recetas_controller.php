@@ -6,10 +6,10 @@ require_once '../config/conexion.php';
 require_once '../models/Receta.php';
 
 // ─── Búsqueda / filtro por GET ─────────────────────────────────────────
-$q          = trim($_GET['q'] ?? '');
-$filtro_tag = trim($_GET['tag'] ?? '');
+$termino_busqueda = trim($_GET['q'] ?? '');
+$filtro_tag       = trim($_GET['tag'] ?? '');
 
-$recetas_raw = Receta::search($conn, $q);
+$recetas_raw = Receta::search($conn, $termino_busqueda);
 
 // ─── Helpers ───────────────────────────────────────────────────────────
 // Colores de tags conocidos
@@ -40,33 +40,33 @@ $todos_tags    = [];
 
 // Procesamos recetas y extraemos todos los tags para los chips de filtro
 $recetas = [];
-foreach ($recetas_raw as $r) {
-    $tags = json_decode($r['etiquetas'] ?? '[]', true) ?: [];
+foreach ($recetas_raw as $receta_db) {
+    $tags = json_decode($receta_db['etiquetas'] ?? '[]', true) ?: [];
 
     // Detectar costo en etiquetas
     $costo_txt = 'Medio';
-    foreach ($tags as $t) {
-        if (in_array($t, $costos)) { $costo_txt = $t; break; }
+    foreach ($tags as $tag_actual) {
+        if (in_array($tag_actual, $costos)) { $costo_txt = $tag_actual; break; }
     }
 
     // Tag visible: el primero que no sea tipo de comida ni costo
     $tag_visible = null;
     $color_tag   = ['bg' => '#F3F4F6', 'fg' => '#6B7280'];
-    foreach ($tags as $t) {
-        if (!in_array($t, $costos) && !in_array($t, $tipos_comida)) {
-            $tag_visible = $t;
-            $color_tag   = $tag_colores[$t] ?? $color_tag;
+    foreach ($tags as $tag_actual) {
+        if (!in_array($tag_actual, $costos) && !in_array($tag_actual, $tipos_comida)) {
+            $tag_visible = $tag_actual;
+            $color_tag   = $tag_colores[$tag_actual] ?? $color_tag;
             break;
         }
     }
 
     // Acumular tags únicos para el chip-bar de filtros
-    foreach ($tags as $t) { $todos_tags[$t] = true; }
+    foreach ($tags as $tag_actual) { $todos_tags[$tag_actual] = true; }
 
     // Aplicar filtro de tag si hay uno activo
     if ($filtro_tag !== '' && !in_array($filtro_tag, $tags)) continue;
 
-    $recetas[] = array_merge($r, [
+    $recetas[] = array_merge($receta_db, [
         'tags'       => $tags,
         'costo_txt'  => $costo_txt,
         'tag_visible'=> $tag_visible,

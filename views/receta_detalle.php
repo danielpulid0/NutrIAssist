@@ -52,20 +52,20 @@ require_once 'includes/header.php';
 
         <h2 class="section-title">Ingredientes</h2>
         <ul class="ingredient-list">
-            <?php foreach ($ingredientes as $i => $ing): ?>
+            <?php foreach ($ingredientes as $indice_ingrediente => $ingrediente_detalle): ?>
             <li class="ingredient-item">
                 <div class="ingr-text">
-                    <div class="ingr-name" id="ingr-name-<?= $i ?>">
+                    <div class="ingr-name" id="ingr-name-<?= $indice_ingrediente ?>">
                         <?php
-                        $cant = rtrim(rtrim((string)$ing['cantidad_gramos'], '0'), '.');
-                        echo $cant . 'g ' . htmlspecialchars($ing['nombre']);
+                        $cant = rtrim(rtrim((string)$ingrediente_detalle['cantidad_gramos'], '0'), '.');
+                        echo $cant . 'g ' . htmlspecialchars($ingrediente_detalle['nombre']);
                         ?>
                     </div>
-                    <div class="ingr-meta" id="ingr-meta-<?= $i ?>"><?= $ing['calorias_calc'] ?> kcal • <?= $ing['proteina_calc'] ?>g prot</div>
+                    <div class="ingr-meta" id="ingr-meta-<?= $indice_ingrediente ?>"><?= $ingrediente_detalle['calorias_calc'] ?> kcal • <?= $ingrediente_detalle['proteina_calc'] ?>g prot</div>
                 </div>
                 <?php if ($receta['permitir_ia_swap']): ?>
                 <button class="btn-swap"
-                        onclick="abrirSwap('<?= htmlspecialchars(addslashes($ing['nombre'])) ?>', <?= $ing['cantidad_gramos'] ?>, <?= $i ?>, <?= $ing['calorias_calc'] ?>, <?= $ing['proteina_calc'] ?>, <?= $ing['carbs_calc'] ?>, <?= $ing['grasas_calc'] ?>)"
+                        onclick="abrirSwap('<?= htmlspecialchars(addslashes($ingrediente_detalle['nombre'])) ?>', <?= $ingrediente_detalle['cantidad_gramos'] ?>, <?= $indice_ingrediente ?>, <?= $ingrediente_detalle['calorias_calc'] ?>, <?= $ingrediente_detalle['proteina_calc'] ?>, <?= $ingrediente_detalle['carbs_calc'] ?>, <?= $ingrediente_detalle['grasas_calc'] ?>)"
                         title="Sustitución IA">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="17 1 21 5 17 9"/>
@@ -82,10 +82,10 @@ require_once 'includes/header.php';
         <?php if (!empty($pasos)): ?>
         <h2 class="section-title">Instrucciones</h2>
         <ol class="steps-list">
-            <?php foreach ($pasos as $n => $paso): ?>
+            <?php foreach ($pasos as $indice_paso => $descripcion_paso): ?>
             <li class="step-item">
-                <div class="step-num"><?= $n + 1 ?></div>
-                <div class="step-text"><?= htmlspecialchars($paso) ?></div>
+                <div class="step-num"><?= $indice_paso + 1 ?></div>
+                <div class="step-text"><?= htmlspecialchars($descripcion_paso) ?></div>
             </li>
             <?php endforeach; ?>
         </ol>

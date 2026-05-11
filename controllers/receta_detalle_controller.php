@@ -23,8 +23,8 @@ $ingredientes = Receta::getIngredients($conn, $id_receta);
 $pasos = [];
 if (!empty($receta['instrucciones'])) {
     $partes = preg_split('/\d+\.\s+/', $receta['instrucciones'], -1, PREG_SPLIT_NO_EMPTY);
-    foreach ($partes as $p) {
-        $paso = trim($p);
+    foreach ($partes as $parte_paso) {
+        $paso = trim($parte_paso);
         if ($paso) $pasos[] = $paso;
     }
 }
@@ -32,8 +32,8 @@ if (!empty($receta['instrucciones'])) {
 // Extraer costo de etiquetas
 $tags  = json_decode($receta['etiquetas'] ?? '[]', true) ?: [];
 $costo = 'Medio';
-foreach ($tags as $t) {
-    if (in_array($t, ['Económico', 'Medio', 'Caro', 'Premium'])) { $costo = $t; break; }
+foreach ($tags as $tag_actual) {
+    if (in_array($tag_actual, ['Económico', 'Medio', 'Caro', 'Premium'])) { $costo = $tag_actual; break; }
 }
 
 $tiempo_txt = $receta['tiempo_prep_min'] ? $receta['tiempo_prep_min'] . ' min' : '—';

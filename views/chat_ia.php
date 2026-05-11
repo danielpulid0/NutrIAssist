@@ -20,8 +20,6 @@ require_once 'includes/header.php';
 
     <div class="chat-messages" id="chat-box">
         
-        <div class="date-badge">HOY, 2:30 PM</div>
-
         <div class="msg-wrapper ai" id="welcome-msg">
             <div class="msg-label">NutrIAssist</div>
             <div class="msg-row">
@@ -92,4 +90,4 @@ require_once 'includes/header.php';
 
 <script src="../assets/js/chat_ia.js?v=<?= time() ?>"></script>
 </body>
-</html>
+</html>
