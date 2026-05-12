@@ -5,9 +5,19 @@ Auth::requirePost();
 
 require_once '../config/conexion.php';
     
+    require_once '../utils/Validator.php';
+    $validator = new Validator();
+
     // 1. Limpiar el correo ingresado
-    $email = trim($_POST['email']);
-    $password_ingresada = $_POST['password'];
+    $email = trim($_POST['email'] ?? '');
+    $password_ingresada = $_POST['password'] ?? '';
+
+    $validator->required($_POST, ['email', 'password'])->email($email);
+
+    if ($validator->hasErrors()) {
+        header("Location: ../views/login.html?error=campos_invalidos");
+        exit();
+    }
 
     require_once '../models/Usuario.php';
 
@@ -35,7 +45,7 @@ require_once '../config/conexion.php';
 
         } else {
             // Login Fallido: Regresamos al login con un código de error en la URL
-            header("Location: ../views/login.html?error=1");
+            header("Location: ../views/login.html?error=credenciales_invalidas");
             exit();
         }
 

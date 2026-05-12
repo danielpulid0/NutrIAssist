@@ -32,10 +32,15 @@
 
         <script>
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('error') === 'email_existente') {
+            const error = urlParams.get('error');
+            if (error === 'email_existente') {
                 document.write('<div class="alert-error">Este correo electrónico ya está registrado. Por favor, intenta iniciar sesión.</div>');
-            } else if (urlParams.get('error') === 'password_insegura') {
+            } else if (error === 'password_insegura') {
                 document.write('<div class="alert-error">La contraseña debe tener al menos 8 caracteres, incluir una letra, un número y un carácter especial.</div>');
+            } else if (error === 'required') {
+                document.write('<div class="alert-error">Por favor, completa todos los campos obligatorios.</div>');
+            } else if (error === 'formato_invalido') {
+                document.write('<div class="alert-error">El formato del correo electrónico no es válido.</div>');
             }
         </script>
 

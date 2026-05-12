@@ -12,6 +12,25 @@ require_once 'includes/header.php';
         <span>Perfil y Metas</span>
     </div>
 
+    <?php if (isset($_GET['exito'])): ?>
+        <div class="alert-success" style="margin: 15px; padding: 12px; background-color: #d4edda; color: #155724; border-radius: 8px; text-align: center;">
+            ¡Perfil actualizado con éxito!
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['error'])): ?>
+        <div class="alert-error" style="margin: 15px; padding: 12px; background-color: #f8d7da; color: #721c24; border-radius: 8px; text-align: center;">
+            <?php 
+                $error = $_GET['error'];
+                if ($error === 'required') echo 'Por favor, completa todos los campos obligatorios.';
+                elseif ($error === 'debe_ser_numero') echo 'La edad, peso y altura deben ser números.';
+                elseif ($error === 'valor_minimo') echo 'Has ingresado un valor demasiado bajo en algún campo biométrico.';
+                elseif ($error === 'valor_maximo') echo 'Has ingresado un valor demasiado alto en algún campo biométrico.';
+                else echo 'Hubo un error al procesar los datos.';
+            ?>
+        </div>
+    <?php endif; ?>
+
     <form action="../controllers/procesar_perfil.php" method="POST" class="perfil-body">
         
         <h2 class="section-title">Datos Biométricos</h2>
