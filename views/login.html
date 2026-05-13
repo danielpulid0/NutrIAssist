@@ -55,7 +55,7 @@
             </div>
 
             <div class="forgot-password">
-                <a href="#">Olvidé mi contraseña</a>
+                <a href="recuperar.php">Olvidé mi contraseña</a>
             </div>
 
             <div class="sticky-footer">
@@ -71,15 +71,18 @@
     <script>
         // Mostrar error si viene del servidor
         const urlParams = new URLSearchParams(window.location.search);
-        const error = urlParams.get('error');
-        const errorBox = document.getElementById('error-box');
+        if (urlParams.get('error') === '1') {
+            document.getElementById('error-box').style.display = 'block';
+        }
 
-        if (error === 'credenciales_invalidas') {
-            errorBox.innerText = 'Correo o contraseña incorrectos.';
+        // Mostrar éxito si se restableció la contraseña
+        if (urlParams.get('reset') === 'success') {
+            const errorBox = document.getElementById('error-box');
             errorBox.style.display = 'block';
-        } else if (error === 'campos_invalidos') {
-            errorBox.innerText = 'Por favor, ingresa un correo válido y tu contraseña.';
-            errorBox.style.display = 'block';
+            errorBox.style.backgroundColor = '#d4edda';
+            errorBox.style.color = '#155724';
+            errorBox.style.borderColor = '#c3e6cb';
+            errorBox.innerText = 'Contraseña actualizada con éxito. Ya puedes iniciar sesión.';
         }
 
         // Toggle mostrar/ocultar contraseña
