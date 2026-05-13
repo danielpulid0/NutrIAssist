@@ -18,13 +18,13 @@
     display: flex; align-items: center;
     margin-bottom: 0.8rem; gap: 0.5rem;
 }
-.cal-prev-mes {
+.cal-prev-mes, .cal-next-mes {
     background: none; border: none; cursor: pointer;
     color: var(--color-text-gray); font-size: 1.3rem;
     line-height: 1; padding: 0 0.2rem; flex-shrink: 0;
     transition: color 0.15s;
 }
-.cal-prev-mes:hover { color: var(--color-text-dark); }
+.cal-prev-mes:hover, .cal-next-mes:hover { color: var(--color-text-dark); }
 .cal-mes-label {
     font-size: 0.9rem; font-weight: 700;
     color: var(--color-text-dark);
@@ -102,10 +102,12 @@
 .cals-num { font-size: 1.55rem; font-weight: 800; color: var(--color-text-dark); letter-spacing: -0.02em; }
 .cals-meta { font-size: 0.85rem; color: var(--color-text-gray); }
 .cals-flame-ring {
-    width: 50px; height: 50px; border-radius: 50%;
+    min-width: 50px; height: 50px; border-radius: 25px;
+    padding: 0 10px;
     border: 2.5px solid var(--color-malachite);
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.35rem; flex-shrink: 0;
+    font-size: 1.15rem; flex-shrink: 0;
+    background-color: var(--color-mint);
 }
 
 /* ── MEAL CARDS ── */

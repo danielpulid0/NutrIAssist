@@ -2,7 +2,7 @@
 require_once '../controllers/diario_controller.php';
 
 $page_title = 'NutrIAssist – Diario';
-$extra_css = '../assets/css/diario.css';
+$extra_css = '../assets/css/diario.css?v=5';
 require_once 'includes/header.php';
 ?>
 
@@ -17,6 +17,7 @@ require_once 'includes/header.php';
         <div class="cal-header">
             <button class="cal-prev-mes" id="btn-prev-mes" aria-label="Mes anterior">&#8249;</button>
             <span class="cal-mes-label" id="cal-mes-label"><?= $label_mes ?></span>
+            <button class="cal-next-mes" id="btn-next-mes" aria-label="Mes siguiente" style="display: none;">&#8250;</button>
         </div>
 
         <!-- Etiquetas de días (fijas) -->
@@ -46,7 +47,9 @@ require_once 'includes/header.php';
                 <span class="cals-meta"> / <?= number_format($meta_calorias) ?> kcal</span>
             </div>
         </div>
-        <div class="cals-flame-ring">🔥</div>
+        <div class="cals-flame-ring" title="Racha de días cumpliendo metas">
+            🔥 <span style="margin-left: 4px; font-weight: 800; color: var(--color-malachite);"><?= $racha ?></span>
+        </div>
     </div>
 
     <!-- ── MEAL CARDS DINÁMICAS ── -->
@@ -289,7 +292,7 @@ document.addEventListener("DOMContentLoaded", function() {
         MESES: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
     };
 </script>
-<script src="../assets/js/diario.js"></script>
+<script src="../assets/js/diario.js?v=5"></script>
 
 </body>
 

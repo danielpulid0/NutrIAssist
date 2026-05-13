@@ -90,6 +90,29 @@
 .header-date-label { color: var(--color-malachite); font-size: 0.75rem; font-weight: 700; }
 .header-date-value { color: var(--color-text-gray); font-size: 0.8rem; }
 
+.ring-streak {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--color-text-dark);
+    background-color: var(--color-mint);
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    margin-bottom: 0.4rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    animation: bounceIn 0.8s ease-out;
+}
+.ring-streak span { color: var(--color-malachite); }
+
+@keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
 .ring-icon { color: var(--color-malachite); font-size: 1.2rem; margin-bottom: 0.2rem; }
 .ring-subtitle { font-size: 0.8rem; }
 .ring-badge { background-color: var(--color-mint); color: var(--color-malachite); font-size: 0.75rem; font-weight: 600; padding: 0.3rem 0.6rem; border-radius: 12px; margin-top: 0.5rem; display: inline-block; }

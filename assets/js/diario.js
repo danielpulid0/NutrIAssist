@@ -51,6 +51,7 @@ const slideCurr = document.getElementById('slide-curr');
 const slideNext = document.getElementById('slide-next');
 const mesLabel  = document.getElementById('cal-mes-label');
 const btnPrev   = document.getElementById('btn-prev-mes');
+const btnNext   = document.getElementById('btn-next-mes');
 
 let semanaActual = sundayOf(window.NutriConfig.FECHA_SEL); // domingo de la semana visible
 
@@ -70,6 +71,18 @@ function actualizarCalendario() {
     const jueves = addDays(semanaActual, 4);
     const [y, m] = jueves.split('-');
     mesLabel.textContent = window.NutriConfig.MESES[parseInt(m, 10) - 1] + ' ' + y;
+
+    // Mostrar/ocultar botón de mes siguiente
+    if (btnNext) {
+        const hoy = new Date(window.NutriConfig.FECHA_HOY + 'T12:00:00');
+        const viewDate = new Date(y + '-' + m + '-01T12:00:00');
+        
+        // Si el mes en vista es menor al mes actual, mostramos el botón
+        const esMesPasado = (viewDate.getFullYear() < hoy.getFullYear()) || 
+                           (viewDate.getFullYear() === hoy.getFullYear() && viewDate.getMonth() < hoy.getMonth());
+        
+        btnNext.style.display = esMesPasado ? 'block' : 'none';
+    }
 }
 
 function irAFecha(fecha) {
@@ -154,6 +167,16 @@ if (btnPrev) {
     btnPrev.addEventListener('click', () => {
         const d = new Date(window.NutriConfig.FECHA_SEL + 'T12:00:00');
         d.setMonth(d.getMonth() - 1);
+        let nueva = fmtDate(d);
+        irAFecha(nueva);
+    });
+}
+
+// Botón mes siguiente → ir al mismo día un mes adelante (cap al día de hoy)
+if (btnNext) {
+    btnNext.addEventListener('click', () => {
+        const d = new Date(window.NutriConfig.FECHA_SEL + 'T12:00:00');
+        d.setMonth(d.getMonth() + 1);
         let nueva = fmtDate(d);
         if (nueva > window.NutriConfig.FECHA_HOY) nueva = window.NutriConfig.FECHA_HOY;
         irAFecha(nueva);

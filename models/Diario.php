@@ -105,5 +105,55 @@ class Diario {
             return [];
         }
     }
+
+    /**
+     * Calcula la racha actual de días consecutivos cumpliendo la meta.
+     * @param PDO $conn
+     * @param int $id_usuario
+     * @param int $meta_calorias
+     * @return int
+     */
+    public static function getStreak($conn, $id_usuario, $meta_calorias) {
+        try {
+            $stmt = $conn->prepare("
+                SELECT rd.fecha, COALESCE(SUM(ac.calorias_ia), 0) as total_cal
+                FROM Registros_Diarios rd
+                LEFT JOIN Comidas c ON rd.id_registro = c.id_registro
+                LEFT JOIN Alimentos_Consumidos ac ON c.id_comida = ac.id_comida
+                WHERE rd.id_usuario = :uid
+                GROUP BY rd.fecha
+                ORDER BY rd.fecha DESC
+                LIMIT 60
+            ");
+            $stmt->execute([':uid' => $id_usuario]);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $data_map = [];
+            foreach ($rows as $r) {
+                $data_map[$r['fecha']] = (float)$r['total_cal'];
+            }
+
+            $streak = 0;
+            $hoy = date('Y-m-d');
+            $ayer = date('Y-m-d', strtotime('-1 day'));
+            
+            // Umbral de cumplimiento (ej: 90% de la meta)
+            $min_goal = $meta_calorias * 0.9;
+
+            // Si hoy ya cumplió, empezamos desde hoy. 
+            // Si hoy no ha cumplido, empezamos desde ayer para no romper la racha prematuramente.
+            $check_date = (isset($data_map[$hoy]) && $data_map[$hoy] >= $min_goal) ? $hoy : $ayer;
+
+            while (isset($data_map[$check_date]) && $data_map[$check_date] >= $min_goal) {
+                $streak++;
+                $check_date = date('Y-m-d', strtotime('-1 day', strtotime($check_date)));
+            }
+
+            return $streak;
+        } catch (PDOException $e) {
+            error_log('[DiarioModel] DB ERROR getStreak: ' . $e->getMessage());
+            return 0;
+        }
+    }
 }
 ?>

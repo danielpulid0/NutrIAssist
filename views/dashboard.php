@@ -25,7 +25,9 @@ require_once 'includes/header.php';
     <div class="ring-container">
         <div class="calorie-ring" style="background: conic-gradient(var(--color-malachite) <?= $porcentaje_anillo ?>%, var(--color-mint) <?= $porcentaje_anillo ?>% 100%);">
             <div class="ring-inner">
-                <p class="ring-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-malachite)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5" fill="var(--color-malachite)" stroke="none"/></svg></p>
+                <div class="ring-streak" title="Tu racha de días cumpliendo metas">
+                    🔥 <span><?= $racha ?></span>
+                </div>
                 <h2><?= number_format($calorias_consumidas) ?></h2>
                 <p class="ring-subtitle">de <?= number_format($meta_calorias) ?> kcal</p>
                 <div class="ring-badge">

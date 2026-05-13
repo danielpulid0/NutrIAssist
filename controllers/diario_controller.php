@@ -47,5 +47,6 @@ $macros = Diario::getDailyMacros($conn, $id_usuario, $fecha_sel);
 $total_calorias = (float) $macros['total_cal'];
 
 $comidas_grupos = Diario::getFoodLogGroups($conn, $id_usuario, $fecha_sel);
+$racha = Diario::getStreak($conn, $id_usuario, $meta_calorias);
 
 $tipos_orden = ['Desayuno', 'Comida', 'Cena', 'Snack'];

@@ -2,7 +2,7 @@
 // Cache-First para assets estáticos | Network-First para vistas PHP
 //Sirve como proxy entre la app y el navegador
 
-const CACHE_NAME = 'nutriassist-v4';
+const CACHE_NAME = 'nutriassist-v5';
 
 const STATIC_ASSETS = [
   '/nutriassist/',
@@ -10,6 +10,8 @@ const STATIC_ASSETS = [
   '/nutriassist/assets/css/global.css',
   '/nutriassist/assets/img/icon-192.png',
   '/nutriassist/assets/img/icon-512.png',
+  '/nutriassist/assets/css/diario.css',
+  '/nutriassist/assets/js/diario.js',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'
 ];
 

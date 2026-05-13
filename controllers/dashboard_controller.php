@@ -40,6 +40,8 @@ $pro_p    = ($meta_proteina > 0) ? min(100, ($pro_consumidas   / $meta_proteina)
 $carbs_p  = ($meta_carbs    > 0) ? min(100, ($carbs_consumidas / $meta_carbs)    * 100) : 0;
 $grasas_p = ($meta_grasas   > 0) ? min(100, ($grasas_consumidas/ $meta_grasas)   * 100) : 0;
 
+$racha = Diario::getStreak($conn, $id_usuario, $meta_calorias);
+
 // ─── LÓGICA DE SUGERENCIA DINÁMICA DE RECETA ──────────────────────
 $lowest_macro = min($pro_p, $carbs_p, $grasas_p);
 $keyword = "";
