@@ -34,16 +34,14 @@ $data = json_decode($json_input, true);
 $mensaje_usuario = $data['prompt'] ?? '';
 $historial_js = $data['history'] ?? [];
 $imagen_b64 = $data['image'] ?? null;
-$audio_b64 = $data['audio'] ?? null; // Audio capturado
-
-if (empty($mensaje_usuario) && empty($imagen_b64) && empty($audio_b64)) {
+if (empty($mensaje_usuario) && empty($imagen_b64)) {
     echo json_encode(['status' => 'error', 'message' => 'El mensaje está vacío']);
     exit();
 }
 
 // ==========================================
 // 6. Configurar el endpoint dinámico (IA Híbrida)
-$modelo_usar = !empty($audio_b64) ? GEMINI_MODELO_VOZ : GEMINI_MODELO_CHAT;
+$modelo_usar = GEMINI_MODELO_CHAT;
 $api_url = "https://generativelanguage.googleapis.com/v1beta/models/{$modelo_usar}:generateContent?key=" . GEMINI_API_KEY;
 
 
@@ -107,16 +105,7 @@ foreach ($historial_js as $index => $msg) {
             ];
         }
 
-        // Adjuntar Audio si existe
-        if (!empty($audio_b64)) {
-            $raw_audio_b64 = preg_replace('/^data:audio\/\w+;base64,/', '', $audio_b64);
-            $parts[] = [
-                "inlineData" => [
-                    "mimeType" => "audio/mp3",
-                    "data" => $raw_audio_b64
-                ]
-            ];
-        }
+
     }
     
     $contents[] = [

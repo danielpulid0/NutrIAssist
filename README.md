@@ -55,13 +55,11 @@ nutriassist/
 ├── api/                           # Endpoints de servicios y lógica de IA
 │   ├── api_alimentos.php          # Integración con USDA y normalización de nombres
 │   ├── gamma_api.php              # Integración directa con Google Gemini API
-│   ├── gemini_tts.php             # Generación de respuestas de audio (Text-to-Speech)
 │   ├── guardar_comida_ia.php      # Persistencia de datos interpretados por la IA
 │   ├── guardar_comida_manual.php  # Registro de entradas manuales del usuario
 │   ├── guardar_comida_lista.php   # Registro desde el buscador de alimentos
 │   ├── ia_swap.php                # Lógica de sustitución de ingredientes mediante IA
-│   ├── reporte_semanal_api.php    # Generación de reportes de progreso
-│   └── transcribe_audio.php       # Procesamiento de voz a texto
+│   └── reporte_semanal_api.php    # Generación de reportes de progreso
 │
 ├── config/                        # Archivos de configuración del sistema
 │   ├── conexion.php               # Configuración de la conexión PDO a MySQL
