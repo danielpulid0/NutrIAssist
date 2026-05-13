@@ -31,7 +31,8 @@
 }
 
 .sheet select,
-.sheet input[type="number"] {
+.sheet input[type="number"],
+.sheet input[type="date"] {
     width: 100%;
     padding: 0.9rem 1rem;
     border: 1.5px solid var(--color-border);
@@ -42,9 +43,19 @@
     margin-bottom: 1rem;
     appearance: none;
     background: white;
+    font-family: inherit;
+}
+.sheet input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+.sheet input[type="date"]:hover::-webkit-calendar-picker-indicator {
+    opacity: 1;
 }
 .sheet select:focus,
-.sheet input[type="number"]:focus {
+.sheet input[type="number"]:focus,
+.sheet input[type="date"]:focus {
     border-color: var(--color-malachite);
     box-shadow: 0 0 0 3px var(--color-mint);
 }
@@ -58,4 +69,102 @@
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
+}
+
+/* =========================================
+   WHEEL PICKER (iOS Style)
+   ========================================= */
+.date-wheel-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: 200px;
+    background: var(--color-bg);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    user-select: none;
+    border: 1px solid var(--color-border);
+}
+
+.wheel-col {
+    flex: 1;
+    height: 100%;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE/Edge */
+    position: relative;
+}
+
+.wheel-col::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.wheel-list {
+    padding: 80px 0; /* Espacio para centrar el primer y último item */
+}
+
+.wheel-item {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: var(--color-text-gray);
+    scroll-snap-align: center;
+    transition: color 0.2s, transform 0.2s;
+    font-weight: 500;
+}
+
+.wheel-item.selected {
+    color: var(--color-text-dark);
+    font-weight: 700;
+    transform: scale(1.1);
+}
+
+/* Líneas de selección central */
+.picker-highlight {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    right: 10px;
+    height: 40px;
+    transform: translateY(-50%);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    pointer-events: none;
+}
+
+/* Gradientes de desvanecimiento */
+.date-wheel-container::before,
+.date-wheel-container::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 80px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.date-wheel-container::before {
+    top: 0;
+    background: linear-gradient(to bottom, var(--color-bg) 0%, transparent 100%);
+}
+
+.date-wheel-container::after {
+    bottom: 0;
+    background: linear-gradient(to top, var(--color-bg) 0%, transparent 100%);
+}
+
+[data-theme='dark'] .date-wheel-container {
+    background: var(--color-bg-light);
+}
+[data-theme='dark'] .date-wheel-container::before {
+    background: linear-gradient(to bottom, var(--color-bg-light) 0%, transparent 100%);
+}
+[data-theme='dark'] .date-wheel-container::after {
+    background: linear-gradient(to top, var(--color-bg-light) 0%, transparent 100%);
 }

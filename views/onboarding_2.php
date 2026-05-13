@@ -141,7 +141,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
     <div class="sheet-overlay" id="sheet-fecha_nacimiento" onclick="closeOnOverlay(event,'sheet-fecha_nacimiento')">
         <div class="sheet">
             <div class="sheet-title">Selecciona tu fecha de nacimiento</div>
-            <input type="date" id="inp-fecha" value="1995-01-01">
+            
+            <div class="date-wheel-container">
+                <div class="picker-highlight"></div>
+                
+                <!-- Día -->
+                <div class="wheel-col" id="wheel-day">
+                    <div class="wheel-list"></div>
+                </div>
+                
+                <!-- Mes -->
+                <div class="wheel-col" id="wheel-month">
+                    <div class="wheel-list"></div>
+                </div>
+                
+                <!-- Año -->
+                <div class="wheel-col" id="wheel-year">
+                    <div class="wheel-list"></div>
+                </div>
+            </div>
+
             <button class="sheet-confirm" onclick="confirmFecha()">Confirmar</button>
         </div>
     </div>
@@ -193,15 +212,109 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
             document.getElementById('h-sexo').value = v;
             closeSheet('sexo');
         }
-        function confirmFecha() {
-            const v = document.getElementById('inp-fecha').value;
-            if (v) {
-                state.fecha = v;
-                document.getElementById('val-fecha').textContent = v;
-                document.getElementById('h-fecha').value = v;
+        const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        const pickerState = { day: 1, month: 0, year: 1995 };
+
+        function initPicker() {
+            const dayList = document.querySelector('#wheel-day .wheel-list');
+            const monthList = document.querySelector('#wheel-month .wheel-list');
+            const yearList = document.querySelector('#wheel-year .wheel-list');
+
+            // Llenar Meses
+            months.forEach((m, i) => {
+                const item = document.createElement('div');
+                item.className = 'wheel-item';
+                item.textContent = m;
+                monthList.appendChild(item);
+            });
+
+            // Llenar Años (1940 - hoy)
+            const currentYear = new Date().getFullYear();
+            for (let y = currentYear; y >= 1940; y--) {
+                const item = document.createElement('div');
+                item.className = 'wheel-item';
+                item.textContent = y;
+                yearList.appendChild(item);
             }
+
+            updateDays();
+
+            // Listeners de scroll
+            [
+                { id: 'wheel-day', key: 'day' },
+                { id: 'wheel-month', key: 'month' },
+                { id: 'wheel-year', key: 'year' }
+            ].forEach(col => {
+                const el = document.getElementById(col.id);
+                el.addEventListener('scroll', () => handleScroll(el, col.key));
+            });
+
+            // Posicionamiento inicial
+            setTimeout(() => {
+                setWheelValue('wheel-month', 0); // Enero
+                setWheelValue('wheel-year', currentYear - 1995); // 1995
+                setWheelValue('wheel-day', 0); // Día 1
+            }, 100);
+        }
+
+        function updateDays() {
+            const dayList = document.querySelector('#wheel-day .wheel-list');
+            const daysInMonth = new Date(pickerState.year, pickerState.month + 1, 0).getDate();
+            
+            dayList.innerHTML = '';
+            for (let d = 1; d <= daysInMonth; d++) {
+                const item = document.createElement('div');
+                item.className = 'wheel-item';
+                item.textContent = d;
+                dayList.appendChild(item);
+            }
+            if (pickerState.day > daysInMonth) pickerState.day = daysInMonth;
+        }
+
+        function handleScroll(el, key) {
+            const items = el.querySelectorAll('.wheel-item');
+            const scrollPos = el.scrollTop;
+            const index = Math.round(scrollPos / 40);
+            
+            items.forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('selected');
+                    if (key === 'month') {
+                        pickerState.month = index;
+                        updateDays();
+                    } else if (key === 'year') {
+                        const currentYear = new Date().getFullYear();
+                        pickerState.year = currentYear - index;
+                        updateDays();
+                    } else {
+                        pickerState.day = index + 1;
+                    }
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        function setWheelValue(id, index) {
+            const el = document.getElementById(id);
+            el.scrollTop = index * 40;
+        }
+
+        function confirmFecha() {
+            const d = pickerState.day.toString().padStart(2, '0');
+            const m = (pickerState.month + 1).toString().padStart(2, '0');
+            const y = pickerState.year;
+            const fullDate = `${y}-${m}-${d}`;
+            
+            state.fecha = fullDate;
+            document.getElementById('val-fecha').textContent = fullDate;
+            document.getElementById('h-fecha').value = fullDate;
+            
             closeSheet('fecha_nacimiento');
         }
+
+        // Llamar init al cargar
+        window.addEventListener('DOMContentLoaded', initPicker);
         function confirmAltura() {
             const v = parseInt(document.getElementById('inp-altura').value);
             if (v >= 100 && v <= 250) {
