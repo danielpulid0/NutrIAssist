@@ -57,6 +57,9 @@ require_once 'includes/header.php';
             <button class="btn-action" id="btn-gallery" title="Galería">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
             </button>
+            <button class="btn-action" id="btn-mic" title="Grabar Voz">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+            </button>
             <div class="input-wrapper">
                 <input type="text" id="user-input" class="chat-input" placeholder="Comida o sube foto..." autocomplete="off">
                 <button class="btn-send" id="btn-send">
@@ -71,6 +74,13 @@ require_once 'includes/header.php';
         <div id="image-preview-container" class="preview-container hidden">
             <img id="image-preview" src="" class="preview-img">
             <button id="remove-image" class="btn-remove-preview">×</button>
+        </div>
+        <!-- Previsualización de audio -->
+        <div id="audio-preview-container" class="audio-preview-container hidden">
+            <div class="recording-pulse hidden"></div>
+            <span id="recording-status" class="recording-status">Grabando... 0:00</span>
+            <button id="stop-recording" class="btn-rec btn-rec--stop">Listo</button>
+            <button id="remove-audio" class="btn-rec btn-rec--remove">Eliminar</button>
         </div>
         <div class="disclaimer">
             NutrIAssist puede cometer errores. Verifica la información.

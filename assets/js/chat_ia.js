@@ -5,6 +5,12 @@ const typingMsg = document.getElementById('typing-msg');
 
 let chatHistory = [];
 let selectedImageBase64 = null;
+let selectedAudioBase64 = null;
+let selectedAudioMimeType = 'audio/webm'; 
+let mediaRecorder;
+let audioChunks = [];
+let recordingInterval;
+let startTime;
 let isMuted = false; // Estado del habla de la IA
 
 // Elementos de la UI
@@ -15,6 +21,14 @@ const inputGallery = document.getElementById('input-gallery');
 const previewContainer = document.getElementById('image-preview-container');
 const previewImg = document.getElementById('image-preview');
 const btnRemoveImg = document.getElementById('remove-image');
+
+// Elementos de audio UI
+const btnMic = document.getElementById('btn-mic');
+const audioPreview = document.getElementById('audio-preview-container');
+const recordingStatus = document.getElementById('recording-status');
+const pulse = document.querySelector('.recording-pulse');
+const btnStopRec = document.getElementById('stop-recording');
+const btnRemoveAudio = document.getElementById('remove-audio');
 
 // Quitar imagen
 btnRemoveImg.addEventListener('click', () => {
@@ -51,6 +65,14 @@ btnRemoveImg.addEventListener('click', () => {
     inputGallery.value = '';
 });
 
+// EVENTOS DE AUDIO
+btnMic.addEventListener('click', startRecording);
+btnStopRec.addEventListener('click', stopRecording);
+btnRemoveAudio.addEventListener('click', () => {
+    selectedAudioBase64 = null;
+    audioPreview.classList.add('hidden');
+});
+
 // EVENTO MUTE TTS
 const btnMute = document.getElementById('btn-mute');
 const volWaves = document.getElementById('vol-waves');
@@ -66,6 +88,60 @@ btnMute.addEventListener('click', () => {
         btnMute.title = "Silenciar asistente";
     }
 });
+
+async function startRecording() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        // Detectar el MIME type real que soporta el navegador
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
+                        : MediaRecorder.isTypeSupported('audio/ogg') ? 'audio/ogg'
+                        : 'audio/mp4';
+
+        mediaRecorder = new MediaRecorder(stream, { mimeType });
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: mimeType });
+            selectedAudioBase64 = await blobToBase64(audioBlob);
+            selectedAudioMimeType = mimeType;
+            recordingStatus.innerText = "Audio de voz capturado ✓";
+            pulse.classList.remove('active');
+            btnStopRec.classList.add('hidden');
+        };
+
+        mediaRecorder.start();
+        startTime = Date.now();
+        audioPreview.classList.remove('hidden');
+        audioPreview.classList.add('active');
+        pulse.classList.remove('hidden');
+        pulse.classList.add('active');
+        btnStopRec.classList.remove('hidden');
+        
+        recordingInterval = setInterval(() => {
+            const seconds = Math.floor((Date.now() - startTime) / 1000);
+            recordingStatus.innerText = `Grabando Audio... 0:${seconds < 10 ? '0' : ''}${seconds}`;
+        }, 1000);
+    } catch (err) {
+        console.error("No se pudo acceder al micrófono:", err);
+    }
+}
+
+function stopRecording() {
+    if(mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+    }
+    clearInterval(recordingInterval);
+}
+
+function blobToBase64(blob) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+    });
+}
 
 // EVENTO MUTE TTS
 
@@ -94,17 +170,48 @@ dropZone.addEventListener('drop', (e) => {
 
 async function sendMessage() {
     let text = userInput.value.trim();
+    const currentAudio = selectedAudioBase64;
     const currentImage = selectedImageBase64;
 
-    if (!text && !currentImage) return;
+    if (!text && !currentImage && !currentAudio) return;
 
     // 1. Limpieza inmediata de la UI para el siguiente mensaje
     userInput.value = '';
     selectedImageBase64 = null;
+    selectedAudioBase64 = null;
     previewContainer.classList.add('hidden');
+    audioPreview.classList.add('hidden');
+    audioPreview.classList.remove('active');
 
-    // Envió texto o imagen normal
-    appendUserMessage(text, currentImage);
+    // 2. CASO ESPECIAL: ES UN AUDIO SIN TEXTO
+    if (!text && currentAudio) {
+        // Mostramos la burbuja de audio de inmediato para que el usuario sienta rapidez
+        appendUserMessage("Transcribiendo audio...", null, currentAudio);
+
+        try {
+            // DETENER EJECUCIÓN: Esperar a que el backend de Google nos dé el texto real
+            const transResponse = await fetch('../api/transcribe_audio.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ audio: currentAudio, mimeType: selectedAudioMimeType })
+            });
+            const transData = await transResponse.json();
+            
+            // EL TEXTO PASA DE "Transcribiendo..." A LO QUE REALMENTE DIJERON
+            text = transData.transcripcion || "Audio enviado";
+
+            // Actualizar visualmente la burbuja del usuario para que vea su texto transcrito
+            const lastBubble = chatBox.querySelector('.msg-wrapper.user:last-of-type .bubble');
+            if(lastBubble) {
+                lastBubble.innerHTML = lastBubble.innerHTML.replace("Transcribiendo audio...", `<div style="font-size: 0.75rem; opacity: 0.7; margin-top: 4px; font-style: italic; max-width: 200px; line-height: 1.2;">"${text}"</div>`);
+            }
+        } catch (e) {
+            text = "Audio enviado";
+        }
+    } else {
+        // Envió texto o imagen normal
+        appendUserMessage(text, currentImage, currentAudio);
+    }
 
     // 3. SOLO AHORA QUE TENEMOS EL TEXTO FINAL (sea de input o audio), MANDAMOS A LA IA
     chatHistory.push({ role: "user", parts: [{ text: text }] });
@@ -155,8 +262,17 @@ async function sendMessage() {
     }
 }
 
-function appendUserMessage(text, imageB64 = null) {
+function appendUserMessage(text, imageB64 = null, audioB64 = null) {
     let imageHtml = imageB64 ? `<img src="${imageB64}" style="max-width: 100%; border-radius: 8px; margin-bottom: 5px; display: block;">` : '';
+    let audioHtml = "";
+    if (audioB64) {
+        audioHtml = `
+            <audio controls src="${audioB64}" style="width: 200px; height: 36px; display: block; border-radius: 20px;"></audio>
+            <div style="font-size: 0.75rem; opacity: 0.7; margin-top: 4px; font-style: italic; max-width: 200px; line-height: 1.2;">
+                "${text}"
+            </div>
+        `;
+    }
     
     const html = `
     <div class="msg-wrapper user">
@@ -164,7 +280,8 @@ function appendUserMessage(text, imageB64 = null) {
         <div class="msg-row">
             <div class="bubble user-bubble">
                 ${imageHtml}
-                ${text} 
+                ${audioHtml}
+                ${!audioB64 ? text : ''} 
             </div>
             <div class="avatar user-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -437,23 +554,66 @@ userInput.addEventListener('keypress', function (e) {
 });
 
 // ==========================================
-// MOTOR TTS (Voz del Navegador)
+// MOTOR TTS GEMINI (Texto a Voz nativo)
 // ==========================================
-function playGeminiVoice(text) {
-    if (isMuted) return;
+async function playGeminiVoice(text) {
+    if (isMuted) return; // NO gastar tokens si está silenciado
+    try {
+        const res = await fetch('../api/gemini_tts.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ texto: text })
+        });
+        
+        const data = await res.json();
+        if (data.status === 'success' && data.audio_base64) {
+            playPCMBase64(data.audio_base64);
+        }
+    } catch (e) {
+        console.error("Error reproduciendo voz:", e);
+    }
+}
+
+// Función constructora WAV a partir de PCM lineal crudo de Gemini TTS
+function playPCMBase64(base64Str) {
+    const raw = atob(base64Str);
+    const len = raw.length;
+    let buffer = new ArrayBuffer(44 + len);
+    let view = new DataView(buffer);
     
-    // Detener cualquier habla previa
-    window.speechSynthesis.cancel();
+    // RIFF chunk descriptor
+    writeString(view, 0, 'RIFF');
+    view.setUint32(4, 36 + len, true);
+    writeString(view, 8, 'WAVE');
     
-    const utterance = new SpeechSynthesisUtterance(text);
+    // FMT sub-chunk
+    writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true); // PCM format = 1
+    view.setUint16(22, 1, true); // Mono channel = 1
+    view.setUint32(24, 24000, true); // Sample rate = 24000Hz (Default Gemini)
+    view.setUint32(28, 24000 * 2, true); // Byte rate
+    view.setUint16(32, 2, true); // Block align
+    view.setUint16(34, 16, true); // Bits per sample = 16
     
-    // Intentar encontrar una voz en español
-    const voices = window.speechSynthesis.getVoices();
-    const spanishVoice = voices.find(v => v.lang.startsWith('es'));
-    if (spanishVoice) utterance.voice = spanishVoice;
+    // Data sub-chunk
+    writeString(view, 36, 'data');
+    view.setUint32(40, len, true);
     
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
+    // Escribir la data PCM exacta
+    let offset = 44;
+    for (let i = 0; i < len; i++) {
+        view.setUint8(offset + i, raw.charCodeAt(i));
+    }
     
-    window.speechSynthesis.speak(utterance);
+    const blob = new Blob([buffer], { type: 'audio/wav' });
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.play();
+}
+
+function writeString(view, offset, string) {
+    for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+    }
 }
