@@ -4,9 +4,9 @@ if (!isset($_SESSION['usuario_id'])) {
     header("Location: registro.html");
     exit();
 }
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edad'])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['fecha_nacimiento'])) {
     $_SESSION['onboarding_sexo']   = $_POST['sexo'];
-    $_SESSION['onboarding_edad']   = $_POST['edad'];
+    $_SESSION['onboarding_fecha_nacimiento'] = $_POST['fecha_nacimiento'];
     $_SESSION['onboarding_altura'] = $_POST['altura'];
     $_SESSION['onboarding_peso']   = $_POST['peso'];
 }

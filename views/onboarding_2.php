@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
         <!-- Formulario oculto con los verdaderos valores -->
         <form id="form-sobre-ti" action="onboarding_3.php" method="POST" class="flex-form-container">
             <input type="hidden" id="h-sexo"   name="sexo"   value="">
-            <input type="hidden" id="h-edad"   name="edad"   value="">
+            <input type="hidden" id="h-fecha"  name="fecha_nacimiento" value="">
             <input type="hidden" id="h-altura" name="altura" value="">
             <input type="hidden" id="h-peso"   name="peso"   value="">
 
@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
                     </span>
                 </div>
 
-                <div class="info-row" onclick="openSheet('edad')">
+                <div class="info-row" onclick="openSheet('fecha_nacimiento')">
                     <div class="info-row-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -77,9 +77,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
                             <line x1="3"  y1="10" x2="21" y2="10"/>
                         </svg>
                     </div>
-                    <span class="info-row-label">Edad</span>
+                    <span class="info-row-label">Fecha de Nacimiento</span>
                     <span class="info-row-value">
-                        <span id="val-edad">24</span>
+                        <span id="val-fecha">1995-01-01</span>
                         <span class="chevron">›</span>
                     </span>
                 </div>
@@ -137,12 +137,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
         </div>
     </div>
 
-    <!-- Edad -->
-    <div class="sheet-overlay" id="sheet-edad" onclick="closeOnOverlay(event,'sheet-edad')">
+    <!-- Fecha de Nacimiento -->
+    <div class="sheet-overlay" id="sheet-fecha_nacimiento" onclick="closeOnOverlay(event,'sheet-fecha_nacimiento')">
         <div class="sheet">
-            <div class="sheet-title">Ingresa tu edad</div>
-            <input type="number" id="inp-edad" min="15" max="100" value="24" placeholder="Ej. 24">
-            <button class="sheet-confirm" onclick="confirmEdad()">Confirmar</button>
+            <div class="sheet-title">Selecciona tu fecha de nacimiento</div>
+            <input type="date" id="inp-fecha" value="1995-01-01">
+            <button class="sheet-confirm" onclick="confirmFecha()">Confirmar</button>
         </div>
     </div>
 
@@ -166,12 +166,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
 
     <script>
         // Estado interno
-        const state = { sexo: 'M', edad: 24, altura: 178, peso: 75 };
+        const state = { sexo: 'M', fecha: '1995-01-01', altura: 178, peso: 75 };
 
         // Inicializar valores en los campos ocultos
         window.onload = () => {
             document.getElementById('h-sexo').value   = state.sexo;
-            document.getElementById('h-edad').value   = state.edad;
+            document.getElementById('h-fecha').value  = state.fecha;
             document.getElementById('h-altura').value = state.altura;
             document.getElementById('h-peso').value   = state.peso;
         };
@@ -193,14 +193,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
             document.getElementById('h-sexo').value = v;
             closeSheet('sexo');
         }
-        function confirmEdad() {
-            const v = parseInt(document.getElementById('inp-edad').value);
-            if (v >= 15 && v <= 100) {
-                state.edad = v;
-                document.getElementById('val-edad').textContent = v;
-                document.getElementById('h-edad').value = v;
+        function confirmFecha() {
+            const v = document.getElementById('inp-fecha').value;
+            if (v) {
+                state.fecha = v;
+                document.getElementById('val-fecha').textContent = v;
+                document.getElementById('h-fecha').value = v;
             }
-            closeSheet('edad');
+            closeSheet('fecha_nacimiento');
         }
         function confirmAltura() {
             const v = parseInt(document.getElementById('inp-altura').value);
@@ -224,7 +224,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
         function submitForm() {
             // Asegurarnos de que todos los valores estén seteados
             if (!document.getElementById('h-sexo').value ||
-                !document.getElementById('h-edad').value ||
+                !document.getElementById('h-fecha').value ||
                 !document.getElementById('h-altura').value ||
                 !document.getElementById('h-peso').value) {
                 alert('Por favor completa todos los campos.');

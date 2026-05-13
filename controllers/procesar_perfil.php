@@ -19,15 +19,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $validator = new Validator();
 
     // --- Biométricos ---
-    $edad = $_POST['edad'] ?? 0;
+    $fecha_nac = $_POST['fecha_nacimiento'] ?? '1995-01-01';
     $peso = $_POST['peso'] ?? 0;
     $altura = $_POST['altura'] ?? 0;
     $sexo = $_POST['sexo'] ?? '';
     $actividad = $_POST['actividad'] ?? 0;
     $meta = $_POST['meta_principal'] ?? '';
 
-    $validator->required($_POST, ['edad', 'peso', 'altura', 'sexo', 'actividad', 'meta_principal'])
-              ->numeric($edad, 'edad')->min($edad, 5, 'edad')->max($edad, 120, 'edad')
+    $validator->required($_POST, ['fecha_nacimiento', 'peso', 'altura', 'sexo', 'actividad', 'meta_principal'])
               ->numeric($peso, 'peso')->min($peso, 20, 'peso')->max($peso, 500, 'peso')
               ->numeric($altura, 'altura')->min($altura, 50, 'altura')->max($altura, 250, 'altura');
 
@@ -37,14 +36,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    $edad = (int)$edad;
     $peso = (float)$peso;
     $altura = (int)$altura;
     $actividad = (int)$actividad;
 
-    // Aproximar fecha de nacimiento usando la edad
-    $anio_nac = date('Y') - $edad;
-    $fecha_nac = "$anio_nac-01-01";
+    // Calcular edad real para la fórmula
+    $cumpleanos = new DateTime($fecha_nac);
+    $hoy = new DateTime();
+    $edad = $hoy->diff($cumpleanos)->y;
 
     // --- RECALCULAR CALORÍAS (TMB + TDEE) ---
     // Fórmula de Mifflin-St Jeor

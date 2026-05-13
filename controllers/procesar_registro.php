@@ -13,11 +13,13 @@ require_once '../config/conexion.php';
     $nombre = trim($_POST['nombre'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password_plana = $_POST['password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
 
     // Validaciones
-    $validator->required($_POST, ['nombre', 'email', 'password'])
+    $validator->required($_POST, ['nombre', 'email', 'password', 'confirm_password'])
               ->email($email)
-              ->password($password_plana);
+              ->password($password_plana)
+              ->matches($password_plana, $confirm_password, 'password');
 
     if ($validator->hasErrors()) {
         $error = $validator->getFirstError();

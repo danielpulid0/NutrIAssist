@@ -7,10 +7,15 @@ require_once '../config/conexion.php';
 require_once '../models/Usuario.php';
 $objetivo   = $_SESSION['onboarding_objetivo']; // 'perder_grasa', 'mantener_peso', 'ganar_musculo'
 $sexo       = $_SESSION['onboarding_sexo'];     // 'M' o 'F'
-$edad       = (int)$_SESSION['onboarding_edad'];
+$fecha_nacimiento = $_SESSION['onboarding_fecha_nacimiento'];
 $altura     = (float)$_SESSION['onboarding_altura'];
 $peso       = (float)$_SESSION['onboarding_peso'];
 $actividad  = (float)$_POST['actividad'];       // Ej. 1.2, 1.55
+
+// Calcular edad desde fecha de nacimiento para la fórmula
+$cumpleanos = new DateTime($fecha_nacimiento);
+$hoy = new DateTime();
+$edad = $hoy->diff($cumpleanos)->y;
 
 // 2. FÓRMULA DE MIFFLIN-ST JEOR (Tasa Metabólica Basal - TMB)
 if ($sexo === 'M') {
@@ -32,11 +37,6 @@ if ($objetivo === 'perder_grasa') {
 
 $calorias_finales = round($calorias_objetivo);
 
-// IMPORTANTE: Calcula la fecha de nacimiento restando la edad al año actual 
-// (Como es un MVP, es una aproximación para cumplir con la tabla de MySQL)
-$anio_nacimiento = date("Y") - $edad;
-$fecha_nacimiento = "$anio_nacimiento-01-01"; 
-
 try {
     // 5. Actualizar la base de datos a través del modelo
     $datos_onboarding = [
@@ -49,7 +49,7 @@ try {
     // 6. Limpiar la memoria (buenas prácticas de seguridad)
     unset($_SESSION['onboarding_objetivo']);
     unset($_SESSION['onboarding_sexo']);
-    unset($_SESSION['onboarding_edad']);
+    unset($_SESSION['onboarding_fecha_nacimiento']);
     unset($_SESSION['onboarding_altura']);
     unset($_SESSION['onboarding_peso']);
 

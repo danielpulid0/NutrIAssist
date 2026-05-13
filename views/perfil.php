@@ -38,10 +38,9 @@ require_once 'includes/header.php';
         <div class="bio-card">
             <div class="bio-grid">
                 <div class="input-group">
-                    <label class="input-label">Edad</label>
+                    <label class="input-label">Fecha de Nacimiento</label>
                     <div class="input-box">
-                        <input type="number" name="edad" value="<?= $edad ?>" required>
-                        <span>años</span>
+                        <input type="date" name="fecha_nacimiento" value="<?= $fecha_nacimiento ?>" required>
                     </div>
                 </div>
                 <div class="input-group">

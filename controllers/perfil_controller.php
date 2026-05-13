@@ -18,9 +18,11 @@ if (!$user) {
     exit();
 }
 
-$edad = 24; // Default
+$fecha_nacimiento = '1995-01-01'; // Default
+$edad = 24; 
 if (!empty($user['fecha_nacimiento']) && $user['fecha_nacimiento'] != '0000-00-00') {
-    $nacimiento = new DateTime($user['fecha_nacimiento']);
+    $fecha_nacimiento = $user['fecha_nacimiento'];
+    $nacimiento = new DateTime($fecha_nacimiento);
     $hoy = new DateTime();
     $edad = $hoy->diff($nacimiento)->y;
 }

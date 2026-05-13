@@ -37,6 +37,8 @@
                 document.write('<div class="alert-error">Este correo electrónico ya está registrado. Por favor, intenta iniciar sesión.</div>');
             } else if (error === 'password_insegura') {
                 document.write('<div class="alert-error">La contraseña debe tener al menos 8 caracteres, incluir una letra, un número y un carácter especial.</div>');
+            } else if (error === 'no_coinciden') {
+                document.write('<div class="alert-error">Las contraseñas no coinciden. Por favor, verifica.</div>');
             } else if (error === 'required') {
                 document.write('<div class="alert-error">Por favor, completa todos los campos obligatorios.</div>');
             } else if (error === 'formato_invalido') {
@@ -69,6 +71,19 @@
                 </button>
             </div>
 
+            <label class="form-label" for="confirm_password">Confirmar contraseña</label>
+            <div class="input-wrapper">
+                <input class="form-input" type="password" id="confirm_password" name="confirm_password"
+                    placeholder="Repite tu contraseña" required minlength="8" autocomplete="new-password">
+                <button type="button" class="input-icon-right" id="toggle-confirm-pw" aria-label="Mostrar contraseña">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                </button>
+            </div>
+
             <div class="sticky-footer">
                 <button type="submit" class="btn-primary">Registrarse</button>
                 <div class="terms-text">
@@ -85,15 +100,19 @@
     </div>
 
     <script>
-        const togglePw = document.getElementById('toggle-pw');
-        const pwInput = document.getElementById('password');
-        togglePw.addEventListener('click', () => {
-            const isHidden = pwInput.type === 'password';
-            pwInput.type = isHidden ? 'text' : 'password';
-            togglePw.innerHTML = isHidden
-                ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
-                : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-        });
+        function setupToggle(buttonId, inputId) {
+            const btn = document.getElementById(buttonId);
+            const input = document.getElementById(inputId);
+            btn.addEventListener('click', () => {
+                const isHidden = input.type === 'password';
+                input.type = isHidden ? 'text' : 'password';
+                btn.innerHTML = isHidden
+                    ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+                    : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+            });
+        }
+        setupToggle('toggle-pw', 'password');
+        setupToggle('toggle-confirm-pw', 'confirm_password');
     </script>
 
     <!-- Registro de Service Worker para PWA -->

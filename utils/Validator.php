@@ -69,6 +69,16 @@ class Validator {
     }
 
     /**
+     * Valida que dos valores coincidan (útil para confirmación de contraseña)
+     */
+    public function matches($value1, $value2, $field) {
+        if ($value1 !== $value2) {
+            $this->addError($field, 'no_coinciden');
+        }
+        return $this;
+    }
+
+    /**
      * Agrega un error a la lista
      */
     public function addError($field, $type) {
