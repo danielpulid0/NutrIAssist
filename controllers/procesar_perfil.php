@@ -27,8 +27,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $meta = $_POST['meta_principal'] ?? '';
 
     $validator->required($_POST, ['fecha_nacimiento', 'peso', 'altura', 'sexo', 'actividad', 'meta_principal'])
-              ->numeric($peso, 'peso')->min($peso, 20, 'peso')->max($peso, 500, 'peso')
-              ->numeric($altura, 'altura')->min($altura, 50, 'altura')->max($altura, 250, 'altura');
+              ->numeric($peso, 'peso')->min($peso, 15, 'peso')->max($peso, 635, 'peso')
+              ->numeric($altura, 'altura')->min($altura, 50, 'altura')->max($altura, 245, 'altura');
 
     if ($validator->hasErrors()) {
         $error = $validator->getFirstError();

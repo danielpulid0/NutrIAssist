@@ -115,12 +115,18 @@ class Usuario {
         $sql = "UPDATE Usuarios 
                 SET fecha_nacimiento = :fecha, 
                     peso_kg = :peso, 
-                    altura_cm = :altura 
+                    altura_cm = :altura,
+                    sexo = :sexo,
+                    id_nivel_actividad = :act,
+                    meta_principal = :meta
                 WHERE id_usuario = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':fecha', $data['fecha_nacimiento']);
         $stmt->bindParam(':peso', $data['peso_kg']);
         $stmt->bindParam(':altura', $data['altura_cm']);
+        $stmt->bindParam(':sexo', $data['sexo']);
+        $stmt->bindParam(':act', $data['actividad']);
+        $stmt->bindParam(':meta', $data['meta_principal']);
         $stmt->bindParam(':id', $id);
         return $stmt->execute();
     }

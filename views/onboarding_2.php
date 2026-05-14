@@ -129,10 +129,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
     <div class="sheet-overlay" id="sheet-sexo" onclick="closeOnOverlay(event,'sheet-sexo')">
         <div class="sheet">
             <div class="sheet-title">Selecciona tu sexo</div>
-            <select id="sel-sexo">
-                <option value="M">Masculino (Hombre)</option>
-                <option value="F">Femenino (Mujer)</option>
-            </select>
+            <div class="select-wrapper">
+                <select id="sel-sexo">
+                    <option value="M">Masculino (Hombre)</option>
+                    <option value="F">Femenino (Mujer)</option>
+                </select>
+            </div>
             <button class="sheet-confirm" onclick="confirmSexo()">Confirmar</button>
         </div>
     </div>
@@ -169,7 +171,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
     <div class="sheet-overlay" id="sheet-altura" onclick="closeOnOverlay(event,'sheet-altura')">
         <div class="sheet">
             <div class="sheet-title">Ingresa tu altura (cm)</div>
-            <input type="number" id="inp-altura" min="100" max="250" value="178" placeholder="Ej. 178">
+            <input type="number" id="inp-altura" min="50" max="245" value="178" placeholder="Ej. 178" 
+                onkeypress="if(event.charCode >= 48 && event.charCode <= 57) { const v = parseInt(this.value + String.fromCharCode(event.charCode)); if(v > 245) return false; }"
+                oninput="if(this.value > 245) this.value = 245; if(this.value < 0) this.value = 0;">
             <button class="sheet-confirm" onclick="confirmAltura()">Confirmar</button>
         </div>
     </div>
@@ -178,7 +182,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
     <div class="sheet-overlay" id="sheet-peso" onclick="closeOnOverlay(event,'sheet-peso')">
         <div class="sheet">
             <div class="sheet-title">Ingresa tu peso (kg)</div>
-            <input type="number" id="inp-peso" min="30" max="300" step="0.1" value="75" placeholder="Ej. 75">
+            <input type="number" id="inp-peso" min="15" max="635" step="0.1" value="75" placeholder="Ej. 75.5" 
+                onkeypress="if((event.charCode >= 48 && event.charCode <= 57) || event.charCode == 46) { const v = parseFloat(this.value + String.fromCharCode(event.charCode)); if(v > 635) return false; }"
+                oninput="if(this.value > 635) this.value = 635; if(this.value < 0) this.value = 0;">
             <button class="sheet-confirm" onclick="confirmPeso()">Confirmar</button>
         </div>
     </div>
@@ -228,14 +234,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
                 monthList.appendChild(item);
             });
 
-            // Llenar Años (1940 - hoy)
+            // Llenar Años (1940 - hace 12 años)
             const currentYear = new Date().getFullYear();
-            for (let y = currentYear; y >= 1940; y--) {
+            const maxYear = currentYear - 12;
+            for (let y = maxYear; y >= 1940; y--) {
                 const item = document.createElement('div');
                 item.className = 'wheel-item';
                 item.textContent = y;
                 yearList.appendChild(item);
             }
+
+            // Si el año inicial (1995) no está en el rango (por si acaso), ajustar pickerState.year
+            if (pickerState.year > maxYear) pickerState.year = maxYear;
 
             updateDays();
 
@@ -284,7 +294,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
                         updateDays();
                     } else if (key === 'year') {
                         const currentYear = new Date().getFullYear();
-                        pickerState.year = currentYear - index;
+                        const maxYear = currentYear - 12;
+                        pickerState.year = maxYear - index;
                         updateDays();
                     } else {
                         pickerState.day = index + 1;
@@ -317,7 +328,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
         window.addEventListener('DOMContentLoaded', initPicker);
         function confirmAltura() {
             const v = parseInt(document.getElementById('inp-altura').value);
-            if (v >= 100 && v <= 250) {
+            if (v >= 50 && v <= 245) {
                 state.altura = v;
                 document.getElementById('val-altura').textContent = v + ' cm';
                 document.getElementById('h-altura').value = v;
@@ -326,7 +337,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['objetivo'])) {
         }
         function confirmPeso() {
             const v = parseFloat(document.getElementById('inp-peso').value);
-            if (v >= 30 && v <= 300) {
+            if (v >= 15 && v <= 635) {
                 state.peso = v;
                 document.getElementById('val-peso').textContent = v + ' kg';
                 document.getElementById('h-peso').value = v;

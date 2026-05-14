@@ -13,6 +13,7 @@
     <link rel="manifest" href="/nutriassist/manifest.json">
     <meta name="theme-color" content="#15B85E">
     <link rel="apple-touch-icon" href="/nutriassist/assets/img/icon-192.png">
+    <script src="../assets/js/theme.js"></script>
 </head>
 
 <body>
@@ -38,7 +39,9 @@
 
             <label class="form-label" for="email">Correo electrónico</label>
             <input class="form-input" type="email" id="email" name="email" placeholder="ejemplo@correo.com" required
-                autocomplete="email">
+                autocomplete="email"
+                oninvalid="this.setCustomValidity('Por favor, ingresa un correo electrónico válido')"
+                oninput="this.setCustomValidity('')">
 
             <label class="form-label" for="password">Contraseña</label>
             <div class="input-wrapper">

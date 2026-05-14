@@ -46,14 +46,18 @@ require_once 'includes/header.php';
                 <div class="input-group">
                     <label class="input-label">Peso</label>
                     <div class="input-box">
-                        <input type="number" name="peso" value="<?= $peso ?>" step="0.1" required>
+                        <input type="number" name="peso" value="<?= $peso ?>" min="15" max="635" step="0.1" required 
+                            onkeypress="if((event.charCode >= 48 && event.charCode <= 57) || event.charCode == 46) { const v = parseFloat(this.value + String.fromCharCode(event.charCode)); if(v > 635) return false; }"
+                            oninput="if(this.value > 635) this.value = 635; if(this.value < 0) this.value = 0;">
                         <span>kg</span>
                     </div>
                 </div>
                 <div class="input-group">
                     <label class="input-label">Altura</label>
                     <div class="input-box">
-                        <input type="number" name="altura" value="<?= $altura ?>" required>
+                        <input type="number" name="altura" value="<?= $altura ?>" min="50" max="245" required 
+                            onkeypress="if(event.charCode >= 48 && event.charCode <= 57) { const v = parseInt(this.value + String.fromCharCode(event.charCode)); if(v > 245) return false; }"
+                            oninput="if(this.value > 245) this.value = 245; if(this.value < 0) this.value = 0;">
                         <span>cm</span>
                     </div>
                 </div>

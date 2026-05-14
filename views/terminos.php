@@ -10,6 +10,7 @@ $page_title = 'NutrIAssist - Términos y Condiciones';
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/global.css?v=3">
     <link rel="stylesheet" href="../assets/css/terminos.css">
+    <script src="../assets/js/theme.js"></script>
 </head>
 <body>
     <div class="mobile-container">
@@ -55,6 +56,5 @@ $page_title = 'NutrIAssist - Términos y Condiciones';
             </div>
         </div>
     </div>
-    <script src="../assets/js/theme.js"></script>
 </body>
 </html>

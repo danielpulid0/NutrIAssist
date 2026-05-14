@@ -144,27 +144,69 @@
     position: absolute;
     left: 0;
     right: 0;
-    height: 80px;
-    z-index: 2;
+    height: 85px; /* Ajuste para mayor cobertura */
+    z-index: 10; /* Asegurar que esté sobre la lista */
     pointer-events: none;
 }
 
 .date-wheel-container::before {
     top: 0;
-    background: linear-gradient(to bottom, var(--color-bg) 0%, transparent 100%);
+    background: linear-gradient(to bottom, var(--color-bg) 0%, rgba(255,255,255,0) 100%);
 }
 
 .date-wheel-container::after {
     bottom: 0;
-    background: linear-gradient(to top, var(--color-bg) 0%, transparent 100%);
+    background: linear-gradient(to top, var(--color-bg) 0%, rgba(255,255,255,0) 100%);
 }
 
-[data-theme='dark'] .date-wheel-container {
-    background: var(--color-bg-light);
-}
 [data-theme='dark'] .date-wheel-container::before {
-    background: linear-gradient(to bottom, var(--color-bg-light) 0%, transparent 100%);
+    background: linear-gradient(to bottom, var(--color-bg-light) 0%, rgba(30,41,59,0) 100%);
 }
 [data-theme='dark'] .date-wheel-container::after {
-    background: linear-gradient(to top, var(--color-bg-light) 0%, transparent 100%);
+    background: linear-gradient(to top, var(--color-bg-light) 0%, rgba(30,41,59,0) 100%);
+}
+
+.picker-highlight {
+    position: absolute;
+    top: 50%;
+    left: 8px;
+    right: 8px;
+    height: 40px;
+    transform: translateY(-50%);
+    border-top: 2px solid var(--color-mint);
+    border-bottom: 2px solid var(--color-mint);
+    background: rgba(17, 207, 80, 0.05); /* Fondo sutil para la zona activa */
+    pointer-events: none;
+    z-index: 5;
+    border-radius: 8px;
+}
+
+/* Selector estilado con icono */
+.select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.select-wrapper select {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    padding-right: 2.5rem;
+    border: 1.5px solid var(--color-border);
+    border-radius: 14px;
+    background: white;
+    font-size: 1rem;
+    color: var(--color-text-dark);
+}
+
+.select-wrapper::after {
+    content: "▼";
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-gray);
+    font-size: 0.8rem;
+    pointer-events: none;
 }

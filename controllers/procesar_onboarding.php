@@ -38,11 +38,31 @@ if ($objetivo === 'perder_grasa') {
 $calorias_finales = round($calorias_objetivo);
 
 try {
+    // Mapear objetivo a formato legible para DB
+    $meta_db = 'Perder Grasa';
+    if ($objetivo === 'mantener_peso') $meta_db = 'Mantener Peso';
+    elseif ($objetivo === 'ganar_musculo') $meta_db = 'Ganar Músculo';
+
+    // Mapear sexo a formato legible
+    $sexo_db = ($sexo === 'M') ? 'Hombre' : 'Mujer';
+
+    // Mapeo de multiplicador a ID de tabla Nivel_Actividad
+    $actividad_id = 1; // Default
+    if ($actividad <= 1.25) $actividad_id = 1;      // Sedentario (1.2)
+    elseif ($actividad <= 1.4) $actividad_id = 2;   // Ligeramente activo (1.375) -> Lo mapeamos a moderado o creamos más? 
+                                                     // La tabla Nivel_Actividad solo tiene 1, 2, 3.
+                                                     // Vamos a dejarlo así: 1=Sedentario, 2=Moderado (incluye ligero), 3=Activo
+    elseif ($actividad <= 1.6) $actividad_id = 2;   // Moderadamente activo (1.55)
+    else $actividad_id = 3;                         // Muy activo (1.725)
+
     // 5. Actualizar la base de datos a través del modelo
     $datos_onboarding = [
         'fecha_nacimiento' => $fecha_nacimiento,
         'peso_kg' => $peso,
-        'altura_cm' => $altura
+        'altura_cm' => $altura,
+        'sexo' => $sexo_db,
+        'actividad' => $actividad_id,
+        'meta_principal' => $meta_db
     ];
     Usuario::updateOnboarding($conn, $id_usuario, $datos_onboarding);
 
