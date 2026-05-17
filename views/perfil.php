@@ -43,7 +43,7 @@ require_once 'includes/header.php';
                     <div class="input-box" style="display: flex; align-items: center; justify-content: space-between;">
                         <input type="hidden" name="fecha_nacimiento" id="h-fecha" value="<?= htmlspecialchars($fecha_nacimiento) ?>">
                         <span id="val-fecha" style="font-size: 1rem; color: var(--color-text-dark);"><?= htmlspecialchars($fecha_nacimiento) ?></span>
-                        <span class="chevron" style="color: var(--color-text-gray); font-size: 1.2rem; margin-left: 8px;">›</span>
+                        <span class="chevron" style="color: var(--color-text-gray); font-size: 1.4rem; margin-left: 8px; display: inline-block; transform: rotate(90deg);">›</span>
                     </div>
                 </div>
                 <div class="input-group">

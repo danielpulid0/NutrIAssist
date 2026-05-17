@@ -9,7 +9,7 @@
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.4);
-    z-index: 100;
+    z-index: 2000;
     align-items: flex-end;
 }
 .sheet-overlay.open { display: flex; }
@@ -201,12 +201,12 @@
 }
 
 .select-wrapper::after {
-    content: "▼";
+    content: "›";
     position: absolute;
-    right: 1rem;
+    right: 1.2rem;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(-50%) rotate(90deg);
     color: var(--color-text-gray);
-    font-size: 0.8rem;
+    font-size: 1.4rem;
     pointer-events: none;
 }

@@ -69,14 +69,25 @@ select { appearance: none; }
 
 .select-wrapper { position: relative; width: 100%; height: 100%; }
 .select-wrapper select { width: 100%; padding-right: 1.5rem; }
+
+/* Anular los bordes y padding que agrega onboarding.css cuando el select está dentro de un input-box en el perfil */
+.input-box .select-wrapper select {
+    border: none !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    padding: 0;
+    padding-right: 1.5rem;
+    font-size: 0.85rem; /* Ajustar texto abultado */
+    font-weight: 500;
+}
 .select-wrapper::after {
-    content: '▼';
-    font-size: 0.6rem;
+    content: '›';
+    font-size: 1.4rem;
     color: var(--color-text-gray);
     position: absolute;
-    right: 0;
+    right: 0 !important; /* Forzar margen pegado a la derecha igual al calendario */
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(-50%) rotate(90deg) !important; /* Rotar para apuntar hacia abajo */
     pointer-events: none;
 }
 

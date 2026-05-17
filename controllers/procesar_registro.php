@@ -23,7 +23,7 @@ require_once '../config/conexion.php';
 
     if ($validator->hasErrors()) {
         $error = $validator->getFirstError();
-        header("Location: ../views/registro.html?error=$error");
+        header("Location: ../views/registro.html?error=$error&nombre=" . urlencode($nombre) . "&email=" . urlencode($email));
         exit();
     }
 
@@ -34,7 +34,7 @@ require_once '../config/conexion.php';
 
     // 4.5 VALIDACIÓN PREVIA: Comprobar que el correo no exista ya
     if (Usuario::getByEmail($conn, $email) !== false) {
-        header("Location: ../views/registro.html?error=email_existente");
+        header("Location: ../views/registro.html?error=email_existente&nombre=" . urlencode($nombre) . "&email=" . urlencode($email));
         exit();
     }
 
@@ -71,7 +71,7 @@ require_once '../config/conexion.php';
     } catch(PDOException $e) {
         // En caso excepcional que pase la validación previa pero MySQL siga bloqueando
         if ($e->getCode() == 23000) {
-            header("Location: ../views/registro.html?error=email_existente");
+            header("Location: ../views/registro.html?error=email_existente&nombre=" . urlencode($nombre) . "&email=" . urlencode($email));
             exit();
         } else {
             die("Error crítico al registrar: " . $e->getMessage());
