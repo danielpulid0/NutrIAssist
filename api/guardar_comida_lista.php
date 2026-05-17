@@ -24,6 +24,7 @@ if (count($datos['items']) > 20) {
 }
 
 require_once '../config/conexion.php';
+require_once '../models/Comida.php';
 
 $fecha_hoy  = date('Y-m-d');
 
@@ -35,12 +36,7 @@ if ($fecha_raw > $fecha_hoy) { $fecha_raw = $fecha_hoy; }
 $fecha = $fecha_raw;
 
 // Normalizar tipo de comida → proteger el ENUM de MySQL
-$tipo_raw = ucfirst(strtolower($datos['tipo_comida'] ?? 'snack'));
-$mapa_tipos = [
-    'Desayuno' => 'Desayuno', 'Almuerzo' => 'Comida', 'Comida'  => 'Comida',
-    'Cena'     => 'Cena',     'Snack'    => 'Snack',  'Merienda'=> 'Snack',
-];
-$tipo_final = $mapa_tipos[$tipo_raw] ?? 'Snack';
+$tipo_final = Comida::normalizarTipoComida($datos['tipo_comida'] ?? 'snack');
 
 // ── Validar cada ítem antes de tocar la DB ────────────────────────
 $items_saneados = [];
@@ -75,7 +71,6 @@ foreach ($datos['items'] as $idx => $item) {
 }
 
 try {
-    require_once '../models/Comida.php';
 
     $id_comida = Comida::saveFoodLog($conn, $id_usuario, $fecha, $tipo_final, $items_saneados);
 

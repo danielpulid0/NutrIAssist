@@ -31,9 +31,6 @@ if (!empty($receta['instrucciones'])) {
 
 // Extraer costo de etiquetas
 $tags  = json_decode($receta['etiquetas'] ?? '[]', true) ?: [];
-$costo = 'Medio';
-foreach ($tags as $tag_actual) {
-    if (in_array($tag_actual, ['Económico', 'Medio', 'Caro', 'Premium'])) { $costo = $tag_actual; break; }
-}
+$costo = Receta::extractCosto($tags);
 
 $tiempo_txt = $receta['tiempo_prep_min'] ? $receta['tiempo_prep_min'] . ' min' : '—';

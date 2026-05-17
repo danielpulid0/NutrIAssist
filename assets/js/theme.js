@@ -1,5 +1,19 @@
 (function () {
-    const currentTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const internalPages = [
+        'dashboard.php',
+        'diario.php',
+        'perfil.php',
+        'recetas.php',
+        'receta_detalle.php',
+        'chat_ia.php',
+        'onboarding_'
+    ];
+    const isInternal = internalPages.some(page => window.location.pathname.includes(page));
+
+    const currentTheme = isInternal
+        ? (localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'))
+        : 'light';
+
     document.documentElement.setAttribute('data-theme', currentTheme);
 
     window.addEventListener('DOMContentLoaded', () => {

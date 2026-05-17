@@ -17,25 +17,7 @@ $cumpleanos = new DateTime($fecha_nacimiento);
 $hoy = new DateTime();
 $edad = $hoy->diff($cumpleanos)->y;
 
-// 2. FÓRMULA DE MIFFLIN-ST JEOR (Tasa Metabólica Basal - TMB)
-if ($sexo === 'M') {
-    $tmb = (10 * $peso) + (6.25 * $altura) - (5 * $edad) + 5;
-} else {
-    $tmb = (10 * $peso) + (6.25 * $altura) - (5 * $edad) - 161;
-}
-
-// 3. Gasto Energético Total Diario (TDEE)
-$calorias_mantenimiento = $tmb * $actividad;
-
-// 4. Ajuste por Objetivo (Déficit o Superávit Calórico)
-$calorias_objetivo = $calorias_mantenimiento;
-if ($objetivo === 'perder_grasa') {
-    $calorias_objetivo -= 500; // Déficit agresivo pero sano
-} elseif ($objetivo === 'ganar_musculo') {
-    $calorias_objetivo += 300; // Superávit ligero
-}
-
-$calorias_finales = round($calorias_objetivo);
+$calorias_finales = Usuario::calcularMetaCalorica($peso, $altura, $edad, $sexo, $actividad, $objetivo);
 
 try {
     // Mapear objetivo a formato legible para DB
@@ -49,11 +31,9 @@ try {
     // Mapeo de multiplicador a ID de tabla Nivel_Actividad
     $actividad_id = 1; // Default
     if ($actividad <= 1.25) $actividad_id = 1;      // Sedentario (1.2)
-    elseif ($actividad <= 1.4) $actividad_id = 2;   // Ligeramente activo (1.375) -> Lo mapeamos a moderado o creamos más? 
-                                                     // La tabla Nivel_Actividad solo tiene 1, 2, 3.
-                                                     // Vamos a dejarlo así: 1=Sedentario, 2=Moderado (incluye ligero), 3=Activo
-    elseif ($actividad <= 1.6) $actividad_id = 2;   // Moderadamente activo (1.55)
-    else $actividad_id = 3;                         // Muy activo (1.725)
+    elseif ($actividad <= 1.4) $actividad_id = 2;   // Ligeramente activo (1.375)
+    elseif ($actividad <= 1.6) $actividad_id = 3;   // Moderadamente activo (1.55)
+    else $actividad_id = 4;                         // Muy activo (1.725)
 
     // 5. Actualizar la base de datos a través del modelo
     $datos_onboarding = [
@@ -64,7 +44,7 @@ try {
         'actividad' => $actividad_id,
         'meta_principal' => $meta_db
     ];
-    Usuario::updateOnboarding($conn, $id_usuario, $datos_onboarding);
+    Usuario::updateProfile($conn, $id_usuario, $datos_onboarding);
 
     // 6. Limpiar la memoria (buenas prácticas de seguridad)
     unset($_SESSION['onboarding_objetivo']);

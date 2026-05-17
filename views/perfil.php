@@ -5,6 +5,7 @@ $page_title = 'NutrIAssist - Mi Perfil';
 $extra_css  = '../assets/css/perfil.css';
 require_once 'includes/header.php';
 ?>
+<link rel="stylesheet" href="../assets/css/onboarding.css?v=<?= time() ?>">
 
 <div class="mobile-container">
     
@@ -37,10 +38,12 @@ require_once 'includes/header.php';
         
         <div class="bio-card">
             <div class="bio-grid">
-                <div class="input-group">
+                <div class="input-group" onclick="openSheet('fecha_nacimiento')" style="cursor: pointer;">
                     <label class="input-label">Fecha de Nacimiento</label>
-                    <div class="input-box">
-                        <input type="date" name="fecha_nacimiento" value="<?= $fecha_nacimiento ?>" required>
+                    <div class="input-box" style="display: flex; align-items: center; justify-content: space-between;">
+                        <input type="hidden" name="fecha_nacimiento" id="h-fecha" value="<?= htmlspecialchars($fecha_nacimiento) ?>">
+                        <span id="val-fecha" style="font-size: 1rem; color: var(--color-text-dark);"><?= htmlspecialchars($fecha_nacimiento) ?></span>
+                        <span class="chevron" style="color: var(--color-text-gray); font-size: 1.2rem; margin-left: 8px;">›</span>
                     </div>
                 </div>
                 <div class="input-group">
@@ -79,9 +82,10 @@ require_once 'includes/header.php';
                 <div class="input-box">
                     <div class="select-wrapper">
                         <select name="actividad">
-                            <option value="1" <?= $actividad == 1 ? 'selected' : '' ?>>Sedentario (Poco o nulo ejercicio)</option>
-                            <option value="2" <?= $actividad == 2 ? 'selected' : '' ?>>Moderado (Ejercicio 3-5 días/sem)</option>
-                            <option value="3" <?= $actividad == 3 ? 'selected' : '' ?>>Activo (Ejercicio 6-7 días/sem)</option>
+                            <option value="1" <?= $actividad == 1 ? 'selected' : '' ?>>Sedentario (Poco o nada de ejercicio)</option>
+                            <option value="2" <?= $actividad == 2 ? 'selected' : '' ?>>Ligeramente Activo (Ejercicio 2-3 días/sem)</option>
+                            <option value="3" <?= $actividad == 3 ? 'selected' : '' ?>>Moderadamente Activo (Ejercicio 4-5 días/sem)</option>
+                            <option value="4" <?= $actividad == 4 ? 'selected' : '' ?>>Muy Activo (Ejercicio diario intenso)</option>
                         </select>
                     </div>
                 </div>
@@ -210,6 +214,34 @@ require_once 'includes/header.php';
         </div>
 
     </form>
+
+    <!-- Fecha de Nacimiento Bottom Sheet Picker -->
+    <div class="sheet-overlay" id="sheet-fecha_nacimiento" onclick="closeOnOverlay(event,'sheet-fecha_nacimiento')">
+        <div class="sheet">
+            <div class="sheet-title">Selecciona tu fecha de nacimiento</div>
+            
+            <div class="date-wheel-container">
+                <div class="picker-highlight"></div>
+                
+                <!-- Día -->
+                <div class="wheel-col" id="wheel-day">
+                    <div class="wheel-list"></div>
+                </div>
+                
+                <!-- Mes -->
+                <div class="wheel-col" id="wheel-month">
+                    <div class="wheel-list"></div>
+                </div>
+                
+                <!-- Año -->
+                <div class="wheel-col" id="wheel-year">
+                    <div class="wheel-list"></div>
+                </div>
+            </div>
+
+            <button type="button" class="sheet-confirm" onclick="confirmFecha()">Confirmar</button>
+        </div>
+    </div>
 
     <?php include 'includes/footer.php'; ?>
 
@@ -463,6 +495,132 @@ async function generarReportePDF() {
         iconDiv.innerHTML = originalIcon;
     }
 }
+</script>
+
+<script>
+function openSheet(name) {
+    document.getElementById('sheet-' + name).classList.add('open');
+}
+function closeSheet(name) {
+    document.getElementById('sheet-' + name).classList.remove('open');
+}
+function closeOnOverlay(e, name) {
+    if (e.target === e.currentTarget) closeSheet(name);
+}
+
+const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+// Inicializar pickerState con el valor actual de fecha_nacimiento
+const initialDateStr = document.getElementById('h-fecha').value || '1995-01-01';
+const parts = initialDateStr.split('-');
+const pickerState = { 
+    day: parts[2] ? parseInt(parts[2]) : 1, 
+    month: parts[1] ? parseInt(parts[1]) - 1 : 0, 
+    year: parts[0] ? parseInt(parts[0]) : 1995 
+};
+
+function initPicker() {
+    const dayList = document.querySelector('#wheel-day .wheel-list');
+    const monthList = document.querySelector('#wheel-month .wheel-list');
+    const yearList = document.querySelector('#wheel-year .wheel-list');
+
+    // Llenar Meses
+    months.forEach((m, i) => {
+        const item = document.createElement('div');
+        item.className = 'wheel-item';
+        item.textContent = m;
+        monthList.appendChild(item);
+    });
+
+    // Llenar Años (1940 - hace 12 años)
+    const currentYear = new Date().getFullYear();
+    const maxYear = currentYear - 12;
+    for (let y = maxYear; y >= 1940; y--) {
+        const item = document.createElement('div');
+        item.className = 'wheel-item';
+        item.textContent = y;
+        yearList.appendChild(item);
+    }
+
+    if (pickerState.year > maxYear) pickerState.year = maxYear;
+
+    updateDays();
+
+    // Listeners de scroll
+    [
+        { id: 'wheel-day', key: 'day' },
+        { id: 'wheel-month', key: 'month' },
+        { id: 'wheel-year', key: 'year' }
+    ].forEach(col => {
+        const el = document.getElementById(col.id);
+        el.addEventListener('scroll', () => handleScroll(el, col.key));
+    });
+
+    // Posicionamiento inicial basado en pickerState
+    setTimeout(() => {
+        setWheelValue('wheel-month', pickerState.month);
+        const yearIndex = maxYear - pickerState.year;
+        setWheelValue('wheel-year', yearIndex >= 0 ? yearIndex : 0);
+        setWheelValue('wheel-day', pickerState.day - 1);
+    }, 100);
+}
+
+function updateDays() {
+    const dayList = document.querySelector('#wheel-day .wheel-list');
+    const daysInMonth = new Date(pickerState.year, pickerState.month + 1, 0).getDate();
+    
+    dayList.innerHTML = '';
+    for (let d = 1; d <= daysInMonth; d++) {
+        const item = document.createElement('div');
+        item.className = 'wheel-item';
+        item.textContent = d;
+        dayList.appendChild(item);
+    }
+    if (pickerState.day > daysInMonth) pickerState.day = daysInMonth;
+}
+
+function handleScroll(el, key) {
+    const items = el.querySelectorAll('.wheel-item');
+    const scrollPos = el.scrollTop;
+    const index = Math.round(scrollPos / 40);
+    
+    items.forEach((item, i) => {
+        if (i === index) {
+            item.classList.add('selected');
+            if (key === 'month') {
+                pickerState.month = index;
+                updateDays();
+            } else if (key === 'year') {
+                const currentYear = new Date().getFullYear();
+                const maxYear = currentYear - 12;
+                pickerState.year = maxYear - index;
+                updateDays();
+            } else {
+                pickerState.day = index + 1;
+            }
+        } else {
+            item.classList.remove('selected');
+        }
+    });
+}
+
+function setWheelValue(id, index) {
+    const el = document.getElementById(id);
+    el.scrollTop = index * 40;
+}
+
+function confirmFecha() {
+    const d = pickerState.day.toString().padStart(2, '0');
+    const m = (pickerState.month + 1).toString().padStart(2, '0');
+    const y = pickerState.year;
+    const fullDate = `${y}-${m}-${d}`;
+    
+    document.getElementById('val-fecha').textContent = fullDate;
+    document.getElementById('h-fecha').value = fullDate;
+    
+    closeSheet('fecha_nacimiento');
+}
+
+window.addEventListener('DOMContentLoaded', initPicker);
 </script>
 
 <script src="../assets/js/perfil.js?v=<?= time() ?>"></script>

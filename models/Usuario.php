@@ -111,24 +111,24 @@ class Usuario {
         return $stmt->execute();
     }
 
-    public static function updateOnboarding($conn, $id, $data) {
-        $sql = "UPDATE Usuarios 
-                SET fecha_nacimiento = :fecha, 
-                    peso_kg = :peso, 
-                    altura_cm = :altura,
-                    sexo = :sexo,
-                    id_nivel_actividad = :act,
-                    meta_principal = :meta
-                WHERE id_usuario = :id";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':fecha', $data['fecha_nacimiento']);
-        $stmt->bindParam(':peso', $data['peso_kg']);
-        $stmt->bindParam(':altura', $data['altura_cm']);
-        $stmt->bindParam(':sexo', $data['sexo']);
-        $stmt->bindParam(':act', $data['actividad']);
-        $stmt->bindParam(':meta', $data['meta_principal']);
-        $stmt->bindParam(':id', $id);
-        return $stmt->execute();
+    /**
+     * Calcula la meta calórica diaria usando la fórmula de Mifflin-St Jeor y el factor de actividad.
+     */
+    public static function calcularMetaCalorica($peso_kg, $altura_cm, $edad, $sexo, $factor_actividad, $meta) {
+        $es_hombre = in_array($sexo, ['Hombre', 'M'], true);
+        $tmb = (10 * $peso_kg) + (6.25 * $altura_cm) - (5 * $edad) + ($es_hombre ? 5 : -161);
+        
+        $calorias_mantenimiento = $tmb * $factor_actividad;
+        
+        $calorias_objetivo = $calorias_mantenimiento;
+        $meta_clean = strtolower(str_replace(' ', '_', $meta));
+        if (str_contains($meta_clean, 'perder') || str_contains($meta_clean, 'grasa')) {
+            $calorias_objetivo -= 500;
+        } elseif (str_contains($meta_clean, 'ganar') || str_contains($meta_clean, 'musculo')) {
+            $calorias_objetivo += 300;
+        }
+        
+        return (int) round($calorias_objetivo);
     }
 
     public static function removeRestriccion($conn, $user_id, $rest_id) {
@@ -160,12 +160,17 @@ class Usuario {
     }
 
     public static function ensureActivityLevelsExist($conn) {
-        $stmt_check_act = $conn->query("SELECT COUNT(*) FROM Nivel_Actividad");
-        if ($stmt_check_act->fetchColumn() == 0) {
+        try {
             $conn->exec("INSERT INTO Nivel_Actividad (id_nivel_actividad, descripcion, multiplicador_biometrico) VALUES 
                 (1, 'Sedentario', 1.200), 
-                (2, 'Moderado', 1.550), 
-                (3, 'Activo', 1.725)");
+                (2, 'Ligeramente Activo', 1.375), 
+                (3, 'Moderadamente Activo', 1.550), 
+                (4, 'Muy Activo', 1.725)
+                ON DUPLICATE KEY UPDATE 
+                descripcion = VALUES(descripcion),
+                multiplicador_biometrico = VALUES(multiplicador_biometrico)");
+        } catch (PDOException $e) {
+            error_log('[UsuarioModel] DB ERROR ensureActivityLevelsExist: ' . $e->getMessage());
         }
     }
 }

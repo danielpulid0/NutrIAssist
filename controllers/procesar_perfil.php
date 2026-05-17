@@ -45,28 +45,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $hoy = new DateTime();
     $edad = $hoy->diff($cumpleanos)->y;
 
-    // --- RECALCULAR CALORÍAS (TMB + TDEE) ---
-    // Fórmula de Mifflin-St Jeor
-    if ($sexo === 'Hombre' || $sexo === 'M') {
-        $tmb = (10 * $peso) + (6.25 * $altura) - (5 * $edad) + 5;
-    } else {
-        $tmb = (10 * $peso) + (6.25 * $altura) - (5 * $edad) - 161;
-    }
-
-    $multiplicadores = [1 => 1.200, 2 => 1.550, 3 => 1.725];
+    $multiplicadores = [
+        1 => 1.200, 
+        2 => 1.375, 
+        3 => 1.550, 
+        4 => 1.725
+    ];
     $factor_actividad = $multiplicadores[$actividad] ?? 1.200;
-    
-    $calorias_mantenimiento = $tmb * $factor_actividad;
 
-    $calorias_objetivo = $calorias_mantenimiento;
-    if ($meta === 'Perder Grasa') {
-        $calorias_objetivo -= 500;
-    } elseif ($meta === 'Ganar Músculo' || $meta === 'Ganar Musculo') {
-        $calorias_objetivo += 300;
-    }
+    $calorias_objetivo = Usuario::calcularMetaCalorica($peso, $altura, $edad, $sexo, $factor_actividad, $meta);
 
     // Actualizar la meta de calorías en la sesión
-    $_SESSION['meta_calorias'] = round($calorias_objetivo);
+    $_SESSION['meta_calorias'] = $calorias_objetivo;
 
     // --- MIGRACIÓN SILENCIOSA DEL CATÁLOGO DE ACTIVIDAD ---
     Usuario::ensureActivityLevelsExist($conn);

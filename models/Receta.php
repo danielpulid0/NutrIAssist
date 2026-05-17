@@ -96,5 +96,20 @@ class Receta {
             return [];
         }
     }
+
+    /**
+     * Extrae el nivel de costo de las etiquetas de una receta.
+     * @param array $tags Etiquetas decodificadas de la receta
+     * @return string Uno de: 'Económico', 'Medio', 'Caro', 'Premium'
+     */
+    public static function extractCosto($tags) {
+        $costos_validos = ['Económico', 'Medio', 'Caro'];
+        foreach ($tags as $tag) {
+            if (in_array($tag, $costos_validos, true)) {
+                return $tag;
+            }
+        }
+        return 'Medio';
+    }
 }
 ?>

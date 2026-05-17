@@ -1,6 +1,24 @@
 <?php
 class Comida {
     /**
+     * Normaliza el tipo de comida crudo al ENUM de MySQL ('Desayuno', 'Comida', 'Cena', 'Snack').
+     */
+    public static function normalizarTipoComida($tipo_raw) {
+        $tipo_clean = ucfirst(strtolower(trim($tipo_raw ?? 'snack')));
+        $mapa_tipos = [
+            'Desayuno'   => 'Desayuno',
+            'Almuerzo'   => 'Comida',
+            'Comida'     => 'Comida',
+            'Cena'       => 'Cena',
+            'Snack'      => 'Snack',
+            'Merienda'   => 'Snack',
+            'Postre'     => 'Snack',
+            'Sugerencia' => 'Snack',
+        ];
+        return $mapa_tipos[$tipo_clean] ?? 'Snack';
+    }
+
+    /**
      * Guarda un registro de alimentos consumidos (Snapshot).
      * Garantiza la existencia del registro diario, crea el bloque de comida (ej. 'Desayuno')
      * e inserta los alimentos asociados.

@@ -12,6 +12,7 @@ if (!$datos || !isset($datos['alimento'], $datos['calorias'])) {
 }
 
 require_once '../config/conexion.php';
+require_once '../models/Comida.php';
 
 $fecha_hoy   = date('Y-m-d');
 
@@ -56,15 +57,8 @@ if (empty($nombre_ia)) {
 }
 
 // Normalizar tipo de comida → proteger el ENUM
-$tipo_ia  = ucfirst(strtolower($datos['tipo_comida'] ?? 'snack'));
-$mapa_tipos = [
-    'Desayuno' => 'Desayuno', 'Almuerzo' => 'Comida', 'Comida' => 'Comida',
-    'Cena' => 'Cena', 'Snack' => 'Snack', 'Merienda' => 'Snack', 'Postre' => 'Snack',
-];
-
-$tipo_final = $mapa_tipos[$tipo_ia] ?? 'Snack';
+$tipo_final = Comida::normalizarTipoComida($datos['tipo_comida'] ?? 'snack');
 try {
-    require_once '../models/Comida.php';
 
     $item = [
         'nombre'   => $nombre_ia,

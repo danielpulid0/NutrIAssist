@@ -44,10 +44,7 @@ foreach ($recetas_raw as $receta_db) {
     $tags = json_decode($receta_db['etiquetas'] ?? '[]', true) ?: [];
 
     // Detectar costo en etiquetas
-    $costo_txt = 'Medio';
-    foreach ($tags as $tag_actual) {
-        if (in_array($tag_actual, $costos)) { $costo_txt = $tag_actual; break; }
-    }
+    $costo_txt = Receta::extractCosto($tags);
 
     // Tag visible: el primero que no sea tipo de comida ni costo
     $tag_visible = null;

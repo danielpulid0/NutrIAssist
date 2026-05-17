@@ -21,6 +21,7 @@ if (!$datos || !isset($datos['calorias'])) {
 
 // 3. Conectar a la DB (Esto establece el timezone correcto: America/Tijuana)
 require_once '../config/conexion.php';
+require_once '../models/Comida.php';
 
 // 4. Sanear valores — strip any non-numeric chars (AI sometimes sends "350 kcal" or "25g")
 $nombre_ia   = htmlspecialchars(trim($datos['alimento']    ?? 'Alimento'));
@@ -35,21 +36,9 @@ $fecha_hoy   = date('Y-m-d');
 error_log("[guardar_comida_ia] Datos recibidos: usuario=$id_usuario, alimento=$nombre_ia, cal=$calorias, pro=$proteina, carbs=$carbs, grasas=$grasas");
 
 // 4. Normalizar tipo de comida → proteger el ENUM de MySQL
-$tipo_ia  = ucfirst(strtolower($datos['tipo_comida'] ?? 'snack'));
-$mapa_tipos = [
-    'Desayuno' => 'Desayuno',
-    'Almuerzo' => 'Comida',
-    'Comida'   => 'Comida',
-    'Cena'     => 'Cena',
-    'Snack'    => 'Snack',
-    'Merienda' => 'Snack',
-    'Postre'   => 'Snack',
-    'Sugerencia' => 'Snack', // Caso E de la IA
-];
-$tipo_final = $mapa_tipos[$tipo_ia] ?? 'Snack';
+$tipo_final = Comida::normalizarTipoComida($datos['tipo_comida'] ?? 'snack');
 
 try {
-    require_once '../models/Comida.php';
 
     $item = [
         'nombre'   => $nombre_ia,

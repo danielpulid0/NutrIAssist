@@ -81,7 +81,11 @@
 
             <label class="form-label" for="nombre">Nombre completo</label>
             <input class="form-input" type="text" id="nombre" name="nombre" placeholder="Ingresa tu nombre completo"
-                required autocomplete="name">
+                required autocomplete="name"
+                pattern="[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]+"
+                title="El nombre completo solo debe contener letras."
+                onkeypress="return /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]$/.test(event.key)"
+                oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]/g, '')">
 
             <label class="form-label" for="email">Correo electrónico</label>
             <input class="form-input" type="email" id="email" name="email" placeholder="ejemplo@correo.com" required
