@@ -5,11 +5,13 @@ $id_usuario = Auth::requireLogin();
 require_once '../config/conexion.php';
 require_once '../models/Receta.php';
 
-// ─── Búsqueda / filtro por GET ─────────────────────────────────────────
+// ─── Búsqueda / filtro por GET (usado para inicializar el estado en JS) ───
 $termino_busqueda = trim($_GET['q'] ?? '');
 $filtro_tag       = trim($_GET['tag'] ?? '');
+$filtro_tiempo    = isset($_GET['rapido']) && $_GET['rapido'] === '1';
 
-$recetas_raw = Receta::search($conn, $termino_busqueda);
+// Obtenemos todas las recetas para filtrado en el cliente (JS)
+$recetas_raw = Receta::search($conn, '');
 
 // ─── Helpers ───────────────────────────────────────────────────────────
 // Colores de tags conocidos
@@ -34,8 +36,8 @@ $tag_colores = [
     'Económico'      => ['bg' => '#DCFCE7', 'fg' => '#16A34A'],
 ];
 
-$costos        = ['Económico', 'Medio', 'Caro', 'Premium'];
-$tipos_comida  = ['Desayuno', 'Comida', 'Cena', 'Snack', 'Vegetariano', 'Vegano'];
+$costos        = ['Económico', 'Economico', 'Medio', 'Caro', 'Costoso', 'Premium'];
+//$tipos_comida  = ['Desayuno', 'Comida', 'Cena', 'Snack', 'Vegetariano', 'Vegano'];
 $todos_tags    = [];
 
 // Procesamos recetas y extraemos todos los tags para los chips de filtro
@@ -50,7 +52,7 @@ foreach ($recetas_raw as $receta_db) {
     $tag_visible = null;
     $color_tag   = ['bg' => '#F3F4F6', 'fg' => '#6B7280'];
     foreach ($tags as $tag_actual) {
-        if (!in_array($tag_actual, $costos) && !in_array($tag_actual, $tipos_comida)) {
+        if (!in_array($tag_actual, $costos)) {
             $tag_visible = $tag_actual;
             $color_tag   = $tag_colores[$tag_actual] ?? $color_tag;
             break;
@@ -60,8 +62,7 @@ foreach ($recetas_raw as $receta_db) {
     // Acumular tags únicos para el chip-bar de filtros
     foreach ($tags as $tag_actual) { $todos_tags[$tag_actual] = true; }
 
-    // Aplicar filtro de tag si hay uno activo
-    if ($filtro_tag !== '' && !in_array($filtro_tag, $tags)) continue;
+
 
     $recetas[] = array_merge($receta_db, [
         'tags'       => $tags,

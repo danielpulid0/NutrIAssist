@@ -43,10 +43,21 @@
     transition: background 0.15s, border-color 0.15s;
     flex-shrink: 0;
 }
-.chip.active, .chip:hover {
+.chip.active {
     background: var(--color-mint);
     border-color: var(--color-malachite);
     color: var(--color-malachite);
+}
+.chip:hover {
+    background: #F3F4F6;
+    border-color: var(--color-text-gray);
+    color: var(--color-text-dark);
+}
+.chip.active:hover {
+    background: var(--color-mint);
+    border-color: var(--color-malachite);
+    color: var(--color-malachite);
+    opacity: 0.9;
 }
 
 /* ── GRID ── */
@@ -122,6 +133,23 @@
     background: var(--color-bg-light);
     border: 1px solid var(--color-border);
     color: var(--color-text-dark);
+}
+
+[data-theme='dark'] .chip.active {
+    background: var(--color-malachite);
+    border-color: var(--color-malachite);
+    color: #ffffff;
+}
+[data-theme='dark'] .chip:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--color-text-dark);
+}
+[data-theme='dark'] .chip.active:hover {
+    background: var(--color-malachite);
+    border-color: var(--color-malachite);
+    color: #ffffff;
+    opacity: 0.9;
 }
 
 [data-theme='dark'] .receta-title {

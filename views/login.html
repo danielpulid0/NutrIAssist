@@ -74,8 +74,17 @@
     <script>
         // Mostrar error si viene del servidor
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('error') === '1') {
-            document.getElementById('error-box').style.display = 'block';
+        const error = urlParams.get('error');
+        if (error) {
+            const errorBox = document.getElementById('error-box');
+            if (error === 'credenciales_invalidas') {
+                errorBox.innerText = 'Credenciales inválidas. Por favor, verifica tu correo y contraseña.';
+            } else if (error === 'campos_invalidos') {
+                errorBox.innerText = 'Por favor, ingresa un correo electrónico y una contraseña válidos.';
+            } else {
+                errorBox.innerText = 'Correo o contraseña incorrectos.';
+            }
+            errorBox.style.display = 'block';
         }
 
         // Mostrar éxito si se restableció la contraseña

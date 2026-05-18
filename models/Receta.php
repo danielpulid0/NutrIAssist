@@ -103,10 +103,17 @@ class Receta {
      * @return string Uno de: 'Económico', 'Medio', 'Caro', 'Premium'
      */
     public static function extractCosto($tags) {
-        $costos_validos = ['Económico', 'Medio', 'Caro'];
+        $costos_map = [
+            'economico'  => 'Económico',
+            'económico'  => 'Económico',
+            'medio'      => 'Medio',
+            'caro'       => 'Costoso',
+            'costoso'    => 'Costoso'
+        ];
         foreach ($tags as $tag) {
-            if (in_array($tag, $costos_validos, true)) {
-                return $tag;
+            $normalized = strtolower(trim($tag));
+            if (isset($costos_map[$normalized])) {
+                return $costos_map[$normalized];
             }
         }
         return 'Medio';
