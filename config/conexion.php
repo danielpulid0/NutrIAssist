@@ -3,7 +3,7 @@
 date_default_timezone_set('America/Tijuana');
 
 $host = "localhost";
-$dbname = "nutriassist_db"; // Ajusta al nombre exacto que creaste
+$dbname = "nutriassist_db"; 
 $username = "root";
 $password = "contrasena";
 

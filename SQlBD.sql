@@ -47,6 +47,8 @@ CREATE TABLE Usuarios (
     peso_kg DECIMAL(5,2) NOT NULL,
     altura_cm INT NOT NULL,
     id_nivel_actividad INT,
+    sexo ENUM('Hombre', 'Mujer') DEFAULT 'Hombre',
+    meta_principal ENUM('Perder Grasa', 'Ganar Músculo', 'Mantener Peso') DEFAULT 'Perder Grasa',
     reset_token VARCHAR(255) NULL,
     reset_token_expiry DATETIME NULL,
     FOREIGN KEY (id_nivel_actividad) REFERENCES Nivel_Actividad(id_nivel_actividad)

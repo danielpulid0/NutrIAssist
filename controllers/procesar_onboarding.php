@@ -5,6 +5,10 @@ Auth::requirePost();
 
 require_once '../config/conexion.php';
 require_once '../models/Usuario.php';
+
+// Asegurar que las columnas dinámicas existan en la tabla Usuarios antes de procesar el registro
+Usuario::ensureColumnsExist($conn);
+
 $objetivo   = $_SESSION['onboarding_objetivo']; // 'perder_grasa', 'mantener_peso', 'ganar_musculo'
 $sexo       = $_SESSION['onboarding_sexo'];     // 'M' o 'F'
 $fecha_nacimiento = $_SESSION['onboarding_fecha_nacimiento'];

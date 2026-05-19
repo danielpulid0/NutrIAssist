@@ -42,6 +42,10 @@ if (isset($_SESSION['usuario_id'])) {
             <a href="views/login.html" class="btn-secondary">Ya tengo cuenta</a>
         </div>
 
+        <div class="splash-footer">
+            © Derechos reservados Galatics Software Association
+        </div>
+
     </div>
 
     <!-- Registro de Service Worker para PWA -->

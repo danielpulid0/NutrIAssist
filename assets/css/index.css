@@ -47,7 +47,15 @@
     flex-direction: column;
     gap: 1rem;
     margin-top: auto;
-    padding-bottom: 2rem;
+    padding-bottom: 0.75rem;
+}
+
+.splash-footer {
+    text-align: center;
+    font-size: 0.50rem;
+    color: var(--color-text-gray);
+    opacity: 0.7;
+    padding-bottom: 1.25rem;
 }
 
 /* Botón secundario (Transparente con borde) */
