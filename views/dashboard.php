@@ -45,7 +45,7 @@ require_once 'includes/header.php';
                     <span class="macro-dot" style="background-color: #3b82f6;"></span>
                     Proteínas
                 </div>
-                <div class="macro-val-h"><?= $pro_consumidas ?> / 150g</div>
+                <div class="macro-val-h"><?= $pro_consumidas ?> / <?= $meta_proteina ?>g</div>
             </div>
             <div class="macro-bar-bg">
                 <div class="macro-bar-fill" style="width: <?= $pro_p ?>%; background-color: #3b82f6;"></div>
@@ -59,7 +59,7 @@ require_once 'includes/header.php';
                     <span class="macro-dot" style="background-color: #f97316;"></span>
                     Carbohidratos
                 </div>
-                <div class="macro-val-h"><?= $carbs_consumidas ?> / 220g</div>
+                <div class="macro-val-h"><?= $carbs_consumidas ?> / <?= $meta_carbs ?>g</div>
             </div>
             <div class="macro-bar-bg">
                 <div class="macro-bar-fill" style="width: <?= $carbs_p ?>%; background-color: #f97316;"></div>
@@ -73,7 +73,7 @@ require_once 'includes/header.php';
                     <span class="macro-dot" style="background-color: #eab308;"></span>
                     Grasas
                 </div>
-                <div class="macro-val-h"><?= $grasas_consumidas ?> / 70g</div>
+                <div class="macro-val-h"><?= $grasas_consumidas ?> / <?= $meta_grasas ?>g</div>
             </div>
             <div class="macro-bar-bg">
                 <div class="macro-bar-fill" style="width: <?= $grasas_p ?>%; background-color: #eab308;"></div>

@@ -35,9 +35,29 @@ require_once '../config/conexion.php';
             $_SESSION['usuario_id'] = $usuario['id_usuario'];
             $_SESSION['usuario_nombre'] = $usuario['nombre'];
             
-            // (Opcional) Aquí podrías volver a calcular la meta de calorías o sacarla de la DB,
-            // por ahora ponemos un default para que el Dashboard no marque error.
-            $_SESSION['meta_calorias'] = 2000; 
+            // Calcular metas dinámicas del usuario en el login
+            $usuarioCompleto = Usuario::getById($conn, $usuario['id_usuario']);
+            if ($usuarioCompleto && isset($usuarioCompleto['peso_kg'])) {
+                $cumpleanos = new DateTime($usuarioCompleto['fecha_nacimiento']);
+                $edad = (new DateTime())->diff($cumpleanos)->y;
+                
+                $multiplicadores = [1 => 1.200, 2 => 1.375, 3 => 1.550, 4 => 1.725];
+                $factor_act = $multiplicadores[$usuarioCompleto['id_nivel_actividad'] ?? 1] ?? 1.200;
+                
+                $metas = Usuario::calcularMetasNutricionales(
+                    $usuarioCompleto['peso_kg'], $usuarioCompleto['altura_cm'],
+                    $edad, $usuarioCompleto['sexo'], $factor_act, $usuarioCompleto['meta_principal']
+                );
+                $_SESSION['meta_calorias'] = $metas['calorias'];
+                $_SESSION['meta_proteina'] = $metas['proteinas'];
+                $_SESSION['meta_grasas']   = $metas['grasas'];
+                $_SESSION['meta_carbs']    = $metas['carbos'];
+            } else {
+                $_SESSION['meta_calorias'] = 2000; 
+                $_SESSION['meta_proteina'] = 150;
+                $_SESSION['meta_grasas']   = 70;
+                $_SESSION['meta_carbs']    = 220;
+            }
 
             // Lo enviamos directo al Dashboard
             header("Location: ../views/dashboard.php");

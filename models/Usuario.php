@@ -112,23 +112,47 @@ class Usuario {
     }
 
     /**
-     * Calcula la meta calórica diaria usando la fórmula de Mifflin-St Jeor y el factor de actividad.
+     * Calcula las metas nutricionales diarias (Calorías, Proteínas, Carbohidratos, Grasas)
+     * basándose en fórmulas deportivas clínicas (por kg de peso) y porcentaje sobre TMB.
      */
-    public static function calcularMetaCalorica($peso_kg, $altura_cm, $edad, $sexo, $factor_actividad, $meta) {
+    public static function calcularMetasNutricionales($peso_kg, $altura_cm, $edad, $sexo, $factor_actividad, $meta) {
         $es_hombre = in_array($sexo, ['Hombre', 'M'], true);
         $tmb = (10 * $peso_kg) + (6.25 * $altura_cm) - (5 * $edad) + ($es_hombre ? 5 : -161);
         
-        $calorias_mantenimiento = $tmb * $factor_actividad;
-        
-        $calorias_objetivo = $calorias_mantenimiento;
         $meta_clean = strtolower(str_replace(' ', '_', $meta));
-        if (str_contains($meta_clean, 'perder') || str_contains($meta_clean, 'grasa')) {
-            $calorias_objetivo -= 500;
-        } elseif (str_contains($meta_clean, 'ganar') || str_contains($meta_clean, 'musculo')) {
-            $calorias_objetivo += 300;
-        }
         
-        return (int) round($calorias_objetivo);
+        $calorias = 0;
+        $proteinas = 0;
+        $grasas = 0;
+
+        if (str_contains($meta_clean, 'ganar') || str_contains($meta_clean, 'musculo')) {
+            // VolumePlan
+            $calorias = ($tmb * $factor_actividad) * 1.15;
+            $proteinas = $peso_kg * 2.0;
+            $grasas = $peso_kg * 1.0;
+        } elseif (str_contains($meta_clean, 'perder') || str_contains($meta_clean, 'grasa')) {
+            // DefinitionPlan
+            $calorias = ($tmb * $factor_actividad) * 0.80;
+            $proteinas = $peso_kg * 2.2;
+            $grasas = $peso_kg * 0.8;
+        } else {
+            // RecompositionPlan (Mantener Peso)
+            $calorias = ($tmb * $factor_actividad) * 1.10;
+            $proteinas = $peso_kg * 2.4;
+            $grasas = $peso_kg * 0.9;
+        }
+
+        // Relleno de Carbohidratos por Residuo Calórico
+        $carbos = ($calorias - (($proteinas * 4) + ($grasas * 9))) / 4;
+        
+        if ($carbos < 0) $carbos = 0;
+
+        return [
+            'calorias' => (int) round($calorias),
+            'proteinas' => (int) round($proteinas),
+            'grasas' => (int) round($grasas),
+            'carbos' => (int) round($carbos)
+        ];
     }
 
     public static function removeRestriccion($conn, $user_id, $rest_id) {

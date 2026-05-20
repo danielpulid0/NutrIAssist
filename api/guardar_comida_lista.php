@@ -18,8 +18,8 @@ if (!$datos || empty($datos['items']) || !is_array($datos['items'])) {
     exit();
 }
 
-if (count($datos['items']) > 20) {
-    echo json_encode(['status' => 'error', 'message' => 'No se pueden registrar más de 20 alimentos a la vez.']);
+if (count($datos['items']) > 10) {
+    echo json_encode(['status' => 'error', 'message' => 'No se pueden registrar más de 10 alimentos a la vez.']);
     exit();
 }
 

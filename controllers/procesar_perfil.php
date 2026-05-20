@@ -53,10 +53,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     ];
     $factor_actividad = $multiplicadores[$actividad] ?? 1.200;
 
-    $calorias_objetivo = Usuario::calcularMetaCalorica($peso, $altura, $edad, $sexo, $factor_actividad, $meta);
+    $metas = Usuario::calcularMetasNutricionales($peso, $altura, $edad, $sexo, $factor_actividad, $meta);
 
-    // Actualizar la meta de calorías en la sesión
-    $_SESSION['meta_calorias'] = $calorias_objetivo;
+    // Actualizar la meta de calorías y macros en la sesión
+    $_SESSION['meta_calorias'] = $metas['calorias'];
+    $_SESSION['meta_proteina'] = $metas['proteinas'];
+    $_SESSION['meta_grasas']   = $metas['grasas'];
+    $_SESSION['meta_carbs']    = $metas['carbos'];
 
     // --- MIGRACIÓN SILENCIOSA DEL CATÁLOGO DE ACTIVIDAD ---
     Usuario::ensureActivityLevelsExist($conn);

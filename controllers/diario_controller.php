@@ -5,7 +5,6 @@ $id_usuario = Auth::requireLogin();
 require_once '../config/conexion.php';
 
 $meta_calorias = (int) ($_SESSION['meta_calorias'] ?? 2000);
-$meta_calorias = (int) ($_SESSION['meta_calorias'] ?? 2000);
 $fecha_hoy     = date('Y-m-d');
 
 // ─── Fecha seleccionada (GET o hoy) ───────────────────────────────

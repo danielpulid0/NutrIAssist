@@ -1,5 +1,6 @@
 # Archivos con credenciales — nunca subir al repositorio
 config/keys.php
+config/conexion.php
 
 # Sistema operativo
 .DS_Store

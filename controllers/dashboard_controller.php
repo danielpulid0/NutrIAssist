@@ -4,9 +4,9 @@ $id_usuario = Auth::requireLogin();
 
 $nombre_usuario = $_SESSION['usuario_nombre'] ?? 'Usuario';
 $meta_calorias  = (int) ($_SESSION['meta_calorias'] ?? 2000);
-$meta_proteina  = 150;
-$meta_carbs     = 220;
-$meta_grasas    = 70;
+$meta_proteina  = (int) ($_SESSION['meta_proteina'] ?? 150);
+$meta_carbs     = (int) ($_SESSION['meta_carbs']    ?? 220);
+$meta_grasas    = (int) ($_SESSION['meta_grasas']   ?? 70);
 
 // ─ Fecha y saludo dinámico ────────────────────────────────────────────
 date_default_timezone_set('America/Tijuana');

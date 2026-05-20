@@ -21,7 +21,7 @@ $cumpleanos = new DateTime($fecha_nacimiento);
 $hoy = new DateTime();
 $edad = $hoy->diff($cumpleanos)->y;
 
-$calorias_finales = Usuario::calcularMetaCalorica($peso, $altura, $edad, $sexo, $actividad, $objetivo);
+$metas = Usuario::calcularMetasNutricionales($peso, $altura, $edad, $sexo, $actividad, $objetivo);
 
 try {
     // Mapear objetivo a formato legible para DB
@@ -58,7 +58,10 @@ try {
     unset($_SESSION['onboarding_peso']);
 
     // 7. Guardar las metas calculadas en la sesión para el Dashboard
-    $_SESSION['meta_calorias'] = $calorias_finales;
+    $_SESSION['meta_calorias'] = $metas['calorias'];
+    $_SESSION['meta_proteina'] = $metas['proteinas'];
+    $_SESSION['meta_grasas']   = $metas['grasas'];
+    $_SESSION['meta_carbs']    = $metas['carbos'];
     $_SESSION['mostrar_tutorial'] = true;
 
     // 8. ¡Redirigir al Dashboard!
