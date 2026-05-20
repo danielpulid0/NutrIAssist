@@ -3,7 +3,7 @@ class Comida {
     /**
      * Normaliza el tipo de comida crudo al ENUM de MySQL ('Desayuno', 'Comida', 'Cena', 'Snack').
      */
-    public static function normalizarTipoComida($tipo_raw) {
+    public static function normalizarTipoComida($tipo_raw) {  //test
         $tipo_clean = ucfirst(strtolower(trim($tipo_raw ?? 'snack')));
         $mapa_tipos = [
             'Desayuno'   => 'Desayuno',

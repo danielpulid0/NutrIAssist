@@ -10,7 +10,7 @@ $fecha_hoy     = date('Y-m-d');
 
 // ─── Fecha seleccionada (GET o hoy) ───────────────────────────────
 $fecha_sel = $_GET['fecha'] ?? $fecha_hoy;
-if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_sel) || $fecha_sel > $fecha_hoy) {
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha_sel) || $fecha_sel > $fecha_hoy) {  //prueba 1 y 2
     $fecha_sel = $fecha_hoy;
 }
 
@@ -32,7 +32,7 @@ $inicio_semana = date('Y-m-d', strtotime("-{$dow_sel} days", $ts_sel));
 // Semana anterior y siguiente (para navegación)
 $semana_prev = date('Y-m-d', strtotime('-7 days', $ts_sel));
 $semana_next = date('Y-m-d', strtotime('+7 days', $ts_sel));
-if ($semana_next > $fecha_hoy) $semana_next = null;
+if ($semana_next > $fecha_hoy) $semana_next = null;              //test 3
 
 // Label de la fecha
 $dias_es = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
