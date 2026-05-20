@@ -32,6 +32,9 @@
     });
 })();
 
+// Guardar la zona horaria del usuario para el backend (PHP)
+document.cookie = "user_timezone=" + Intl.DateTimeFormat().resolvedOptions().timeZone + "; path=/; max-age=31536000";
+
 // Registro de Service Worker para PWA (para vistas logueadas)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

@@ -50,6 +50,9 @@ if (isset($_SESSION['usuario_id'])) {
 
     <!-- Registro de Service Worker para PWA -->
     <script>
+        // Guardar la zona horaria del usuario para el backend (PHP)
+        document.cookie = "user_timezone=" + Intl.DateTimeFormat().resolvedOptions().timeZone + "; path=/; max-age=31536000";
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/nutriassist/sw.js')

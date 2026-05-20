@@ -9,7 +9,7 @@ $meta_carbs     = (int) ($_SESSION['meta_carbs']    ?? 220);
 $meta_grasas    = (int) ($_SESSION['meta_grasas']   ?? 70);
 
 // ─ Fecha y saludo dinámico ────────────────────────────────────────────
-date_default_timezone_set('America/Tijuana');
+require_once '../config/conexion.php';
 $hora_actual = (int) date('H');
 if ($hora_actual < 12)      $saludo = 'Buenos días';
 elseif ($hora_actual < 19)  $saludo = 'Buenas tardes';
@@ -20,7 +20,6 @@ $meses_es_corto = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','
 $label_hoy = $dias_es_corto[(int)date('w')] . ', ' . (int)date('j') . ' ' . $meses_es_corto[(int)date('n') - 1];
 
 // ─── Consulta real: SUM de macros del día ─────────────────────────
-require_once '../config/conexion.php';
 require_once '../models/Diario.php';
 require_once '../models/Receta.php';
 

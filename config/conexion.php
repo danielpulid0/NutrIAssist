@@ -1,6 +1,11 @@
 <?php
 // config/db.php
-date_default_timezone_set('America/Tijuana');
+$user_tz = $_COOKIE['user_timezone'] ?? 'America/Tijuana';
+if (in_array($user_tz, timezone_identifiers_list())) {
+    date_default_timezone_set($user_tz);
+} else {
+    date_default_timezone_set('America/Tijuana');
+}
 
 $host = "localhost";
 $dbname = "nutriassist_db"; 
