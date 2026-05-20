@@ -40,8 +40,8 @@ if ($calorias < 0 || $proteina < 0 || $carbs < 0 || $grasas < 0) {
 
 // Regla 2: Límites fisiológicos máximos razonables
 // (ningún alimento en 100g tiene más de 900 kcal ni 100g de macronutriente)
-if ($calorias > 9000) {
-    echo json_encode(['status' => 'error', 'message' => 'El valor de calorías supera el límite permitido (9000 kcal).']);
+if ($calorias > 2000) {
+    echo json_encode(['status' => 'error', 'message' => 'El valor de calorías supera el límite permitido (2000 kcal).']);
     exit();
 }
 

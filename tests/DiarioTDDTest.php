@@ -293,14 +293,14 @@ class DiarioTDDTest extends TestCase
     }
 
     /**
-     * RED: Calorías > 9000 deben ser rechazadas como anomalía.
-     * GREEN: Se implementó $calorias > 9000 en guardar_comida_lista.php:65
+     * RED: Calorías > 2000 deben ser rechazadas como anomalía.
+     * GREEN: Se implementó $calorias > 2000 en guardar_comida_lista.php:65
      */
     public function test_calorias_excesivas_son_rechazadas(): void
     {
-        $this->assertTrue(9001 > 9000, 'Calorías=9001 deben superar el límite');
-        $this->assertFalse(9000 > 9000, 'Calorías=9000 están en el límite permitido');
-        $this->assertFalse(500 > 9000, 'Calorías=500 están dentro del rango');
+        $this->assertTrue(2001 > 2000, 'Calorías=2001 deben superar el límite');
+        $this->assertFalse(2000 > 2000, 'Calorías=2000 están en el límite permitido');
+        $this->assertFalse(500 > 2000, 'Calorías=500 están dentro del rango');
     }
 
     // =====================================================================

@@ -62,8 +62,8 @@ foreach ($datos['items'] as $idx => $item) {
         echo json_encode(['status' => 'error', 'message' => "Los valores de \"$nombre\" no pueden ser negativos."]);
         exit();
     }
-    if ($calorias > 9000) {
-        echo json_encode(['status' => 'error', 'message' => "Calorías de \"$nombre\" superan el límite (9000 kcal)."]);
+    if ($calorias > 2000) {
+        echo json_encode(['status' => 'error', 'message' => "Calorías de \"$nombre\" superan el límite (2000 kcal)."]);
         exit();
     }
 
