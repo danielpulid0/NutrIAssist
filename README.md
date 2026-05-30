@@ -178,7 +178,7 @@ El sistema ofrece alternativas saludables a ingredientes comunes de una receta b
 ---
 
 ## Equipo de Desarrollo
-Proyecto académico desarrollado para el curso de Tecnologías Emergentes.
+Proyecto académico desarrollado Galactics Software Association.
 
 ---
 
