@@ -2,7 +2,7 @@
 // Cache-First para assets estáticos | Network-First para vistas PHP
 //Sirve como proxy entre la app y el navegador
 
-const CACHE_NAME = 'nutriassist-v5';
+const CACHE_NAME = 'nutriassist-v6';
 
 const STATIC_ASSETS = [
   '/nutriassist/',
@@ -36,6 +36,11 @@ self.addEventListener('activate', event => {
 // FETCH — estrategia híbrida
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
+
+  // Solo interceptar peticiones GET con esquema http o https
+  if (event.request.method !== 'GET' || !url.protocol.startsWith('http')) {
+    return;
+  }
 
   // Controllers → siempre red (datos dinámicos, nunca cachear)
   if (url.pathname.includes('/controllers/')) {
